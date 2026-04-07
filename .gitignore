@@ -1,22 +1,28 @@
-*.bak 
-*.ddk 
-*.edk 
-*.lst 
-*.lnp 
-*.mpf 
-*.mpj 
-*.obj 
-*.omf 
-*.plg 
-*.rpt 
-*.tmp 
-*.__i 
-*.crf 
-*.o 
-*.d 
-*.axf 
-*.tra 
-*.dep  
-*.iex 
-*.htm 
+# 编译生成的文件夹
+Debug/
+Release/
+bin/
+obj/
+
+# 编译生成的二进制文件
+*.elf
+*.bin
+*.hex
 *.map
+*.lst
+
+# 编译产生的中间文件
+*.o
+*.d
+*.crf
+*.axf
+*.htm
+*.dep
+*.lnp
+*.sct
+
+# 临时文件
+*.tmp
+*.bak
+.DS_Store
+Thumbs.db

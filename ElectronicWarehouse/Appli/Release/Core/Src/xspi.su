@@ -1,0 +1,3 @@
+../Core/Src/xspi.c:30:6:MX_XSPI1_Init	40	static
+../Core/Src/xspi.c:84:6:HAL_XSPI_MspInit	464	static
+../Core/Src/xspi.c:147:6:HAL_XSPI_MspDeInit	8	static

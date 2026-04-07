@@ -19,15 +19,18 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "cmsis_os2.h"
+#include "cacheaxi.h"
 #include "csi.h"
 #include "dcmipp.h"
 #include "dma2d.h"
 #include "i2c.h"
 #include "ltdc.h"
+#include "ramcfg.h"
 #include "usart.h"
 #include "xspi.h"
 #include "xspim.h"
 #include "gpio.h"
+#include "app_x-cube-ai.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -120,13 +123,16 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  //MX_DCMIPP_Init();
   MX_DMA2D_Init();
-  MX_XSPI1_Init();
-  MX_LTDC_Init();
-  MX_DCMIPP_Init();
-  MX_USART1_UART_Init();
-  MX_I2C4_Init();
   MX_I2C2_Init();
+  MX_I2C4_Init();
+  //MX_XSPI1_Init();
+  MX_LTDC_Init();
+  MX_USART1_UART_Init();
+  MX_CACHEAXI_Init();
+  MX_RAMCFG_Init();
+  MX_X_CUBE_AI_Init();
   SystemIsolation_Config();
   /* USER CODE BEGIN 2 */
 #ifdef DEBUG
@@ -282,6 +288,30 @@ int main(void)
 //      uint32_t error_code = hdcmipp->ErrorCode;  // 加一行这个方便观察
       __NOP();
   }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  /* Dummy syscalls to silence linker warnings */
+  int _close(int file) { return -1; }
+  int _fstat(int file, void *st) { return 0; }
+  int _isatty(int file) { return 1; }
+  int _lseek(int file, int ptr, int dir) { return 0; }
+  int _read(int file, char *ptr, int len) { return 0; }
+  int _write(int file, char *ptr, int len) { return len; }
+  int _getpid(void) { return 1; }
+  int _kill(int pid, int sig) { return -1; }
+  int _open(char *file, int flags, int mode) { return -1; }
 
 /* USER CODE END 4 */
 

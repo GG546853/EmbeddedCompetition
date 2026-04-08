@@ -226,6 +226,21 @@
 									<listOptionValue builtIn="false" value="../../Middlewares/ST/AI/Npu/Devices/STM32N6XX"/>
 									<listOptionValue builtIn="false" value="../../Middlewares/ST/AI/Inc"/>
 									<listOptionValue builtIn="false" value="../../Middlewares/ST/AI/Npu/ll_aton"/>
+									<listOptionValue builtIn="false" value="&quot;C:\Users\96022\Desktop\EmbeddedCompetition\ElectronicWarehouse\Appli\Middlewares\STM32_MW_ISP\evision\Inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;C:\Users\96022\Desktop\EmbeddedCompetition\ElectronicWarehouse\Appli\Middlewares\STM32_MW_ISP\isp\Inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;C:\Users\96022\Desktop\EmbeddedCompetition\ElectronicWarehouse\Appli\Middlewares\STM32_MW_ISP\isp_param_conf&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;C:\Users\96022\Desktop\EmbeddedCompetition\ElectronicWarehouse\Appli\Middlewares\STM32_MW_ISP&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;C:\Users\96022\Desktop\EmbeddedCompetition\ElectronicWarehouse\Appli\APP&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;C:\Users\96022\Desktop\EmbeddedCompetition\ElectronicWarehouse\Appli\Drivers\BSP\EEPROM&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;C:\Users\96022\Desktop\EmbeddedCompetition\ElectronicWarehouse\Appli\Drivers\BSP\HyperRAM&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;C:\Users\96022\Desktop\EmbeddedCompetition\ElectronicWarehouse\Appli\Drivers\BSP\IMX335&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;C:\Users\96022\Desktop\EmbeddedCompetition\ElectronicWarehouse\Appli\Drivers\BSP\IMX335\STM32_IMX335&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;C:\Users\96022\Desktop\EmbeddedCompetition\ElectronicWarehouse\Appli\Drivers\BSP\KEY&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;C:\Users\96022\Desktop\EmbeddedCompetition\ElectronicWarehouse\Appli\Drivers\BSP\LED&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;C:\Users\96022\Desktop\EmbeddedCompetition\ElectronicWarehouse\Appli\Drivers\BSP\RGBLCD&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;C:\Users\96022\Desktop\EmbeddedCompetition\ElectronicWarehouse\Appli\Drivers\BSP\SYS&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;C:\Users\96022\Desktop\EmbeddedCompetition\ElectronicWarehouse\Appli\Drivers\BSP\TOUCH&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;C:\Users\96022\Desktop\EmbeddedCompetition\ElectronicWarehouse\Appli\Drivers\BSP\UART&quot;"/>
 								</option>
 								<inputType id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c.1217527871" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c"/>
 							</tool>
@@ -237,9 +252,12 @@
 								<option id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.linker.option.script.1022063670" name="Linker Script (-T)" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.linker.option.script" value="C:\Users\96022\Desktop\EmbeddedCompetition\ElectronicWarehouse\Appli\STM32N647X0HXQ_ROMxspi2_RAMxspi1.ld" valueType="string"/>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.linker.option.directories.1568400778" name="Library search path (-L)" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.linker.option.directories" valueType="libPaths">
 									<listOptionValue builtIn="false" value="../../Middlewares/ST/AI/Lib"/>
+									<listOptionValue builtIn="false" value="&quot;C:\Users\96022\Desktop\EmbeddedCompetition\ElectronicWarehouse\Appli\Middlewares\STM32_MW_ISP\evision\Lib&quot;"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.linker.option.libraries.2072522114" name="Libraries (-l)" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.linker.option.libraries" valueType="libs">
 									<listOptionValue builtIn="false" value=":NetworkRuntime1020_CM55_GCC.a"/>
+									<listOptionValue builtIn="false" value="n6-evision-st-ae_gcc"/>
+									<listOptionValue builtIn="false" value="n6-evision-awb_gcc"/>
 								</option>
 								<inputType id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.linker.input.969459993" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>

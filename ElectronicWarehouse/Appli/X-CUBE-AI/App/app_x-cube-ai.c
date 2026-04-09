@@ -52,7 +52,6 @@
 #include "RGBLED_task.h"
 #include "rgblcd.h"
 #include "network.h"
-
 /* USER CODE END includes */
 
 /* Entry points --------------------------------------------------------------*/
@@ -118,6 +117,7 @@ void MX_X_CUBE_AI_Init(void)
     __HAL_RCC_NPU_RELEASE_RESET();
     npu_cache_init();
     /* USER CODE BEGIN 5 */
+
     /* USER CODE END 5 */
 }
 
@@ -131,14 +131,15 @@ void MX_X_CUBE_AI_Process(void)
     buffer_in  = (uint8_t *)LL_Buffer_addr_start(&ibuffersInfos[0]);
     buffer_out = (uint8_t *)LL_Buffer_addr_start(&obuffersInfos[0]);
 
+    //LL_ATON_RT_RuntimeInit();
     LL_ATON_RT_Init_Network(&NN_Instance_Default);
     // 处理 Cache 一致性
     // 因为摄像头数据是通过外设(DCMIPP/LTDC)通过总线直接写入 EXTRAM 的
     // CPU 的 D-Cache 可能缓存了旧的内存数据。必须先无效化 Cache，确保 CPU 读到最新的摄像头画面！
-    SCB_InvalidateDCache_by_Addr((uint32_t *)g_ltdc_lcd_framebuf, (CAM_WIDTH * CAM_HEIGHT * 2));
-    Preprocess_Camera_Image(g_ltdc_lcd_framebuf, (int8_t *)buffer_in);
+//    SCB_InvalidateDCache_by_Addr((uint32_t *)g_ltdc_lcd_framebuf, (CAM_WIDTH * CAM_HEIGHT * 2));
+//    Preprocess_Camera_Image(g_ltdc_lcd_framebuf, (int8_t *)buffer_in);
     //因为 buffer_in 是 CPU 写进去的，NPU（硬件外设）要去读取，需要清理(Clean) Cache
-    SCB_CleanDCache_by_Addr((uint32_t *)buffer_in, (416 * 416 * 3));
+//    SCB_CleanDCache_by_Addr((uint32_t *)buffer_in, (416 * 416 * 3));
     do {
             // 运行 Epoch 块
             ll_aton_rt_ret = LL_ATON_RT_RunEpochBlock(&NN_Instance_Default);

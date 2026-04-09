@@ -116,3 +116,4 @@ void HAL_RAMCFG_MspDeInit(RAMCFG_HandleTypeDef* ramcfgHandle)
 /* USER CODE BEGIN 1 */
 
 /* USER CODE END 1 */
+

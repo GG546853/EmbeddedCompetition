@@ -77,6 +77,7 @@ void MX_DCMIPP_Init(void)
 
 }
 
+
 /* USER CODE BEGIN 1 */
 /**
 * @brief DCMIPP MSP Initialization
@@ -146,3 +147,4 @@ void HAL_DCMIPP_MspDeInit(DCMIPP_HandleTypeDef *hdcmipp)
   }
 }
 /* USER CODE END 1 */
+

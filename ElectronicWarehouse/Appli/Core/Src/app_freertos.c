@@ -53,7 +53,7 @@ osThreadId_t defaultTaskHandle;
 const osThreadAttr_t defaultTask_attributes = {
   .name = "defaultTask",
   .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 512 * 4
+  .stack_size = 1024 * 4
 };
 
 /* Private function prototypes -----------------------------------------------*/
@@ -130,7 +130,13 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
   RGBLED_TaskHandle = osThreadNew(RGBLED_Task, NULL, &RGBLEDTask_attributes);
+  if(RGBLED_TaskHandle == NULL) {
+	  __NOP();
+  }
   Sensor_TaskHandle = osThreadNew(Sensor_Task, NULL, &SensorTask_attributes);
+  if(Sensor_TaskHandle == NULL) {
+	  __NOP();
+  }
   /* USER CODE END RTOS_THREADS */
 
   /* USER CODE BEGIN RTOS_EVENTS */

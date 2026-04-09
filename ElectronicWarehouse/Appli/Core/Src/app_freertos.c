@@ -26,6 +26,7 @@
 #include "Sensor_task.h"
 #include "imx335.h"
 #include "rgblcd.h"
+#include "app_x-cube-ai.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -150,6 +151,7 @@ void StartDefaultTask(void *argument)
   /* Infinite loop */
   for(;;)
   {
+	  MX_X_CUBE_AI_Process();
 	  vTaskDelay(pdMS_TO_TICKS(33));
   }
   /* USER CODE END defaultTask */

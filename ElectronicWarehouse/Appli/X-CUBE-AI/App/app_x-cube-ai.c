@@ -51,8 +51,8 @@
 #include "Sensor_task.h"
 #include "RGBLED_task.h"
 #include "rgblcd.h"
- extern const LL_Buffer_InfoTypeDef NN_Default_Input_buffersInfos[];
- extern const LL_Buffer_InfoTypeDef NN_Default_Output_buffersInfos[];
+#include "network.h"
+
 /* USER CODE END includes */
 
 /* Entry points --------------------------------------------------------------*/
@@ -125,9 +125,11 @@ void MX_X_CUBE_AI_Process(void)
 {
     /* USER CODE BEGIN 6 */
 	LL_ATON_RT_RetValues_t ll_aton_rt_ret = LL_ATON_RT_DONE;
+	 const LL_Buffer_InfoTypeDef * ibuffersInfos = NN_Interface_Default.input_buffers_info();
+	 const LL_Buffer_InfoTypeDef * obuffersInfos = NN_Interface_Default.output_buffers_info();
 
-    buffer_in  = (uint8_t *)LL_Buffer_addr_start(&NN_Default_Input_buffersInfos[0]);
-    buffer_out = (uint8_t *)LL_Buffer_addr_start(&NN_Default_Output_buffersInfos[0]);
+    buffer_in  = (uint8_t *)LL_Buffer_addr_start(&ibuffersInfos[0]);
+    buffer_out = (uint8_t *)LL_Buffer_addr_start(&obuffersInfos[0]);
 
     LL_ATON_RT_Init_Network(&NN_Instance_Default);
     // 处理 Cache 一致性

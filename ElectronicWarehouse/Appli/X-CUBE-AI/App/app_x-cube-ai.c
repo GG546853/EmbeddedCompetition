@@ -117,7 +117,9 @@ void MX_X_CUBE_AI_Init(void)
     __HAL_RCC_NPU_RELEASE_RESET();
     npu_cache_init();
     /* USER CODE BEGIN 5 */
-
+    HAL_NVIC_SetPriority(NPU_IRQn, 5, 0);
+    // 2. 使能 NPU 中断
+    HAL_NVIC_EnableIRQ(NPU_IRQn);
     /* USER CODE END 5 */
 }
 

@@ -22,6 +22,7 @@
 #include "stm32n6xx_it.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "ll_aton_runtime.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -219,5 +220,9 @@ void USART1_IRQHandler(void)
 }
 
 /* USER CODE BEGIN 1 */
+void NPU_IRQHandler(void)
+{
 
+    LL_ATON_RT_NPU_IRQHandler();
+}
 /* USER CODE END 1 */

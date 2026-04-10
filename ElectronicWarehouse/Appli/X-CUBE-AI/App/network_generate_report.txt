@@ -1,6 +1,6 @@
 ST Edge AI Core v2.2.0-20266 2adc00962
-Created date          : 2026-04-09 21:21:11
-Parameters            : generate --target stm32n6 --name network -m C:/Users/96022/Desktop/yolo_tm/runs/detect/train/weights/best_int8.onnx --st-neural-art n6-extflash@C:/ST/STEdgeAI/2.2/scripts/N6_scripts/user_neuralart.json --workspace C:/Users/96022/AppData/Local/Temp/mxAI_workspace291263828633007824996229368961830 --output C:/Users/96022/.stm32cubemx/network_output
+Created date          : 2026-04-10 21:15:17
+Parameters            : generate --target stm32n6 --name network -m C:/Users/96022/Desktop/yolo_tm/runs/detect/train/weights/best_int8.onnx --st-neural-art n6-extflash@C:/ST/STEdgeAI/2.2/scripts/N6_scripts/user_neuralart.json --workspace C:/Users/96022/AppData/Local/Temp/mxAI_workspace37470647704007799715850712829242 --output C:/Users/96022/.stm32cubemx/network_output
 
 Model name - best_int8
 ------ --------------------------------------------------- ---------------------------------------------- ------------------- ------------ -------------------------------- 
@@ -1546,7 +1546,7 @@ model: macc=1,873,173,009 weights=12,095,980 activations=-- io=--
 Compilation details
 ------------------------------------------------------------------------------------
 Compiler version: 1.1.1-14
-Compiler arguments:  -i C:\Users\96022\.stm32cubemx\network_output\best_int8_OE_3_3_0.onnx --json-quant-file C:\Users\96022\.stm32cubemx\network_output\best_int8_OE_3_3_0_Q.json -g network.c --load-mdesc C:\ST\STEdgeAI\2.2\Utilities\configs\stm32n6.mdesc --load-mpool C:\ST\STEdgeAI\2.2\scripts\N6_scripts\my_mpools\stm32n6__extFlash.mpool --save-mpool-file C:\Users\96022\AppData\Local\Temp\mxAI_workspace291263828633007824996229368961830\neural_art__network\stm32n6__extFlash.mpool --out-dir-prefix C:\Users\96022\AppData\Local\Temp\mxAI_workspace291263828633007824996229368961830\neural_art__network/ --optimization 3 --all-buffers-info --mvei --cache-maintenance --Oauto-sched --native-float --enable-virtual-mem-pools --Omax-ca-pipe 4 --Ocache-opt --Os --output-info-file c_info.json
+Compiler arguments:  -i C:\Users\96022\.stm32cubemx\network_output\best_int8_OE_3_3_0.onnx --json-quant-file C:\Users\96022\.stm32cubemx\network_output\best_int8_OE_3_3_0_Q.json -g network.c --load-mdesc C:\ST\STEdgeAI\2.2\Utilities\configs\stm32n6.mdesc --load-mpool C:\ST\STEdgeAI\2.2\scripts\N6_scripts\my_mpools\stm32n6__extFlash.mpool --save-mpool-file C:\Users\96022\AppData\Local\Temp\mxAI_workspace37470647704007799715850712829242\neural_art__network\stm32n6__extFlash.mpool --out-dir-prefix C:\Users\96022\AppData\Local\Temp\mxAI_workspace37470647704007799715850712829242\neural_art__network/ --optimization 3 --all-buffers-info --mvei --cache-maintenance --Oauto-sched --native-float --enable-virtual-mem-pools --Omax-ca-pipe 4 --Ocache-opt --Os --output-info-file c_info.json
 ====================================================================================
 
 Memory usage information  (input/output buffers are included in activations)

@@ -128,7 +128,7 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  //MX_DCMIPP_Init();
+  MX_DCMIPP_Init();
   MX_DMA2D_Init();
   MX_I2C2_Init();
   MX_I2C4_Init();

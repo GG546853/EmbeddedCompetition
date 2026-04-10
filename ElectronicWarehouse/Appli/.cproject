@@ -100,6 +100,15 @@
 									<listOptionValue builtIn="false" value="../../Middlewares/ST/AI/Inc"/>
 									<listOptionValue builtIn="false" value="../../Middlewares/ST/AI/Npu/ll_aton"/>
 									<listOptionValue builtIn="false" value="&quot;C:\Users\96022\Desktop\EmbeddedCompetition\ElectronicWarehouse\Appli\Drivers\BSP\NORFlash&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;C:\Users\96022\Desktop\EmbeddedCompetition\ElectronicWarehouse\Appli\Drivers\STM32_ExtMem_Manager\boot&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;C:\Users\96022\Desktop\EmbeddedCompetition\ElectronicWarehouse\Appli\Drivers\STM32_ExtMem_Manager\custom\memories&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;C:\Users\96022\Desktop\EmbeddedCompetition\ElectronicWarehouse\Appli\Drivers\STM32_ExtMem_Manager\custom&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;C:\Users\96022\Desktop\EmbeddedCompetition\ElectronicWarehouse\Appli\Drivers\STM32_ExtMem_Manager\nor_sfdp&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;C:\Users\96022\Desktop\EmbeddedCompetition\ElectronicWarehouse\Appli\Drivers\STM32_ExtMem_Manager\psram&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;C:\Users\96022\Desktop\EmbeddedCompetition\ElectronicWarehouse\Appli\Drivers\STM32_ExtMem_Manager\sal&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;C:\Users\96022\Desktop\EmbeddedCompetition\ElectronicWarehouse\Appli\Drivers\STM32_ExtMem_Manager\sdcard&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;C:\Users\96022\Desktop\EmbeddedCompetition\ElectronicWarehouse\Appli\Drivers\STM32_ExtMem_Manager\user&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;C:\Users\96022\Desktop\EmbeddedCompetition\ElectronicWarehouse\Appli\Drivers\STM32_ExtMem_Manager&quot;"/>
 								</option>
 								<inputType id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c.2108561397" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c"/>
 							</tool>

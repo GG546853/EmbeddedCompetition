@@ -32,6 +32,7 @@ Drivers/BSP/IMX335/STM32_IMX335 \
 Drivers/BSP/IMX335 \
 Drivers/BSP/KEY \
 Drivers/BSP/LED \
+Drivers/BSP/NORFlash \
 Drivers/BSP/RGBLCD \
 Drivers/BSP/SYS \
 Drivers/BSP/TOUCH \
@@ -39,5 +40,8 @@ Drivers/BSP/UART \
 Drivers/STM32N6xx_HAL_Driver \
 Middlewares/RTOS2/CMSIS/RTOS2/Core/TZ_Secure_Only \
 Middlewares/RTOS2/CMSIS/RTOS2/Heap/Heap_4 \
+Middlewares/ST/AI/Npu/Devices/STM32N6XX \
+Middlewares/ST/AI/Npu/ll_aton \
 Middlewares/STM32_MW_ISP/isp/Src \
+X-CUBE-AI/App \
 

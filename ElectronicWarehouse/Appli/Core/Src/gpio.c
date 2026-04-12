@@ -32,8 +32,11 @@
 
 /* USER CODE END 1 */
 
-/** Configure pins
-*/
+/**
+  * @brief GPIO Initialization Function
+  * @param None
+  * @retval None
+  */
 void MX_GPIO_Init(void)
 {
 

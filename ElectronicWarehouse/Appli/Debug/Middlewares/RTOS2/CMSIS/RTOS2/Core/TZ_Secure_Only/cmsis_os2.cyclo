@@ -1,4 +1,4 @@
-../../Drivers/CMSIS/Include/core_cm55.h:4049:22:__NVIC_SetPriority	2
+../../Drivers/CMSIS/Include/core_cm55.h:4115:22:__NVIC_SetPriority	2
 C:/Users/96022/Desktop/EmbeddedCompetition/ElectronicWarehouse/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.c:181:22:SVC_Setup	1
 C:/Users/96022/Desktop/EmbeddedCompetition/ElectronicWarehouse/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.c:200:26:IRQ_Context	5
 C:/Users/96022/Desktop/EmbeddedCompetition/ElectronicWarehouse/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.c:228:17:OS_Tick_GetCount	1

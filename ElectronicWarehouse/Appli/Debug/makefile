@@ -9,7 +9,10 @@ RM := rm -rf
 
 # All of the sources participating in the build are defined here
 -include sources.mk
+-include X-CUBE-AI/App/subdir.mk
 -include Middlewares/STM32_MW_ISP/isp/Src/subdir.mk
+-include Middlewares/ST/AI/Npu/ll_aton/subdir.mk
+-include Middlewares/ST/AI/Npu/Devices/STM32N6XX/subdir.mk
 -include Middlewares/RTOS2/CMSIS/RTOS2/Heap/Heap_4/subdir.mk
 -include Middlewares/RTOS2/CMSIS/RTOS2/Core/TZ_Secure_Only/subdir.mk
 -include Drivers/STM32N6xx_HAL_Driver/subdir.mk
@@ -17,6 +20,7 @@ RM := rm -rf
 -include Drivers/BSP/TOUCH/subdir.mk
 -include Drivers/BSP/SYS/subdir.mk
 -include Drivers/BSP/RGBLCD/subdir.mk
+-include Drivers/BSP/NORFlash/subdir.mk
 -include Drivers/BSP/LED/subdir.mk
 -include Drivers/BSP/KEY/subdir.mk
 -include Drivers/BSP/IMX335/STM32_IMX335/subdir.mk
@@ -78,7 +82,7 @@ main-build: ElectronicWarehouse_Appli.elf secondary-outputs
 
 # Tool invocations
 ElectronicWarehouse_Appli.elf ElectronicWarehouse_Appli.map: $(OBJS) $(USER_OBJS) C:\Users\96022\Desktop\EmbeddedCompetition\ElectronicWarehouse\Appli\STM32N647X0HXQ_LRUN_RAMxspi1.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "ElectronicWarehouse_Appli.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m55 -T"C:\Users\96022\Desktop\EmbeddedCompetition\ElectronicWarehouse\Appli\STM32N647X0HXQ_LRUN_RAMxspi1.ld" --specs=nosys.specs -Wl,-Map="ElectronicWarehouse_Appli.map" -Wl,--gc-sections -static -Wl,--cmse-implib -Wl,--out-implib=./secure_nsclib.o -L"C:\Users\96022\Desktop\EmbeddedCompetition\ElectronicWarehouse\Appli\Middlewares\STM32_MW_ISP\evision\Lib" --specs=nano.specs -mfpu=fpv5-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+	arm-none-eabi-gcc -o "ElectronicWarehouse_Appli.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m55 -T"C:\Users\96022\Desktop\EmbeddedCompetition\ElectronicWarehouse\Appli\STM32N647X0HXQ_LRUN_RAMxspi1.ld" --specs=nosys.specs -Wl,-Map="ElectronicWarehouse_Appli.map" -Wl,--gc-sections -static -Wl,--cmse-implib -Wl,--out-implib=./secure_nsclib.o -L"C:\Users\96022\Desktop\EmbeddedCompetition\ElectronicWarehouse\Appli\Middlewares\STM32_MW_ISP\evision\Lib" -L../../Middlewares/ST/AI/Lib --specs=nano.specs -mfpu=fpv5-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 

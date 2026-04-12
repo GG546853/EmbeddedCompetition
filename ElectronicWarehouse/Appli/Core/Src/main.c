@@ -36,6 +36,7 @@
 /* USER CODE BEGIN Includes */
 #include "sys.h"
 #include "hyperram.h"
+#include "norflash.h"
 #include "imx335.h"
 #include "rgblcd.h"
 /* USER CODE END Includes */
@@ -60,6 +61,7 @@
 /* USER CODE BEGIN PV */
 #ifdef DEBUG
 static HyperRAM_ObjectTypeDef HyperRAMObject = {0}; //句柄
+static NORFlash_ObjectTypeDef NORFlashObject = {0};
 #endif
 /* USER CODE END PV */
 
@@ -127,11 +129,12 @@ int main(void)
   MX_DMA2D_Init();
   MX_I2C2_Init();
   MX_I2C4_Init();
-  MX_XSPI1_Init();
+  //MX_XSPI1_Init();
   MX_LTDC_Init();
   MX_USART1_UART_Init();
   MX_CACHEAXI_Init();
   MX_RAMCFG_Init();
+  //MX_XSPI2_Init();
   MX_X_CUBE_AI_Init();
   SystemIsolation_Config();
   /* USER CODE BEGIN 2 */
@@ -142,6 +145,17 @@ int main(void)
       Error_Handler();
   }
   HyperRAM_EnableMemoryMappedMode(&HyperRAMObject);
+
+  MX_XSPI2_Init();
+  uint32_t xspi2_clk = HAL_RCCEx_GetPeriphCLKFreq(RCC_PERIPHCLK_XSPI2);
+  if (NORFlash_Init(&NORFlashObject, &hxspi2, xspi2_clk) != NORFlash_OK)
+    {
+        Error_Handler();
+    }
+  if (NORFlash_EnableMemoryMappedMode(&NORFlashObject) != NORFlash_OK)
+  {
+      Error_Handler();
+  }
 #endif
 
   rgblcd_init();
@@ -262,6 +276,17 @@ void PeriphCommonClock_Config(void)
   HAL_GPIO_ConfigPinAttributes(GPIOG,GPIO_PIN_11,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
   HAL_GPIO_ConfigPinAttributes(GPIOG,GPIO_PIN_13,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
   HAL_GPIO_ConfigPinAttributes(GPIOH,GPIO_PIN_4,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
+  HAL_GPIO_ConfigPinAttributes(GPION,GPIO_PIN_0,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
+  HAL_GPIO_ConfigPinAttributes(GPION,GPIO_PIN_1,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
+  HAL_GPIO_ConfigPinAttributes(GPION,GPIO_PIN_2,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
+  HAL_GPIO_ConfigPinAttributes(GPION,GPIO_PIN_3,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
+  HAL_GPIO_ConfigPinAttributes(GPION,GPIO_PIN_4,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
+  HAL_GPIO_ConfigPinAttributes(GPION,GPIO_PIN_5,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
+  HAL_GPIO_ConfigPinAttributes(GPION,GPIO_PIN_6,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
+  HAL_GPIO_ConfigPinAttributes(GPION,GPIO_PIN_8,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
+  HAL_GPIO_ConfigPinAttributes(GPION,GPIO_PIN_9,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
+  HAL_GPIO_ConfigPinAttributes(GPION,GPIO_PIN_10,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
+  HAL_GPIO_ConfigPinAttributes(GPION,GPIO_PIN_11,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
   HAL_GPIO_ConfigPinAttributes(GPIOO,GPIO_PIN_0,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
   HAL_GPIO_ConfigPinAttributes(GPIOO,GPIO_PIN_2,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
   HAL_GPIO_ConfigPinAttributes(GPIOO,GPIO_PIN_4,GPIO_PIN_SEC|GPIO_PIN_NPRIV);

@@ -99,6 +99,7 @@
 									<listOptionValue builtIn="false" value="../../Middlewares/ST/AI/Npu/Devices/STM32N6XX"/>
 									<listOptionValue builtIn="false" value="../../Middlewares/ST/AI/Inc"/>
 									<listOptionValue builtIn="false" value="../../Middlewares/ST/AI/Npu/ll_aton"/>
+									<listOptionValue builtIn="false" value="&quot;C:\Users\96022\Desktop\EmbeddedCompetition\ElectronicWarehouse\Appli\Drivers\BSP\NORFlash&quot;"/>
 								</option>
 								<inputType id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c.2108561397" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c"/>
 							</tool>

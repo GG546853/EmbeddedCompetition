@@ -56,6 +56,7 @@ void DebugMon_Handler(void);
 void DCMIPP_IRQHandler(void);
 void TIM6_IRQHandler(void);
 void USART1_IRQHandler(void);
+void LTDC_UP_IRQHandler(void);
 /* USER CODE BEGIN EFP */
 
 /* USER CODE END EFP */

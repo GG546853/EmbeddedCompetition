@@ -7,6 +7,8 @@
 ../../Drivers/STM32N6xx_HAL_Driver/Inc/stm32n6xx_ll_bus.h:2065:22:LL_AHB5_GRP1_EnableClockLowPower	1
 ../../Drivers/STM32N6xx_HAL_Driver/Inc/stm32n6xx_ll_bus.h:3123:22:LL_APB2_GRP1_EnableClockLowPower	1
 ../../Drivers/STM32N6xx_HAL_Driver/Inc/stm32n6xx_ll_bus.h:3915:22:LL_MISC_EnableClockLowPower	1
-../X-CUBE-AI/App/app_x-cube-ai.c:64:6:set_clk_sleep_mode	1
-../X-CUBE-AI/App/app_x-cube-ai.c:103:6:MX_X_CUBE_AI_Init	1
-../X-CUBE-AI/App/app_x-cube-ai.c:124:6:MX_X_CUBE_AI_Process	1
+../../Middlewares/ST/AI/Npu/ll_aton/ll_aton_NN_interface.h:479:32:LL_Buffer_addr_base	2
+../../Middlewares/ST/AI/Npu/ll_aton/ll_aton_NN_interface.h:489:32:LL_Buffer_addr_start	1
+../X-CUBE-AI/App/app_x-cube-ai.c:76:6:set_clk_sleep_mode	1
+../X-CUBE-AI/App/app_x-cube-ai.c:115:6:MX_X_CUBE_AI_Init	1
+../X-CUBE-AI/App/app_x-cube-ai.c:138:6:MX_X_CUBE_AI_Process	37

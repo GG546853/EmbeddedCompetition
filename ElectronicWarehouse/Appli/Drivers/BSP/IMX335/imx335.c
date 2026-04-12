@@ -32,6 +32,8 @@ static ISP_HandleTypeDef imx335_hisp = {0};
 static int32_t imx335_isp_gain;
 static int32_t imx335_isp_exposure;
 
+uint8_t g_ai_cam_buf[320 * 320 * 3] __attribute__((aligned(32)));
+
 static uint8_t imx335_dcmipp_init(void);
 static int32_t imx335_io_init(void);
 static int32_t imx335_io_deinit(void);
@@ -147,7 +149,11 @@ uint8_t imx335_start_capture(uint32_t address)
     {
         return 1;
     }
-
+    //extern uint8_t g_ai_cam_buf[];
+    if (HAL_DCMIPP_CSI_PIPE_Start(&hdcmipp, DCMIPP_PIPE2, DCMIPP_VIRTUAL_CHANNEL0, (uint32_t)g_ai_cam_buf, DCMIPP_MODE_CONTINUOUS) != HAL_OK)
+    {
+    	return 1;
+    }
     return 0;
 }
 
@@ -304,6 +310,30 @@ static uint8_t imx335_dcmipp_init(void)
     {
         return 1;
     }
+
+    DCMIPP_CSI_PIPE_ConfTypeDef pipe2_csi_conf = {0};
+    pipe2_csi_conf.DataTypeMode = DCMIPP_DTMODE_DTIDA;
+    pipe2_csi_conf.DataTypeIDA = DCMIPP_DT_RAW10;
+    HAL_DCMIPP_CSI_PIPE_SetConfig(&hdcmipp, DCMIPP_PIPE2, &pipe2_csi_conf);
+
+    DCMIPP_PipeConfTypeDef pipe2_conf = {0};
+    pipe2_conf.FrameRate  = DCMIPP_FRAME_RATE_ALL;
+    pipe2_conf.PixelPipePitch = 320 * 3; // RGB888 每像素 3 字节
+    pipe2_conf.PixelPackerFormat = DCMIPP_PIXEL_PACKER_FORMAT_RGB888_YUV444_1; // NPU 喜欢 RGB 分离的格式
+    HAL_DCMIPP_PIPE_SetConfig(&hdcmipp, DCMIPP_PIPE2, &pipe2_conf);
+
+    /* 摄像头是 2592x1944，要缩放到 320x320 */
+    /* H: 2592/320 = 8.1 (Div=8, 余数0.1。Ratio = 0.1*65536 = 6553) */
+    /* V: 1944/320 = 6.075 (Div=6, 余数0.075。Ratio = 0.075*65536 = 4915) */
+    DCMIPP_DownsizeTypeDef pipe2_down_size = {0};
+    pipe2_down_size.HSize = 320;
+    pipe2_down_size.VSize = 320;
+    pipe2_down_size.HDivFactor = 8;
+    pipe2_down_size.HRatio = 6553;
+    pipe2_down_size.VDivFactor = 6;
+    pipe2_down_size.VRatio = 4915;
+    HAL_DCMIPP_PIPE_SetDownsizeConfig(&hdcmipp, DCMIPP_PIPE2, &pipe2_down_size);
+    HAL_DCMIPP_PIPE_EnableDownsize(&hdcmipp, DCMIPP_PIPE2);
 
     return 0;
 }

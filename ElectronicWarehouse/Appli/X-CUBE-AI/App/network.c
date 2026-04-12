@@ -39,7 +39,7 @@
  * --Ocache-opt = true
  * --output-info-file = "c_info"
  * --onnx-input = "C:/Users/96022/.stm32cubemx/network_output/best_int8_OE_3_3_0.onnx"
- * --out-dir-prefix = "C:/Users/96022/AppData/Local/Temp/mxAI_workspace54432656460006504902933335681016/neural_art__network/"
+ * --out-dir-prefix = "C:/Users/96022/AppData/Local/Temp/mxAI_workspace267862453157003278534859126622294/neural_art__network/"
  * --all-buffers-info = true
  * --mvei = true
  * --Oauto-sched = true

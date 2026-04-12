@@ -56,6 +56,7 @@
 
 /* External variables --------------------------------------------------------*/
 extern DCMIPP_HandleTypeDef hdcmipp;
+extern LTDC_HandleTypeDef hltdc;
 extern UART_HandleTypeDef huart1;
 extern TIM_HandleTypeDef htim6;
 
@@ -216,6 +217,20 @@ void USART1_IRQHandler(void)
   /* USER CODE BEGIN USART1_IRQn 1 */
 
   /* USER CODE END USART1_IRQn 1 */
+}
+
+/**
+  * @brief This function handles LTDC global interrupt.
+  */
+void LTDC_UP_IRQHandler(void)
+{
+  /* USER CODE BEGIN LTDC_UP_IRQn 0 */
+
+  /* USER CODE END LTDC_UP_IRQn 0 */
+  HAL_LTDC_IRQHandler(&hltdc);
+  /* USER CODE BEGIN LTDC_UP_IRQn 1 */
+
+  /* USER CODE END LTDC_UP_IRQn 1 */
 }
 
 /* USER CODE BEGIN 1 */

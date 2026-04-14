@@ -54,12 +54,18 @@
 #include "network.h"
 #include "npu_cache.h"
 
+#define MAX_BOXES 200
+ typedef struct {
+     float x1, y1, x2, y2;
+     float conf;
+     int keep;
+ } Box_t;
+
  extern uint8_t g_ai_cam_buf[320 * 320 * 3];
  extern uint16_t g_ltdc_layer2_framebuf[480 * 800];
+ extern DCMIPP_HandleTypeDef hdcmipp;
 
 
- int8_t *npu_input_buf;
- int8_t *npu_output_buf;
 
  /* 声明 AI 模型需要的输入和输出缓存 (32字节对齐，放入 SRAM 中加快处理) */
 // int8_t ai_input_tensor[3 * 320 * 320] __attribute__((aligned(32)));
@@ -138,77 +144,54 @@ void MX_X_CUBE_AI_Init(void)
 void MX_X_CUBE_AI_Process(void)
 {
     /* USER CODE BEGIN 6 */
-    LL_ATON_RT_RetValues_t ll_aton_rt_ret = LL_ATON_RT_DONE;
-    uint32_t buff_in_len, buff_out_len;
-
-    /* 将 NMS 需要的结构体和数组定义在函数内 (加 static 避免爆栈) */
-    #define MAX_BOXES 200
-    typedef struct {
-        float x1, y1, x2, y2;
-        float conf;
-        int keep;
-    } Box_t;
+	uint32_t buff_in_len;
+	uint32_t buff_out_len;
     static Box_t boxes[MAX_BOXES];
 
-    // 1. 获取 NPU 真正的输入和输出缓冲区指针
-    const LL_Buffer_InfoTypeDef  *ibuffers = NN_Interface_Default.input_buffers_info();
-    const LL_Buffer_InfoTypeDef  *obuffers = NN_Interface_Default.output_buffers_info();
+	LL_ATON_RT_RetValues_t ll_aton_rt_ret = LL_ATON_RT_DONE;
+	const LL_Buffer_InfoTypeDef * ibuffersInfos = NN_Interface_Default.input_buffers_info();
+	const LL_Buffer_InfoTypeDef * obuffersInfos = NN_Interface_Default.output_buffers_info();
+	buffer_in = (uint8_t *)LL_Buffer_addr_start(&ibuffersInfos[0]);
+	buffer_out = (uint8_t *)LL_Buffer_addr_start(&obuffersInfos[0]);
+	LL_ATON_RT_RuntimeInit();
+	buff_in_len = ibuffersInfos->offset_end - ibuffersInfos->offset_start;
+	buff_out_len = obuffersInfos->offset_end - obuffersInfos->offset_start;
 
-    npu_input_buf  = (int8_t *)LL_Buffer_addr_start(&ibuffers[0]);
-    npu_output_buf = (int8_t *)LL_Buffer_addr_start(&obuffers[0]);
+	SCB_CleanDCache_by_Addr((uint32_t*)buffer_in, buff_in_len);
+	SCB_InvalidateDCache_by_Addr((uint32_t*)buffer_in, buff_in_len);
+	HAL_DCMIPP_CSI_PIPE_Start(&hdcmipp, DCMIPP_PIPE2, DCMIPP_VIRTUAL_CHANNEL0, buffer_in, DCMIPP_MODE_SNAPSHOT);
 
-    buff_in_len = ibuffers->offset_end - ibuffers->offset_start;
-    buff_out_len = obuffers->offset_end - obuffers->offset_start;
+	vTaskDelay(pdMS_TO_TICKS(5));
+	SCB_CleanDCache_by_Addr((uint32_t*)buffer_in, buff_in_len);
 
-    // 确保从摄像头读取的数据 Cache 已经失效，拿到最新画面
-    SCB_InvalidateDCache_by_Addr((uint32_t *)g_ai_cam_buf, sizeof(g_ai_cam_buf));
-
-    /* ==============================================================
-       1. 前处理 (Pre-processing)：把摄像头 RGB888 转成 AI 需要的 INT8
-       ============================================================== */
-    uint32_t pixels = 320 * 320;
-    for (uint32_t i = 0; i < pixels; i++) {
-        npu_input_buf[i]              = (int8_t)((int16_t)g_ai_cam_buf[i*3 + 0] - 128); // R
-        npu_input_buf[pixels + i]     = (int8_t)((int16_t)g_ai_cam_buf[i*3 + 1] - 128); // G
-        npu_input_buf[2*pixels + i]   = (int8_t)((int16_t)g_ai_cam_buf[i*3 + 2] - 128); // B
+    uint32_t img_size = 320 * 320 * 3; // RGB888 总字节数
+    uint8_t *pImg = (uint8_t *)buffer_in;
+    for (uint32_t i = 0; i < img_size; i++) {
+        pImg[i] ^= 0x80; // 这行等同于减去 128，且处理速度极快
     }
 
-    // 把写好的输入数据强制刷入物理内存，让 NPU 读到最新数据
-    // 手动向上对齐 32 字节以防死机
-    uint32_t aligned_in_len = ((buff_in_len + 31) / 32) * 32;
-    SCB_CleanDCache_by_Addr((uint32_t *)npu_input_buf, aligned_in_len);
-
-    /* ==============================================================
-       2. 执行 NPU 推理 (Run AI)
-       ============================================================== */
+	SCB_InvalidateDCache_by_Addr((uint32_t*)buffer_in, buff_in_len);
+    LL_ATON_RT_Init_Network(&NN_Instance_Default);  // Initialize passed network instance object
     do {
-        ll_aton_rt_ret = LL_ATON_RT_RunEpochBlock(&NN_Instance_Default);
-        if (ll_aton_rt_ret == LL_ATON_RT_WFE) {
-            LL_ATON_OSAL_WFE();
-        }
+      /* Execute first/next step */
+      ll_aton_rt_ret = LL_ATON_RT_RunEpochBlock(&NN_Instance_Default);
+      /* Wait for next event */
+      if (ll_aton_rt_ret == LL_ATON_RT_WFE) {
+        LL_ATON_OSAL_WFE();
+      }
     } while (ll_aton_rt_ret != LL_ATON_RT_DONE);
-
-    /* 🔴 必须保留！让 CPU 的 Cache 失效，以便从物理内存读取 NPU 刚写进去的输出数据 */
-    // 手动向上对齐 32 字节以防死机
-    uint32_t aligned_out_len = ((buff_out_len + 31) / 32) * 32;
-    SCB_InvalidateDCache_by_Addr((uint32_t *)npu_output_buf, aligned_out_len);
-
-    /* ==============================================================
-       3. 后处理与画框 (Post-processing)
-       ============================================================== */
-    // 清空透明图层
     memset(g_ltdc_layer2_framebuf, 0, sizeof(g_ltdc_layer2_framebuf));
 
     float scale = 1.781954170f;
     int zero_point = -122;
     int valid_count = 0;
-
+    int8_t *int8_out = (int8_t *)buffer_out;
     /* 第一步：遍历所有2100个锚框，找出置信度大于阈值的框 */
     for(int i = 0; i < 2100; i++)
     {
-        int8_t class0_q = npu_output_buf[4 * 2100 + i];
-        int8_t class1_q = npu_output_buf[5 * 2100 + i];
-        int8_t class2_q = npu_output_buf[6 * 2100 + i];
+        int8_t class0_q = int8_out[4 * 2100 + i];
+        int8_t class1_q = int8_out[5 * 2100 + i];
+        int8_t class2_q = int8_out[6 * 2100 + i];
 
         int8_t max_class_q = class0_q;
         if(class1_q > max_class_q) max_class_q = class1_q;
@@ -219,10 +202,10 @@ void MX_X_CUBE_AI_Process(void)
         // YOLOv8 int8 量化通常需要较高的阈值过滤噪点，设为 0.45
         if(conf > 0.45f && valid_count < MAX_BOXES)
         {
-            float cx = (npu_output_buf[0 * 2100 + i] - zero_point) * scale;
-            float cy = (npu_output_buf[1 * 2100 + i] - zero_point) * scale;
-            float w  = (npu_output_buf[2 * 2100 + i] - zero_point) * scale;
-            float h  = (npu_output_buf[3 * 2100 + i] - zero_point) * scale;
+            float cx = (int8_out[0 * 2100 + i] - zero_point) * scale;
+            float cy = (int8_out[1 * 2100 + i] - zero_point) * scale;
+            float w  = (int8_out[2 * 2100 + i] - zero_point) * scale;
+            float h  = (int8_out[3 * 2100 + i] - zero_point) * scale;
 
             // 存入结构体，转换为左上角和右下角坐标 (以 320x320 为基准)
             boxes[valid_count].x1 = cx - w / 2.0f;
@@ -292,9 +275,12 @@ void MX_X_CUBE_AI_Process(void)
             }
         }
     }
+//	SCB_CleanDCache_by_Addr((uint32_t*)buffer_in, buff_in_len);
+//	SCB_InvalidateDCache_by_Addr((uint32_t*)buffer_in, buff_in_len);
 
-    // 🔴 极度重要：画完框后，把内存强制刷出 Cache，否则 LTDC (屏幕硬件) 读不到红框！
-    SCB_CleanDCache_by_Addr((uint32_t *)g_ltdc_layer2_framebuf, sizeof(g_ltdc_layer2_framebuf));
+    LL_ATON_RT_Reset_Network(&NN_Instance_Default);
+
+    /* USER CODE END 6 */
 }
 #ifdef __cplusplus
 }

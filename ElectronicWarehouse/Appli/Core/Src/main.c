@@ -128,12 +128,12 @@ int main(void)
   MX_DMA2D_Init();
   MX_I2C2_Init();
   MX_I2C4_Init();
-  MX_XSPI1_Init();
+  //MX_XSPI1_Init();
   MX_LTDC_Init();
   MX_USART1_UART_Init();
   MX_CACHEAXI_Init();
   MX_RAMCFG_Init();
-  MX_XSPI2_Init();
+  //MX_XSPI2_Init();
   MX_X_CUBE_AI_Init();
   SystemIsolation_Config();
   /* USER CODE BEGIN 2 */

@@ -32,7 +32,7 @@ static ISP_HandleTypeDef imx335_hisp = {0};
 static int32_t imx335_isp_gain;
 static int32_t imx335_isp_exposure;
 
-//uint8_t g_ai_cam_buf[320 * 320 * 3] __attribute__((aligned(32)));
+uint8_t g_ai_cam_buf[320 * 320 * 3] __attribute__((aligned(32)));
 
 static uint8_t imx335_dcmipp_init(void);
 static int32_t imx335_io_init(void);

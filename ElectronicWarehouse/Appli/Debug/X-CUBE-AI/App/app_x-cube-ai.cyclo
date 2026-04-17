@@ -11,4 +11,4 @@
 ../../Middlewares/ST/AI/Npu/ll_aton/ll_aton_NN_interface.h:489:32:LL_Buffer_addr_start	1
 ../X-CUBE-AI/App/app_x-cube-ai.c:82:6:set_clk_sleep_mode	1
 ../X-CUBE-AI/App/app_x-cube-ai.c:121:6:MX_X_CUBE_AI_Init	1
-../X-CUBE-AI/App/app_x-cube-ai.c:144:6:MX_X_CUBE_AI_Process	37
+../X-CUBE-AI/App/app_x-cube-ai.c:144:6:MX_X_CUBE_AI_Process	39

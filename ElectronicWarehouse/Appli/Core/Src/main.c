@@ -301,6 +301,9 @@ void PeriphCommonClock_Config(void)
 
 /* USER CODE BEGIN RIF_Init 1 */
 
+//  HAL_RIF_RIMC_ConfigMasterAttributes(RIF_MASTER_INDEX_NPU, &RIMC_master);
+//  HAL_RIF_RISC_SetSlaveSecureAttributes(RIF_RISC_PERIPH_INDEX_NPU, RIF_ATTRIBUTE_NPRIV  | RIF_ATTRIBUTE_SEC);
+
 /* USER CODE END RIF_Init 1 */
 /* USER CODE BEGIN RIF_Init 2 */
 

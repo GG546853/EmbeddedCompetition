@@ -162,16 +162,17 @@ void MX_X_CUBE_AI_Process(void)
 	HAL_DCMIPP_CSI_PIPE_Start(&hdcmipp, DCMIPP_PIPE2, DCMIPP_VIRTUAL_CHANNEL0, buffer_in, DCMIPP_MODE_SNAPSHOT);
 
 	vTaskDelay(pdMS_TO_TICKS(5));
-	SCB_CleanDCache_by_Addr((uint32_t*)buffer_in, buff_in_len);
+
 
     uint32_t img_size = 320 * 320 * 3; // RGB888 总字节数
     uint8_t *pImg = (uint8_t *)buffer_in;
     for (uint32_t i = 0; i < img_size; i++) {
-        pImg[i] ^= 0x80; // 这行等同于减去 128，且处理速度极快
+        pImg[i] ^= 0x80;
     }
-
+	SCB_CleanDCache_by_Addr((uint32_t*)buffer_in, buff_in_len);
 	SCB_InvalidateDCache_by_Addr((uint32_t*)buffer_in, buff_in_len);
     LL_ATON_RT_Init_Network(&NN_Instance_Default);  // Initialize passed network instance object
+
     do {
       /* Execute first/next step */
       ll_aton_rt_ret = LL_ATON_RT_RunEpochBlock(&NN_Instance_Default);
@@ -180,6 +181,10 @@ void MX_X_CUBE_AI_Process(void)
         LL_ATON_OSAL_WFE();
       }
     } while (ll_aton_rt_ret != LL_ATON_RT_DONE);
+
+    uint32_t aligned_out_len = ((buff_out_len + 31) / 32) * 32;
+    SCB_InvalidateDCache_by_Addr((uint32_t*)buffer_out, aligned_out_len);
+
     memset(g_ltdc_layer2_framebuf, 0, sizeof(g_ltdc_layer2_framebuf));
 
     float scale = 1.781954170f;

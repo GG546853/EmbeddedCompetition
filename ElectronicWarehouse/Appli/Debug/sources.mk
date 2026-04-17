@@ -32,6 +32,7 @@ Drivers/BSP/IMX335/STM32_IMX335 \
 Drivers/BSP/IMX335 \
 Drivers/BSP/KEY \
 Drivers/BSP/LED \
+Drivers/BSP/NORFlash \
 Drivers/BSP/RGBLCD \
 Drivers/BSP/SYS \
 Drivers/BSP/TOUCH \

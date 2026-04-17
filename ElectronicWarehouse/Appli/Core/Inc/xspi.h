@@ -34,11 +34,14 @@ extern "C" {
 
 extern XSPI_HandleTypeDef hxspi1;
 
+extern XSPI_HandleTypeDef hxspi2;
+
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */
 
 void MX_XSPI1_Init(void);
+void MX_XSPI2_Init(void);
 
 /* USER CODE BEGIN Prototypes */
 

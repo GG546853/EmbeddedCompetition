@@ -17,6 +17,7 @@ RM := rm -rf
 -include Drivers/BSP/TOUCH/subdir.mk
 -include Drivers/BSP/SYS/subdir.mk
 -include Drivers/BSP/RGBLCD/subdir.mk
+-include Drivers/BSP/NORFlash/subdir.mk
 -include Drivers/BSP/LED/subdir.mk
 -include Drivers/BSP/KEY/subdir.mk
 -include Drivers/BSP/IMX335/STM32_IMX335/subdir.mk

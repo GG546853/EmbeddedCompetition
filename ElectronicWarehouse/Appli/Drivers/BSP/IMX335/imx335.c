@@ -281,6 +281,8 @@ static uint8_t imx335_dcmipp_init(void)
         return 1;
     }
 
+
+
     dcmipp_csi_pipe_conf_struct.DataTypeMode = DCMIPP_DTMODE_DTIDA;
     dcmipp_csi_pipe_conf_struct.DataTypeIDA = DCMIPP_DT_RAW10;
     dcmipp_csi_pipe_conf_struct.DataTypeIDB = DCMIPP_DT_RAW10;
@@ -313,9 +315,17 @@ static uint8_t imx335_dcmipp_init(void)
         return 1;
     }
 
+
+
+
+
+
+
+
     DCMIPP_CSI_PIPE_ConfTypeDef pipe2_csi_conf = {0};
     pipe2_csi_conf.DataTypeMode = DCMIPP_DTMODE_DTIDA;
     pipe2_csi_conf.DataTypeIDA = DCMIPP_DT_RAW10;
+    pipe2_csi_conf.DataTypeIDB = DCMIPP_DT_RAW10;
 	if (HAL_DCMIPP_CSI_PIPE_SetConfig(&hdcmipp, DCMIPP_PIPE2, &pipe2_csi_conf) != HAL_OK)
 	{
     	return 1;
@@ -333,10 +343,12 @@ static uint8_t imx335_dcmipp_init(void)
     DCMIPP_DownsizeTypeDef pipe2_down_size = {0};
     pipe2_down_size.HSize = 224;
     pipe2_down_size.VSize = 224;
-    pipe2_down_size.HDivFactor = 88;
-    pipe2_down_size.HRatio = 32363;
-    pipe2_down_size.VDivFactor = 117;
-    pipe2_down_size.VRatio = 65000;
+
+    pipe2_down_size.HDivFactor = 512;//88
+    pipe2_down_size.VDivFactor = 512;//117
+
+    pipe2_down_size.VRatio = 17770;//65000
+    pipe2_down_size.HRatio = 17770;//32363
     if (HAL_DCMIPP_PIPE_SetDownsizeConfig(&hdcmipp, DCMIPP_PIPE2, &pipe2_down_size) != HAL_OK)
     {
         return 1;

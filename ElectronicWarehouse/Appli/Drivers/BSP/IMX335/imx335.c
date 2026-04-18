@@ -32,7 +32,7 @@ static ISP_HandleTypeDef imx335_hisp = {0};
 static int32_t imx335_isp_gain;
 static int32_t imx335_isp_exposure;
 
-uint8_t g_ai_cam_buf[224 * 224 * 2] __attribute__((aligned(32)));
+uint8_t g_ai_cam_buf[224 * 224 * 3] __attribute__((section(".noncacheable"), aligned(32)));
 
 static uint8_t imx335_dcmipp_init(void);
 static int32_t imx335_io_init(void);
@@ -146,10 +146,10 @@ uint8_t imx335_start_capture(uint32_t address)
 {
     imx335_capture_frame_count = 0;
 
-//     if (HAL_DCMIPP_CSI_PIPE_Start(&hdcmipp, DCMIPP_PIPE1, DCMIPP_VIRTUAL_CHANNEL0, address, DCMIPP_MODE_CONTINUOUS) != HAL_OK)
-//     {
-//         return 1;
-//     }
+     if (HAL_DCMIPP_CSI_PIPE_Start(&hdcmipp, DCMIPP_PIPE1, DCMIPP_VIRTUAL_CHANNEL0, address, DCMIPP_MODE_CONTINUOUS) != HAL_OK)
+     {
+         return 1;
+     }
 
     if (HAL_DCMIPP_CSI_PIPE_Start(&hdcmipp, DCMIPP_PIPE2, DCMIPP_VIRTUAL_CHANNEL0, (uint32_t)g_ai_cam_buf, DCMIPP_MODE_CONTINUOUS) != HAL_OK)
     {
@@ -322,8 +322,8 @@ static uint8_t imx335_dcmipp_init(void)
 	}
     DCMIPP_PipeConfTypeDef pipe2_conf = {0};
     pipe2_conf.FrameRate  = DCMIPP_FRAME_RATE_ALL;
-    pipe2_conf.PixelPipePitch = 224 * 2;
-    pipe2_conf.PixelPackerFormat = DCMIPP_PIXEL_PACKER_FORMAT_RGB565_1; // NPU 喜欢 RGB 分离的格式
+    pipe2_conf.PixelPipePitch = 224 * 3;
+    pipe2_conf.PixelPackerFormat = DCMIPP_PIXEL_PACKER_FORMAT_RGB888_YUV444_1; // NPU 喜欢 RGB 分离的格式
     if (HAL_DCMIPP_PIPE_SetConfig(&hdcmipp, DCMIPP_PIPE2, &pipe2_conf) != HAL_OK)
 	{
     	return 1;

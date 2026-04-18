@@ -20,23 +20,10 @@ void Sensor_Task(void *argument)
 	  //imx335_stop_capture();
 	while(1)
 	{
+        vTaskDelay(pdMS_TO_TICKS(33));
 		imx335_isp_background_process();
 		//MX_X_CUBE_AI_Process();
-		SCB_InvalidateDCache_by_Addr((uint32_t*)g_ai_cam_buf, 224 * 224 * 2);
+		SCB_InvalidateDCache_by_Addr((uint32_t*)g_ai_cam_buf, 224 * 224 * 3);
 
-        uint16_t *src_cam = (uint16_t *)g_ai_cam_buf;
-        uint16_t *dst_lcd = (uint16_t *)g_ltdc_lcd_framebuf;
-
-        // 2. 将 224x224 的图像嵌在 800x480 的左上角
-        for (int y = 0; y < 224; y++) {
-            memcpy(&dst_lcd[y * 800],
-                   &src_cam[y * 224],
-                   224 * sizeof(uint16_t)); // 注意乘以 sizeof(uint16_t)
-        }
-        SCB_CleanDCache_by_Addr((uint32_t*)g_ltdc_lcd_framebuf, 800 * 480 * 2);
-
-        /* =================================================== */
-
-        vTaskDelay(pdMS_TO_TICKS(33)); // 大约 30FPS 刷新率
 	}
 }

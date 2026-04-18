@@ -1,1 +1,1 @@
-../APP/Sensor_task.c:16:6:Sensor_Task	64	static,ignoring_inline_asm
+../APP/Sensor_task.c:16:6:Sensor_Task	32	static,ignoring_inline_asm

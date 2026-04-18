@@ -35,7 +35,8 @@ _rgblcd_dev rgblcddev;
 
 /* LTDC帧缓冲区 */
 uint16_t g_ltdc_lcd_framebuf[480 * 800] __attribute__((section(".EXTRAM")));
-uint16_t internal_test_buf[480][800] __attribute__((section(".noncacheable"), aligned(32)));
+
+uint16_t g_ltdc_layer2_framebuf[480 * 800] __attribute__((section(".noncacheable"), aligned(32)));
 /* 函数声明 */
 static uint16_t rgblcd_panelid_read(void);
 static uint8_t rgblcd_ltdc_clk_set(uint32_t clock);
@@ -167,6 +168,31 @@ void rgblcd_init(void)
     ltdc_layer_cfg_struct.Backcolor.Red = 0;
     HAL_LTDC_ConfigLayer(&hltdc, &ltdc_layer_cfg_struct, 0);
     HAL_LTDC_SetAddress(&hltdc, (uint32_t)g_ltdc_lcd_framebuf, 0);
+
+    LTDC_LayerCfgTypeDef layer2_cfg = {0};
+    layer2_cfg.WindowX0 = 0;
+    layer2_cfg.WindowX1 = rgblcddev.pwidth;
+    layer2_cfg.WindowY0 = 0;
+    layer2_cfg.WindowY1 = rgblcddev.pheight;
+    layer2_cfg.PixelFormat = LTDC_PIXEL_FORMAT_RGB565; // 格式保持一致
+    layer2_cfg.Alpha = 255;
+    layer2_cfg.Alpha0 = 0;
+    layer2_cfg.BlendingFactor1 = LTDC_BLENDING_FACTOR1_PAxCA;
+    layer2_cfg.BlendingFactor2 = LTDC_BLENDING_FACTOR2_PAxCA;
+    layer2_cfg.FBStartAdress = (uint32_t)g_ltdc_layer2_framebuf;
+    layer2_cfg.ImageWidth = rgblcddev.pwidth;
+    layer2_cfg.ImageHeight = rgblcddev.pheight;
+    layer2_cfg.Backcolor.Blue = 0;
+    layer2_cfg.Backcolor.Green = 0;
+    layer2_cfg.Backcolor.Red = 0;
+    HAL_LTDC_ConfigLayer(&hltdc, &layer2_cfg, 1);
+
+    HAL_LTDC_ConfigColorKeying(&hltdc, 0x000000, 1);
+    HAL_LTDC_EnableColorKeying(&hltdc, 1);
+
+    /* 清空图层2（全涂黑，即全透明） */
+    memset(g_ltdc_layer2_framebuf, 0, sizeof(g_ltdc_layer2_framebuf));
+    HAL_LTDC_Reload(&hltdc, LTDC_RELOAD_IMMEDIATE);
 
     rgblcd_display_dir(0);
     rgblcd_clear(0xFFFF);
@@ -857,4 +883,21 @@ static uint32_t rgblcd_pow(uint8_t m, uint8_t n)
     }
 
     return result;
+}
+/* 🟢 新增：专用于在透明图层2上画点的函数 */
+void rgblcd_layer2_draw_point(uint16_t x, uint16_t y, uint16_t color) {
+    if(x >= rgblcddev.width || y >= rgblcddev.height) return;
+    g_ltdc_layer2_framebuf[y * rgblcddev.width + x] = color;
+}
+
+/* 🟢 新增：专用于在透明图层2上画空心矩形的函数 */
+void rgblcd_layer2_draw_rect(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t color) {
+    for (uint16_t i = 0; i < w; i++) {
+        rgblcd_layer2_draw_point(x + i, y, color);         // 顶边
+        rgblcd_layer2_draw_point(x + i, y + h - 1, color); // 底边
+    }
+    for (uint16_t i = 0; i < h; i++) {
+        rgblcd_layer2_draw_point(x, y + i, color);         // 左边
+        rgblcd_layer2_draw_point(x + w - 1, y + i, color); // 右边
+    }
 }

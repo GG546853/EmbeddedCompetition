@@ -32,6 +32,8 @@ static ISP_HandleTypeDef imx335_hisp = {0};
 static int32_t imx335_isp_gain;
 static int32_t imx335_isp_exposure;
 
+uint8_t g_ai_cam_buf[224 * 224 * 2] __attribute__((aligned(32)));
+
 static uint8_t imx335_dcmipp_init(void);
 static int32_t imx335_io_init(void);
 static int32_t imx335_io_deinit(void);
@@ -143,7 +145,13 @@ uint8_t imx335_get_capture(uint32_t address)
 uint8_t imx335_start_capture(uint32_t address)
 {
     imx335_capture_frame_count = 0;
-    if (HAL_DCMIPP_CSI_PIPE_Start(&hdcmipp, DCMIPP_PIPE1, DCMIPP_VIRTUAL_CHANNEL0, address, DCMIPP_MODE_CONTINUOUS) != HAL_OK)
+
+//     if (HAL_DCMIPP_CSI_PIPE_Start(&hdcmipp, DCMIPP_PIPE1, DCMIPP_VIRTUAL_CHANNEL0, address, DCMIPP_MODE_CONTINUOUS) != HAL_OK)
+//     {
+//         return 1;
+//     }
+
+    if (HAL_DCMIPP_CSI_PIPE_Start(&hdcmipp, DCMIPP_PIPE2, DCMIPP_VIRTUAL_CHANNEL0, (uint32_t)g_ai_cam_buf, DCMIPP_MODE_CONTINUOUS) != HAL_OK)
     {
         return 1;
     }
@@ -305,6 +313,39 @@ static uint8_t imx335_dcmipp_init(void)
         return 1;
     }
 
+    DCMIPP_CSI_PIPE_ConfTypeDef pipe2_csi_conf = {0};
+    pipe2_csi_conf.DataTypeMode = DCMIPP_DTMODE_DTIDA;
+    pipe2_csi_conf.DataTypeIDA = DCMIPP_DT_RAW10;
+	if (HAL_DCMIPP_CSI_PIPE_SetConfig(&hdcmipp, DCMIPP_PIPE2, &pipe2_csi_conf) != HAL_OK)
+	{
+    	return 1;
+	}
+    DCMIPP_PipeConfTypeDef pipe2_conf = {0};
+    pipe2_conf.FrameRate  = DCMIPP_FRAME_RATE_ALL;
+    pipe2_conf.PixelPipePitch = 224 * 2;
+    pipe2_conf.PixelPackerFormat = DCMIPP_PIXEL_PACKER_FORMAT_RGB565_1; // NPU 喜欢 RGB 分离的格式
+    if (HAL_DCMIPP_PIPE_SetConfig(&hdcmipp, DCMIPP_PIPE2, &pipe2_conf) != HAL_OK)
+	{
+    	return 1;
+	}
+
+
+    DCMIPP_DownsizeTypeDef pipe2_down_size = {0};
+    pipe2_down_size.HSize = 224;
+    pipe2_down_size.VSize = 224;
+    pipe2_down_size.HDivFactor = 88;
+    pipe2_down_size.HRatio = 32363;
+    pipe2_down_size.VDivFactor = 117;
+    pipe2_down_size.VRatio = 65000;
+    if (HAL_DCMIPP_PIPE_SetDownsizeConfig(&hdcmipp, DCMIPP_PIPE2, &pipe2_down_size) != HAL_OK)
+    {
+        return 1;
+    }
+
+    if (HAL_DCMIPP_PIPE_EnableDownsize(&hdcmipp, DCMIPP_PIPE2) != HAL_OK)
+    {
+        return 1;
+    }
     return 0;
 }
 

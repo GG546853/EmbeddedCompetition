@@ -19,15 +19,18 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "cmsis_os2.h"
+#include "cacheaxi.h"
 #include "csi.h"
 #include "dcmipp.h"
 #include "dma2d.h"
 #include "i2c.h"
 #include "ltdc.h"
+#include "ramcfg.h"
 #include "usart.h"
 #include "xspi.h"
 #include "xspim.h"
 #include "gpio.h"
+#include "app_x-cube-ai.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -71,6 +74,8 @@ static void SystemIsolation_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
+osSemaphoreId_t cam_frame_sem;
 
 /* USER CODE END 0 */
 
@@ -130,6 +135,9 @@ int main(void)
   MX_LTDC_Init();
   MX_USART1_UART_Init();
   //MX_XSPI2_Init();
+  MX_CACHEAXI_Init();
+  MX_RAMCFG_Init();
+  MX_X_CUBE_AI_Init();
   SystemIsolation_Config();
   /* USER CODE BEGIN 2 */
 #ifdef DEBUG
@@ -160,6 +168,9 @@ int main(void)
   {
 	    __NOP();
   }
+
+
+  cam_frame_sem = osSemaphoreNew(1, 0, NULL);
 
   /* USER CODE END 2 */
 
@@ -227,11 +238,16 @@ void PeriphCommonClock_Config(void)
 
   HAL_RIF_RIMC_ConfigMasterAttributes(RIF_MASTER_INDEX_LTDC1, &RIMC_master);
 
+  RIMC_master.MasterCID = RIF_CID_0;
+  RIMC_master.SecPriv = RIF_ATTRIBUTE_NSEC | RIF_ATTRIBUTE_PRIV;
+  HAL_RIF_RIMC_ConfigMasterAttributes(RIF_MASTER_INDEX_LTDC2, &RIMC_master);
+
   /*RISUP configuration*/
   HAL_RIF_RISC_SetSlaveSecureAttributes(RIF_RISC_PERIPH_INDEX_TIM6 , RIF_ATTRIBUTE_SEC | RIF_ATTRIBUTE_PRIV);
   HAL_RIF_RISC_SetSlaveSecureAttributes(RIF_RISC_PERIPH_INDEX_DCMIPP , RIF_ATTRIBUTE_SEC | RIF_ATTRIBUTE_PRIV);
   HAL_RIF_RISC_SetSlaveSecureAttributes(RIF_RISC_PERIPH_INDEX_DMA2D , RIF_ATTRIBUTE_SEC | RIF_ATTRIBUTE_PRIV);
   HAL_RIF_RISC_SetSlaveSecureAttributes(RIF_RISC_PERIPH_INDEX_LTDCL1 , RIF_ATTRIBUTE_SEC | RIF_ATTRIBUTE_PRIV);
+  HAL_RIF_RISC_SetSlaveSecureAttributes(RIF_RISC_PERIPH_INDEX_LTDCL2 , RIF_ATTRIBUTE_SEC | RIF_ATTRIBUTE_PRIV);
 
   /* RIF-Aware IPs Config */
 
@@ -307,6 +323,11 @@ void PeriphCommonClock_Config(void)
   void HAL_DCMIPP_PIPE_FrameEventCallback(DCMIPP_HandleTypeDef *hdcmipp, uint32_t Pipe)
   {
     imx335_dcmipp_pipe_frame_cb(hdcmipp, Pipe);
+
+    if (Pipe == DCMIPP_PIPE2 && cam_frame_sem != NULL) {
+        osSemaphoreRelease(cam_frame_sem);
+    }
+
     __NOP();
   }
 
@@ -327,6 +348,22 @@ void PeriphCommonClock_Config(void)
 //      uint32_t error_code = hdcmipp->ErrorCode;  // 加一行这个方便观察
       __NOP();
   }
+
+
+
+
+
+
+  int _close(int file) { return -1; }
+  int _fstat(int file, void *st) { return 0; }
+  int _isatty(int file) { return 1; }
+  int _lseek(int file, int ptr, int dir) { return 0; }
+  int _read(int file, char *ptr, int len) { return 0; }
+  int _write(int file, char *ptr, int len) { return len; }
+  int _getpid(void) { return 1; }
+  int _kill(int pid, int sig) { return -1; }
+  int _open(char *file, int flags, int mode) { return -1; }
+
 
 /* USER CODE END 4 */
 

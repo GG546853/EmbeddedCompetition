@@ -71,11 +71,24 @@ void MX_DCMIPP_Init(void)
   {
     Error_Handler();
   }
+
+  /** Pipe 2 Config
+  */
+  pCSI_PipeConfig.DataTypeIDB = DCMIPP_DT_RGB565;
+  if (HAL_DCMIPP_CSI_PIPE_SetConfig(&hdcmipp, DCMIPP_PIPE2, &pCSI_PipeConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_DCMIPP_PIPE_SetConfig(&hdcmipp, DCMIPP_PIPE2, &pPipeConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
   /* USER CODE BEGIN DCMIPP_Init 2 */
 
   /* USER CODE END DCMIPP_Init 2 */
 
 }
+
 
 /* USER CODE BEGIN 1 */
 /**

@@ -173,10 +173,10 @@ void rgblcd_init(void)
     LTDC_LayerCfgTypeDef layer2_cfg = {0};
     layer2_cfg.WindowX0 = 0;
     //layer2_cfg.WindowX1 = rgblcddev.pwidth;
-    layer2_cfg.WindowX1 = 224;
+    layer2_cfg.WindowX1 = 400;
     layer2_cfg.WindowY0 = 0;
     //layer2_cfg.WindowY1 = rgblcddev.pheight;
-    layer2_cfg.WindowY1 = 224;
+    layer2_cfg.WindowY1 = 240;
     //layer2_cfg.PixelFormat = LTDC_PIXEL_FORMAT_RGB565; // 格式保持一致
     layer2_cfg.PixelFormat = LTDC_PIXEL_FORMAT_RGB888;
     layer2_cfg.Alpha = 255;
@@ -187,8 +187,8 @@ void rgblcd_init(void)
     layer2_cfg.FBStartAdress = (uint32_t)g_ai_cam_buf;
 //    layer2_cfg.ImageWidth = rgblcddev.pwidth;
 //    layer2_cfg.ImageHeight = rgblcddev.pheight;
-    layer2_cfg.ImageWidth = 224;
-    layer2_cfg.ImageHeight = 224;
+    layer2_cfg.ImageWidth = 400;
+    layer2_cfg.ImageHeight = 240;
     layer2_cfg.Backcolor.Blue = 0;
     layer2_cfg.Backcolor.Green = 0;
     layer2_cfg.Backcolor.Red = 0;

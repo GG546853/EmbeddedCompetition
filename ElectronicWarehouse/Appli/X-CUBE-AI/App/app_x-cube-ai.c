@@ -62,7 +62,7 @@ typedef struct {
     int keep;
 } Box_t;
 
-extern uint8_t g_ai_cam_buf[224 * 224 * 3];
+extern uint8_t g_ai_cam_buf[];
 extern uint16_t g_ltdc_layer2_framebuf[480 * 800];
 extern DCMIPP_HandleTypeDef hdcmipp;
 extern osSemaphoreId_t cam_frame_sem; // 确保在 main.c 中创建了这个信号量并在此声明

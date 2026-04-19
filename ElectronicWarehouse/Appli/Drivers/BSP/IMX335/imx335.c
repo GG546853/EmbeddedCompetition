@@ -32,7 +32,8 @@ static ISP_HandleTypeDef imx335_hisp = {0};
 static int32_t imx335_isp_gain;
 static int32_t imx335_isp_exposure;
 
-uint8_t g_ai_cam_buf[224 * 224 * 3] __attribute__((section(".noncacheable"), aligned(32)));
+//uint8_t g_ai_cam_buf[224 * 224 * 3] __attribute__((section(".noncacheable"), aligned(32)));
+uint8_t g_ai_cam_buf[400 * 240 * 3] __attribute__((section(".noncacheable"), aligned(32)));
 
 static uint8_t imx335_dcmipp_init(void);
 static int32_t imx335_io_init(void);
@@ -319,7 +320,12 @@ static uint8_t imx335_dcmipp_init(void)
 
 
 
-
+    DCMIPP_CropConfTypeDef pipe2_crop = {0};
+    pipe2_crop.HStart = 0;    // 水平不切
+    pipe2_crop.HSize  = 2592;
+    pipe2_crop.VStart = 372;  // 从第 372 行开始切 ( (1944-1200)/2 )
+    pipe2_crop.VSize  = 1200; // 切取 1200 行高度
+    HAL_DCMIPP_PIPE_SetCropConfig(&hdcmipp, DCMIPP_PIPE2, &pipe2_crop);
 
 
     DCMIPP_CSI_PIPE_ConfTypeDef pipe2_csi_conf = {0};
@@ -332,7 +338,7 @@ static uint8_t imx335_dcmipp_init(void)
 	}
     DCMIPP_PipeConfTypeDef pipe2_conf = {0};
     pipe2_conf.FrameRate  = DCMIPP_FRAME_RATE_ALL;
-    pipe2_conf.PixelPipePitch = 224 * 3;
+    pipe2_conf.PixelPipePitch = 400 * 3;
     pipe2_conf.PixelPackerFormat = DCMIPP_PIXEL_PACKER_FORMAT_RGB888_YUV444_1; // NPU 喜欢 RGB 分离的格式
     if (HAL_DCMIPP_PIPE_SetConfig(&hdcmipp, DCMIPP_PIPE2, &pipe2_conf) != HAL_OK)
 	{
@@ -341,14 +347,14 @@ static uint8_t imx335_dcmipp_init(void)
 
 
     DCMIPP_DownsizeTypeDef pipe2_down_size = {0};
-    pipe2_down_size.HSize = 224;
-    pipe2_down_size.VSize = 224;
+    pipe2_down_size.HSize = 400;
+    pipe2_down_size.VSize = 240;
 
-    pipe2_down_size.HDivFactor = 512;//88
-    pipe2_down_size.VDivFactor = 512;//117
+    pipe2_down_size.HDivFactor = 158;//88
+    pipe2_down_size.VDivFactor = 204;//117
 
-    pipe2_down_size.VRatio = 17770;//65000
-    pipe2_down_size.HRatio = 17770;//32363
+    pipe2_down_size.VRatio = 40960;//65000
+    pipe2_down_size.HRatio = 53084;//32363
     if (HAL_DCMIPP_PIPE_SetDownsizeConfig(&hdcmipp, DCMIPP_PIPE2, &pipe2_down_size) != HAL_OK)
     {
         return 1;

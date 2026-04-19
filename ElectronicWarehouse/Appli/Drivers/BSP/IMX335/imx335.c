@@ -320,12 +320,13 @@ static uint8_t imx335_dcmipp_init(void)
 
 
 
-    DCMIPP_CropConfTypeDef pipe2_crop = {0};
-    pipe2_crop.HStart = 0;    // 水平不切
-    pipe2_crop.HSize  = 2592;
-    pipe2_crop.VStart = 372;  // 从第 372 行开始切 ( (1944-1200)/2 )
-    pipe2_crop.VSize  = 1200; // 切取 1200 行高度
-    HAL_DCMIPP_PIPE_SetCropConfig(&hdcmipp, DCMIPP_PIPE2, &pipe2_crop);
+//    DCMIPP_CropConfTypeDef pipe2_crop = {0};
+//    pipe2_crop.HStart = 0;    // 水平不切
+//    pipe2_crop.HSize  = 2592;
+//    pipe2_crop.VStart = 372;  // 从第 372 行开始切 ( (1944-1200)/2 )
+//    pipe2_crop.VSize  = 1200; // 切取 1200 行高度
+//    HAL_DCMIPP_PIPE_SetCropConfig(&hdcmipp, DCMIPP_PIPE2, &pipe2_crop);
+//
 
 
     DCMIPP_CSI_PIPE_ConfTypeDef pipe2_csi_conf = {0};
@@ -345,15 +346,25 @@ static uint8_t imx335_dcmipp_init(void)
     	return 1;
 	}
 
-
+    DCMIPP_DecimationConfTypeDef decConfig = {0};
+    decConfig.HRatio = DCMIPP_HDEC_ALL; // 水平不变
+    decConfig.VRatio = DCMIPP_VDEC_1_OUT_2; // 垂直缩小一半
+    if (HAL_DCMIPP_PIPE_SetDecimationConfig(&hdcmipp, DCMIPP_PIPE2, &decConfig) != HAL_OK)
+    {
+        return 1;
+    }
+    if (HAL_DCMIPP_PIPE_EnableDecimation(&hdcmipp, DCMIPP_PIPE2) != HAL_OK)
+    {
+        return 1;
+    }
     DCMIPP_DownsizeTypeDef pipe2_down_size = {0};
     pipe2_down_size.HSize = 400;
     pipe2_down_size.VSize = 240;
 
-    pipe2_down_size.HDivFactor = 158;//88
-    pipe2_down_size.VDivFactor = 204;//117
+    pipe2_down_size.HDivFactor = 158;
+    pipe2_down_size.VDivFactor = 253;
 
-    pipe2_down_size.VRatio = 40960;//65000
+    pipe2_down_size.VRatio = 33178;//65000
     pipe2_down_size.HRatio = 53084;//32363
     if (HAL_DCMIPP_PIPE_SetDownsizeConfig(&hdcmipp, DCMIPP_PIPE2, &pipe2_down_size) != HAL_OK)
     {

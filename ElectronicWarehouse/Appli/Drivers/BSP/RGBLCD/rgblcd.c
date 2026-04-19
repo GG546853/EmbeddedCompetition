@@ -36,13 +36,13 @@ _rgblcd_dev rgblcddev;
 /* LTDC帧缓冲区 */
 uint16_t g_ltdc_lcd_framebuf[480 * 800] __attribute__((section(".EXTRAM")));
 
-uint16_t g_ltdc_layer2_framebuf[480 * 800] __attribute__((section(".noncacheable"), aligned(32)));
+uint8_t g_ltdc_layer2_framebuf[480 * 800 *3] __attribute__((section(".noncacheable"), aligned(32)));
 /* 函数声明 */
 static uint16_t rgblcd_panelid_read(void);
 static uint8_t rgblcd_ltdc_clk_set(uint32_t clock);
 static uint32_t rgblcd_pow(uint8_t m, uint8_t n);
 
-extern uint8_t g_ai_cam_buf[224 * 224 * 3];
+//extern uint8_t g_ai_cam_buf[224 * 224 * 3];
 /**
  * @brief   初始化RGB LED
  * @param   无
@@ -172,32 +172,32 @@ void rgblcd_init(void)
 
     LTDC_LayerCfgTypeDef layer2_cfg = {0};
     layer2_cfg.WindowX0 = 0;
-    //layer2_cfg.WindowX1 = rgblcddev.pwidth;
-    layer2_cfg.WindowX1 = 400;
+    layer2_cfg.WindowX1 = rgblcddev.pwidth;
+//    layer2_cfg.WindowX1 = 224;
     layer2_cfg.WindowY0 = 0;
-    //layer2_cfg.WindowY1 = rgblcddev.pheight;
-    layer2_cfg.WindowY1 = 240;
-    //layer2_cfg.PixelFormat = LTDC_PIXEL_FORMAT_RGB565; // 格式保持一致
+    layer2_cfg.WindowY1 = rgblcddev.pheight;
+//    layer2_cfg.WindowY1 = 224;
+//    layer2_cfg.PixelFormat = LTDC_PIXEL_FORMAT_RGB565; // 格式保持一致
     layer2_cfg.PixelFormat = LTDC_PIXEL_FORMAT_RGB888;
     layer2_cfg.Alpha = 255;
     layer2_cfg.Alpha0 = 0;
     layer2_cfg.BlendingFactor1 = LTDC_BLENDING_FACTOR1_PAxCA;
     layer2_cfg.BlendingFactor2 = LTDC_BLENDING_FACTOR2_PAxCA;
-//    layer2_cfg.FBStartAdress = (uint32_t)g_ltdc_layer2_framebuf;
-    layer2_cfg.FBStartAdress = (uint32_t)g_ai_cam_buf;
-//    layer2_cfg.ImageWidth = rgblcddev.pwidth;
-//    layer2_cfg.ImageHeight = rgblcddev.pheight;
-    layer2_cfg.ImageWidth = 400;
-    layer2_cfg.ImageHeight = 240;
+    layer2_cfg.FBStartAdress = (uint32_t)g_ltdc_layer2_framebuf;
+//    layer2_cfg.FBStartAdress = (uint32_t)g_ai_cam_buf;
+    layer2_cfg.ImageWidth = rgblcddev.pwidth;
+    layer2_cfg.ImageHeight = rgblcddev.pheight;
+//    layer2_cfg.ImageWidth = 224;
+//    layer2_cfg.ImageHeight = 224;
     layer2_cfg.Backcolor.Blue = 0;
     layer2_cfg.Backcolor.Green = 0;
     layer2_cfg.Backcolor.Red = 0;
     HAL_LTDC_ConfigLayer(&hltdc, &layer2_cfg, 1);
 
-//    HAL_LTDC_ConfigColorKeying(&hltdc, 0x000000, 1);
-//    HAL_LTDC_EnableColorKeying(&hltdc, 1);
+    HAL_LTDC_ConfigColorKeying(&hltdc, 0x000000, 1);
+    HAL_LTDC_EnableColorKeying(&hltdc, 1);
 
-    HAL_LTDC_DisableColorKeying(&hltdc, 1);
+    //HAL_LTDC_DisableColorKeying(&hltdc, 1);
     /* 清空图层2（全涂黑，即全透明） */
     memset(g_ltdc_layer2_framebuf, 0, sizeof(g_ltdc_layer2_framebuf));
     HAL_LTDC_Reload(&hltdc, LTDC_RELOAD_IMMEDIATE);

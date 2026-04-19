@@ -33,8 +33,8 @@ static int32_t imx335_isp_gain;
 static int32_t imx335_isp_exposure;
 
 //uint8_t g_ai_cam_buf[224 * 224 * 3] __attribute__((section(".noncacheable"), aligned(32)));
-uint8_t g_ai_cam_buf[400 * 240 * 3] __attribute__((section(".noncacheable"), aligned(32)));
-
+//uint8_t g_ai_cam_buf[400 * 240 * 3] __attribute__((section(".noncacheable"), aligned(32)));
+//uint8_t g_ai_cam_buf[224 * 224 * 3] __attribute__((section(".noncacheable"), aligned(32)));
 static uint8_t imx335_dcmipp_init(void);
 static int32_t imx335_io_init(void);
 static int32_t imx335_io_deinit(void);
@@ -152,10 +152,10 @@ uint8_t imx335_start_capture(uint32_t address)
          return 1;
      }
 
-    if (HAL_DCMIPP_CSI_PIPE_Start(&hdcmipp, DCMIPP_PIPE2, DCMIPP_VIRTUAL_CHANNEL0, (uint32_t)g_ai_cam_buf, DCMIPP_MODE_CONTINUOUS) != HAL_OK)
-    {
-        return 1;
-    }
+//    if (HAL_DCMIPP_CSI_PIPE_Start(&hdcmipp, DCMIPP_PIPE2, DCMIPP_VIRTUAL_CHANNEL0, (uint32_t)g_ai_cam_buf, DCMIPP_MODE_CONTINUOUS) != HAL_OK)
+//    {
+//        return 1;
+//    }
 
     return 0;
 }
@@ -339,7 +339,7 @@ static uint8_t imx335_dcmipp_init(void)
 	}
     DCMIPP_PipeConfTypeDef pipe2_conf = {0};
     pipe2_conf.FrameRate  = DCMIPP_FRAME_RATE_ALL;
-    pipe2_conf.PixelPipePitch = 400 * 3;
+    pipe2_conf.PixelPipePitch = 224 * 3;
     pipe2_conf.PixelPackerFormat = DCMIPP_PIXEL_PACKER_FORMAT_RGB888_YUV444_1; // NPU 喜欢 RGB 分离的格式
     if (HAL_DCMIPP_PIPE_SetConfig(&hdcmipp, DCMIPP_PIPE2, &pipe2_conf) != HAL_OK)
 	{
@@ -347,7 +347,7 @@ static uint8_t imx335_dcmipp_init(void)
 	}
 
     DCMIPP_DecimationConfTypeDef decConfig = {0};
-    decConfig.HRatio = DCMIPP_HDEC_ALL; // 水平不变
+    decConfig.HRatio = DCMIPP_HDEC_1_OUT_2; // 水平不变
     decConfig.VRatio = DCMIPP_VDEC_1_OUT_2; // 垂直缩小一半
     if (HAL_DCMIPP_PIPE_SetDecimationConfig(&hdcmipp, DCMIPP_PIPE2, &decConfig) != HAL_OK)
     {
@@ -358,14 +358,14 @@ static uint8_t imx335_dcmipp_init(void)
         return 1;
     }
     DCMIPP_DownsizeTypeDef pipe2_down_size = {0};
-    pipe2_down_size.HSize = 400;
-    pipe2_down_size.VSize = 240;
+    pipe2_down_size.HSize = 224;
+    pipe2_down_size.VSize = 224;
 
-    pipe2_down_size.HDivFactor = 158;
-    pipe2_down_size.VDivFactor = 253;
+    pipe2_down_size.HDivFactor = 176;
+    pipe2_down_size.VDivFactor = 235;
 
-    pipe2_down_size.VRatio = 33178;//65000
-    pipe2_down_size.HRatio = 53084;//32363
+    pipe2_down_size.VRatio = 35669;
+    pipe2_down_size.HRatio = 47572;
     if (HAL_DCMIPP_PIPE_SetDownsizeConfig(&hdcmipp, DCMIPP_PIPE2, &pipe2_down_size) != HAL_OK)
     {
         return 1;

@@ -53,26 +53,40 @@
 #include "rgblcd.h"
 #include "network.h"
 #include "npu_cache.h"
+#include"dma2d.h"
 #include <math.h>
 
-#define MAX_BOXES 100
-typedef struct {
-    float x1, y1, x2, y2;
-    float conf;
-    int keep;
-} Box_t;
+#define GRID_SIZE    7
+#define NUM_ANCHORS  5
+#define ATTRS  6
+#define NUM_CLASSES  1  // 人体检测模型通常只有1类
+#define CONF_THRESH  0.5f
+#define NMS_THRESH   0.45f
 
-extern uint8_t g_ai_cam_buf[];
-extern uint16_t g_ltdc_layer2_framebuf[480 * 800];
+ typedef struct {
+ float x1, y1, x2, y2;
+ float conf;
+ int keep;
+ } Box;
+
+//extern uint8_t g_ai_cam_buf[];
+extern uint8_t g_ltdc_layer2_framebuf[480 * 800 * 3];
 extern DCMIPP_HandleTypeDef hdcmipp;
 extern osSemaphoreId_t cam_frame_sem; // 确保在 main.c 中创建了这个信号量并在此声明
+extern DMA2D_HandleTypeDef hdma2d;
 
 static inline float sigmoid(float x) {
     return 1.0f / (1.0f + expf(-x));
 }
 
  static const float anchors[10] = {0.9883f, 3.3606f, 2.1194f, 5.3759f, 3.0520f, 9.1336f, 5.5517f, 9.3066f, 9.7260f, 11.1422f};
- static Box_t boxes[MAX_BOXES];
+
+ __attribute__((section(".camera_buf"))) __attribute__((aligned(32))) Box boxes[2100];
+
+ int result_count = 0;
+
+
+
 
 /* USER CODE END includes */
 
@@ -192,14 +206,12 @@ void MX_X_CUBE_AI_Process(void)
     SCB_CleanDCache_by_Addr((uint32_t*)buffer_in, buff_in_len);
     SCB_InvalidateDCache_by_Addr((uint32_t*)buffer_in, buff_in_len);
 
-    HAL_DCMIPP_CSI_PIPE_Start(&hdcmipp, DCMIPP_PIPE2, DCMIPP_VIRTUAL_CHANNEL0, (uint32_t)g_ai_cam_buf, DCMIPP_MODE_SNAPSHOT);
+    HAL_DCMIPP_CSI_PIPE_Start(&hdcmipp, DCMIPP_PIPE2, DCMIPP_VIRTUAL_CHANNEL0, (uint32_t)buffer_in, DCMIPP_MODE_SNAPSHOT);
 
     if(osSemaphoreAcquire(cam_frame_sem, pdMS_TO_TICKS(100)) != osOK) {
         return;
     }
-    SCB_InvalidateDCache_by_Addr((uint32_t*)g_ai_cam_buf, 224 * 224 * 3);
 
-    memcpy(buffer_in, g_ai_cam_buf, 224 * 224 * 3);
     SCB_CleanDCache_by_Addr((uint32_t*)buffer_in, buff_in_len);
     SCB_InvalidateDCache_by_Addr((uint32_t*)buffer_in, buff_in_len);
 
@@ -211,130 +223,175 @@ void MX_X_CUBE_AI_Process(void)
        }
      } while (ll_aton_rt_ret != LL_ATON_RT_DONE);
 
-    uint32_t aligned_out_len = ((buff_out_len + 31) / 32) * 32;
-    SCB_InvalidateDCache_by_Addr((uint32_t*)buffer_out, aligned_out_len);
+    // 1. 获取输出缓冲区 (1x7x7x30 f32)
+        float *out_data = (float *)buffer_out;
+        result_count = 0;
 
-    // 清空 LCD 图层2，准备画新框
-    memset(g_ltdc_layer2_framebuf, 0, sizeof(g_ltdc_layer2_framebuf));
+        // 2. 解码 YOLO 输出
+        for (int y = 0; y < GRID_SIZE; y++) {
+            for (int x = 0; x < GRID_SIZE; x++) {
+                for (int a = 0; a < NUM_ANCHORS; a++) {
+                    // 计算索引：HWC 格式 (7, 7, 5 * 6)
+                	int base = (y * GRID_SIZE + x) * (ATTRS * NUM_ANCHORS) + (a * ATTRS);
 
-    // 6. YOLOv2 后处理解码
-    // 输出形状: 1 x 7 x 7 x 30 (grid=7x7, 5个锚框，每个锚框6个值: tx, ty, tw, th, obj, cls)
-    float *f32_out = (float *)buffer_out;
-    int valid_count = 0;
+                    float tx = out_data[base + 0];
+                    float ty = out_data[base + 1];
+                    float tw = out_data[base + 2];
+                    float th = out_data[base + 3];
+                    float tc = out_data[base + 4];
+                    float tclass = out_data[base + 5];
 
-    for (int cy = 0; cy < 7; cy++) {
-        for (int cx = 0; cx < 7; cx++) {
-            for (int a = 0; a < 5; a++) {
-                // 计算当前锚框在数组中的索引
-                int index = (cy * 7 * 30) + (cx * 30) + (a * 6);
+                    float obj_conf = 1.0f / (1.0f + expf(-tc));
+                    float class_prob = 1.0f / (1.0f + expf(-tclass));
+                    float conf = obj_conf * class_prob;
+                    if (conf > 0.5f) {
+                        // 解码中心点坐标 (Sigmoid后加上网格偏移，再除以网格总数归一化)
+                        float bx = (1.0f / (1.0f + expf(-tx)) + x) / GRID_SIZE;
+                        float by = (1.0f / (1.0f + expf(-ty)) + y) / GRID_SIZE;
 
-                // YOLOv2 解码逻辑
-                float tx = f32_out[index + 0];
-                float ty = f32_out[index + 1];
-                float tw = f32_out[index + 2];
-                float th = f32_out[index + 3];
-                float to = f32_out[index + 4]; // 物体置信度
-                float tc = f32_out[index + 5]; // 类别置信度 (人)
+                        // 解码宽高 (乘以对应的Anchor宽高的指数，再除以网格总数归一化)
+                        float bw = (anchors[2 * a] * expf(tw)) / GRID_SIZE;
+                        float bh = (anchors[2 * a + 1] * expf(th)) / GRID_SIZE;
 
-                // 目标存在概率
-                float obj_score = sigmoid(to);
-                float cls_score = sigmoid(tc);
-                float final_score = obj_score * cls_score;
+                        // 将归一化坐标(0~1)映射到模型输入分辨率 (224x224)
+                        float cx_input = bx * 224.0f;
+                        float cy_input = by * 224.0f;
+                        float w_input  = bw * 224.0f;
+                        float h_input  = bh * 224.0f;
 
-                // 阈值过滤
-                if (final_score > 0.45f && valid_count < MAX_BOXES) {
-
-                    // 计算在 7x7 网格上的相对中心坐标
-                    float bx = (sigmoid(tx) + cx) / 7.0f;
-                    float by = (sigmoid(ty) + cy) / 7.0f;
-
-                    // 计算相对宽和高
-                    float bw = (anchors[a * 2 + 0] * expf(tw)) / 7.0f;
-                    float bh = (anchors[a * 2 + 1] * expf(th)) / 7.0f;
-
-                    // 存入结构体，转换为归一化的左上角和右下角坐标 (0.0 ~ 1.0)
-                    boxes[valid_count].x1 = bx - bw / 2.0f;
-                    boxes[valid_count].y1 = by - bh / 2.0f;
-                    boxes[valid_count].x2 = bx + bw / 2.0f;
-                    boxes[valid_count].y2 = by + bh / 2.0f;
-                    boxes[valid_count].conf = final_score;
-                    boxes[valid_count].keep = 1;
-                    valid_count++;
-                }
-            }
-        }
-    }
-
-    // 7. NMS (非极大值抑制)
-    for (int i = 0; i < valid_count; i++) {
-        if (boxes[i].keep) {
-            for (int j = i + 1; j < valid_count; j++) {
-                if (boxes[j].keep) {
-                    float xx1 = (boxes[i].x1 > boxes[j].x1) ? boxes[i].x1 : boxes[j].x1;
-                    float yy1 = (boxes[i].y1 > boxes[j].y1) ? boxes[i].y1 : boxes[j].y1;
-                    float xx2 = (boxes[i].x2 < boxes[j].x2) ? boxes[i].x2 : boxes[j].x2;
-                    float yy2 = (boxes[i].y2 < boxes[j].y2) ? boxes[i].y2 : boxes[j].y2;
-
-                    float intersection = 0.0f;
-                    if (xx2 > xx1 && yy2 > yy1) {
-                        intersection = (xx2 - xx1) * (yy2 - yy1);
-                    }
-
-                    float area_i = (boxes[i].x2 - boxes[i].x1) * (boxes[i].y2 - boxes[i].y1);
-                    float area_j = (boxes[j].x2 - boxes[j].x1) * (boxes[j].y2 - boxes[j].y1);
-                    float union_area = area_i + area_j - intersection;
-
-                    float iou = (union_area > 0) ? (intersection / union_area) : 0;
-
-                    // IOU 阈值 45%
-                    if (iou > 0.45f) {
-                        // 谁置信度小，就淘汰谁
-                        if (boxes[i].conf > boxes[j].conf) {
-                            boxes[j].keep = 0;
-                        } else {
-                            boxes[i].keep = 0;
-                            break;
+                        // 存入 boxes 结构体，格式转换为 (左上角x1,y1, 右下角x2,y2)
+                        if (result_count < 2100) { // 确保不超过结构体数组上限
+                            boxes[result_count].x1 = cx_input - w_input / 2.0f;
+                            boxes[result_count].y1 = cy_input - h_input / 2.0f;
+                            boxes[result_count].x2 = cx_input + w_input / 2.0f;
+                            boxes[result_count].y2 = cy_input + h_input / 2.0f;
+                            boxes[result_count].conf = conf;
+                            boxes[result_count].keep = 1;
+                            result_count++;
                         }
                     }
+
                 }
             }
         }
-    }
+        for (int i = 0; i < result_count; i++) {
+             if (boxes[i].keep) {
+                 for (int j = i + 1; j < result_count; j++) {
+                     if (boxes[j].keep) {
+                         float x1 = (boxes[i].x1 > boxes[j].x1) ? boxes[i].x1 : boxes[j].x1;
+                         float y1 = (boxes[i].y1 > boxes[j].y1) ? boxes[i].y1 : boxes[j].y1;
+                         float x2 = (boxes[i].x2 < boxes[j].x2) ? boxes[i].x2 : boxes[j].x2;
+                         float y2 = (boxes[i].y2 < boxes[j].y2) ? boxes[i].y2 : boxes[j].y2;
 
-    // 8. 映射到 LCD (800x480) 并绘制边界框
-    for (int i = 0; i < valid_count; i++) {
-        if (boxes[i].keep) {
-            int display_x1 = (int)(boxes[i].x1 * 800.0f);
-            int display_y1 = (int)(boxes[i].y1 * 480.0f);
-            int display_x2 = (int)(boxes[i].x2 * 800.0f);
-            int display_y2 = (int)(boxes[i].y2 * 480.0f);
+                         float inter_w = x2 - x1;
+                         float inter_h = y2 - y1;
+                         float intersection = 0.0f;
 
-            if (display_x1 < 0) display_x1 = 0;
-            if (display_y1 < 0) display_y1 = 0;
-            if (display_x2 > 799) display_x2 = 799;
-            if (display_y2 > 479) display_y2 = 479;
+                         if (inter_w > 0 && inter_h > 0) {
+                             intersection = inter_w * inter_h;
+                         }
 
-            int w_lcd = display_x2 - display_x1;
-            int h_lcd = display_y2 - display_y1;
+                         float area_i = (boxes[i].x2 - boxes[i].x1) * (boxes[i].y2 - boxes[i].y1);
+                         float area_j = (boxes[j].x2 - boxes[j].x1) * (boxes[j].y2 - boxes[j].y1);
+                         float union_area = area_i + area_j - intersection;
+                         float iou = (union_area > 0) ? (intersection / union_area) : 0;
 
-            if (w_lcd > 0 && h_lcd > 0) {
-                // 画 3 个像素厚度的红框，保证瞎子都能看见
-                for (int thick = 0; thick < 3; thick++) {
-                    if (display_x1 + thick < display_x2 && display_y1 + thick < display_y2) {
-                        rgblcd_layer2_draw_rect(
-                            (uint16_t)(display_x1 + thick),
-                            (uint16_t)(display_y1 + thick),
-                            (uint16_t)(w_lcd - thick * 2),
-                            (uint16_t)(h_lcd - thick * 2),
-                            0xF800 // 红色
-                        );
-                    }
+                         if (iou > 0.7f) {
+                             boxes[j].keep = 0;
+                         }
+                     }
+                 }
+             }
+         }
+
+        // ================== 映射并在屏幕绘制 ==================
+        int final_count = 0;
+
+        // 清理/准备图层
+        HAL_DMA2D_ConfigLayer(&hdma2d, 1);
+        // 这里的lcd_fg_buffer为800*480*3字节的全屏缓冲
+        HAL_DMA2D_Start(&hdma2d, 0x00000000, (uint32_t)g_ltdc_layer2_framebuf, 800, 480);
+        HAL_DMA2D_PollForTransfer(&hdma2d, 1000);
+
+        for (int i = 0; i < result_count; i++) {
+            if (boxes[i].keep) {
+                final_count++;
+
+                // 注意：因为你的模型输入是224x224，所以映射比例基于224
+                float scale_x = 800.0f / 224.0f;
+                float scale_y = 480.0f / 224.0f;
+
+                int display_x1 = (int)(boxes[i].x1 * scale_x);
+                int display_y1 = (int)(boxes[i].y1 * scale_y);
+                int display_x2 = (int)(boxes[i].x2 * scale_x);
+                int display_y2 = (int)(boxes[i].y2 * scale_y);
+
+                int display_width = display_x2 - display_x1;
+                int display_height = display_y2 - display_y1;
+
+                /* 边界检查，防止越界 */
+                if (display_x1 < 0) display_x1 = 0;
+                if (display_y1 < 0) display_y1 = 0;
+                if (display_x2 > 800) display_x2 = 800;
+                if (display_y2 > 480) display_y2 = 480;
+
+                display_width = display_x2 - display_x1;
+                display_height = display_y2 - display_y1;
+
+                if (display_width <= 0 || display_height <= 0) continue;
+
+                /* 只有当宽度和高度大于0才绘制 */
+                if (display_y1 >= 480) display_y1 = 479;
+                if (display_y2 > 480) display_y2 = 480;
+                if (display_x1 >= 800) display_x1 = 799;
+                if (display_x2 > 800) display_x2 = 800;
+
+                display_width = display_x2 - display_x1;
+                display_height = display_y2 - display_y1;
+
+                if (display_width <= 0 || display_height <= 0) continue;
+                /* 绘制上边框 */
+                if (display_y1 < 480) {
+                    hdma2d.Init.Mode = DMA2D_R2M;
+                    hdma2d.Init.ColorMode = DMA2D_OUTPUT_RGB888;
+                    hdma2d.Init.OutputOffset = 800 - display_width;
+                    hdma2d.Init.RedBlueSwap = DMA2D_RB_REGULAR;
+                    HAL_DMA2D_Init(&hdma2d);
+                    HAL_DMA2D_ConfigLayer(&hdma2d, 1);
+                    // 3代表RGB888格式(每像素3字节)
+                    HAL_DMA2D_Start(&hdma2d, 0x00FF0000, (uint32_t)&g_ltdc_layer2_framebuf[(display_y1 * 800 + display_x1) * 3], display_width, 1);
+                    HAL_DMA2D_PollForTransfer(&hdma2d, 100);
+                }
+                /* 绘制下边框 */
+                if (display_y2 <= 480 && display_y2 > display_y1) {
+                    hdma2d.Init.OutputOffset = 800 - display_width;
+                    HAL_DMA2D_Init(&hdma2d);
+                    HAL_DMA2D_Start(&hdma2d, 0x00FF0000, (uint32_t)&g_ltdc_layer2_framebuf[((display_y2 - 1) * 800 + display_x1) * 3], display_width, 1);
+                    HAL_DMA2D_PollForTransfer(&hdma2d, 100);
+                }
+
+                /* 绘制左边框 */
+                if (display_x1 < 800) {
+                    hdma2d.Init.OutputOffset = 800 - 1;
+                    HAL_DMA2D_Init(&hdma2d);
+                    HAL_DMA2D_Start(&hdma2d, 0x00FF0000, (uint32_t)&g_ltdc_layer2_framebuf[(display_y1 * 800 + display_x1) * 3], 1, display_height);
+                    HAL_DMA2D_PollForTransfer(&hdma2d, 100);
+                }
+
+                /* 绘制右边框 */
+                if (display_x2 <= 800 && display_x2 > display_x1) {
+                    hdma2d.Init.OutputOffset = 800 - 1;
+                    HAL_DMA2D_Init(&hdma2d);
+                    HAL_DMA2D_Start(&hdma2d, 0x00FF0000, (uint32_t)&g_ltdc_layer2_framebuf[(display_y1 * 800 + (display_x2 - 1)) * 3], 1, display_height);
+                    HAL_DMA2D_PollForTransfer(&hdma2d, 100);
                 }
             }
-        }
-    }
 
-    LL_ATON_RT_Reset_Network(&NN_Instance_Default);
+        }
+
+        LL_ATON_RT_Reset_Network(&NN_Instance_Default);
+
+        vTaskDelay(pdMS_TO_TICKS(10));
     /* USER CODE END 6 */
 }
 #ifdef __cplusplus

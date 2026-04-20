@@ -16,13 +16,13 @@ extern uint8_t g_ltdc_layer2_framebuf[480 * 800 *3];
 void Sensor_Task(void *argument)
 {
 	  //rgblcd_show_string(30, 110, 200, 16, 16, "IMX335 OK!   ", RED);
-	  imx335_start_capture((uint32_t)g_ltdc_layer2_framebuf);
+	  imx335_start_capture((uint32_t)g_ltdc_lcd_framebuf);
 	  //imx335_stop_capture();
 	while(1)
 	{
-        vTaskDelay(pdMS_TO_TICKS(33));
-		imx335_isp_background_process();
 		MX_X_CUBE_AI_Process();
+		imx335_isp_background_process();
+        vTaskDelay(pdMS_TO_TICKS(33));
 		//SCB_InvalidateDCache_by_Addr((uint32_t*)g_ai_cam_buf, 224 * 224 * 3);
 
 	}

@@ -197,7 +197,7 @@ void rgblcd_init(void)
     HAL_LTDC_ConfigColorKeying(&hltdc, 0x000000, 1);
     HAL_LTDC_EnableColorKeying(&hltdc, 1);
 
-    HAL_LTDC_DisableColorKeying(&hltdc, 1);
+    //HAL_LTDC_DisableColorKeying(&hltdc, 1);
     /* 清空图层2（全涂黑，即全透明） */
     memset(g_ltdc_layer2_framebuf, 0, sizeof(g_ltdc_layer2_framebuf));
     HAL_LTDC_Reload(&hltdc, LTDC_RELOAD_IMMEDIATE);

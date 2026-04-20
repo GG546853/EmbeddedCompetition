@@ -7701,7 +7701,7 @@
   "ec_blobs_info": [],
   "environment": {
     "generated_model": {
-      "generated_time": "2026-04-20T02:03:04.322759100+0000",
+      "generated_time": "2026-04-20T11:30:44.763598200+0000",
       "model_files": [
         {
           "name": "network.c",
@@ -7749,12 +7749,12 @@
       "size": 0,
       "type": ""
     },
-    "network_signature": "0x18f7483663bd3e33",
+    "network_signature": "0x198d4184faa89444",
     "target": "",
     "test_name": "",
     "tools": [
       {
-        "arguments": "generate --target stm32n6 --name network -m C:/Users/96022/Desktop/Software_Package/Projects/99_Applications/991_AI_People_Detection/Model/tiny_yolo_v2_224_int8.tflite --st-neural-art n6-allmems-O3@C:/Users/96022/STM32Cube/Repository/Packs/STMicroelectronics/X-CUBE-AI/10.2.0/scripts/N6_scripts/user_neuralart.json --workspace C:/Users/96022/AppData/Local/Temp/mxAI_workspace105815893639914888106322496606356 --output C:/Users/96022/.stm32cubemx/network_output",
+        "arguments": "generate --target stm32n6 --name network -m C:/Users/96022/Desktop/Software_Package/Projects/99_Applications/991_AI_People_Detection/Model/tiny_yolo_v2_224_int8.tflite --st-neural-art n6-allmems-O3@C:/Users/96022/STM32Cube/Repository/Packs/STMicroelectronics/X-CUBE-AI/10.2.0/scripts/N6_scripts/user_neuralart.json --workspace C:/Users/96022/AppData/Local/Temp/mxAI_workspace1497008744400010327606251849452880 --output C:/Users/96022/.stm32cubemx/network_output",
         "environment": [
           "STATS_TYPE=X-CUBE-AI"
         ],
@@ -7775,10 +7775,10 @@
         "version": "2.2.0-20266 2adc00962"
       },
       {
-        "arguments": " -i C:\\Users\\96022\\.stm32cubemx\\network_output\\tiny_yolo_v2_224_int8_OE_3_3_0.onnx --json-quant-file C:\\Users\\96022\\.stm32cubemx\\network_output\\tiny_yolo_v2_224_int8_OE_3_3_0_Q.json -g network.c --load-mdesc C:\\Users\\96022\\STM32Cube\\Repository\\Packs\\STMicroelectronics\\X-CUBE-AI\\10.2.0\\scripts\\N6_scripts\\my_mdescs\\stm32n6.mdesc --load-mpool C:\\Users\\96022\\STM32Cube\\Repository\\Packs\\STMicroelectronics\\X-CUBE-AI\\10.2.0\\scripts\\N6_scripts\\my_mpools\\stm32n6.mpool --save-mpool-file C:\\Users\\96022\\AppData\\Local\\Temp\\mxAI_workspace105815893639914888106322496606356\\neural_art__network\\stm32n6.mpool --out-dir-prefix C:\\Users\\96022\\AppData\\Local\\Temp\\mxAI_workspace105815893639914888106322496606356\\neural_art__network/ --optimization 3 --all-buffers-info --mvei --cache-maintenance --Oauto-sched --native-float --enable-virtual-mem-pools --Omax-ca-pipe 4 --Ocache-opt --Os --output-info-file c_info.json",
+        "arguments": " -i C:\\Users\\96022\\.stm32cubemx\\network_output\\tiny_yolo_v2_224_int8_OE_3_3_0.onnx --json-quant-file C:\\Users\\96022\\.stm32cubemx\\network_output\\tiny_yolo_v2_224_int8_OE_3_3_0_Q.json -g network.c --load-mdesc C:\\Users\\96022\\STM32Cube\\Repository\\Packs\\STMicroelectronics\\X-CUBE-AI\\10.2.0\\scripts\\N6_scripts\\my_mdescs\\stm32n6.mdesc --load-mpool C:\\Users\\96022\\STM32Cube\\Repository\\Packs\\STMicroelectronics\\X-CUBE-AI\\10.2.0\\scripts\\N6_scripts\\my_mpools\\stm32n6.mpool --save-mpool-file C:\\Users\\96022\\AppData\\Local\\Temp\\mxAI_workspace1497008744400010327606251849452880\\neural_art__network\\stm32n6.mpool --out-dir-prefix C:\\Users\\96022\\AppData\\Local\\Temp\\mxAI_workspace1497008744400010327606251849452880\\neural_art__network/ --optimization 3 --all-buffers-info --mvei --cache-maintenance --Oauto-sched --native-float --enable-virtual-mem-pools --Omax-ca-pipe 4 --Ocache-opt --Os --output-info-file c_info.json",
         "environment": [],
         "input_model": {
-          "generated_time": "2026-04-20T10:03:04+0800",
+          "generated_time": "2026-04-20T19:30:44+0800",
           "model_files": [
             {
               "name": "tiny_yolo_v2_224_int8_OE_3_3_0.onnx",

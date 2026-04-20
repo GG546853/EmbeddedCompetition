@@ -244,7 +244,7 @@ void MX_X_CUBE_AI_Process(void)
                     float obj_conf = 1.0f / (1.0f + expf(-tc));
                     float class_prob = 1.0f / (1.0f + expf(-tclass));
                     float conf = obj_conf * class_prob;
-                    if (conf > 0.5f) {
+                    if (conf > 0.75f) {
                         // 解码中心点坐标 (Sigmoid后加上网格偏移，再除以网格总数归一化)
                         float bx = (1.0f / (1.0f + expf(-tx)) + x) / GRID_SIZE;
                         float by = (1.0f / (1.0f + expf(-ty)) + y) / GRID_SIZE;
@@ -274,6 +274,17 @@ void MX_X_CUBE_AI_Process(void)
                 }
             }
         }
+
+        for (int i = 0; i < result_count - 1; i++) {
+            for (int j = i + 1; j < result_count; j++) {
+                if (boxes[i].conf < boxes[j].conf) {
+                    Box temp = boxes[i];
+                    boxes[i] = boxes[j];
+                    boxes[j] = temp;
+                }
+            }
+        }
+
         for (int i = 0; i < result_count; i++) {
              if (boxes[i].keep) {
                  for (int j = i + 1; j < result_count; j++) {
@@ -296,7 +307,7 @@ void MX_X_CUBE_AI_Process(void)
                          float union_area = area_i + area_j - intersection;
                          float iou = (union_area > 0) ? (intersection / union_area) : 0;
 
-                         if (iou > 0.7f) {
+                         if (iou > 0.45f) {
                              boxes[j].keep = 0;
                          }
                      }
@@ -307,6 +318,12 @@ void MX_X_CUBE_AI_Process(void)
         // ================== 映射并在屏幕绘制 ==================
         int final_count = 0;
 
+        hdma2d.Init.Mode = DMA2D_R2M;                 // 寄存器到内存(纯色填充)
+        hdma2d.Init.ColorMode = DMA2D_OUTPUT_RGB888;  // 设定输出颜色格式
+        hdma2d.Init.OutputOffset = 0;                 // 【关键】重置偏移量为0，否则清屏会错乱
+        if (HAL_DMA2D_Init(&hdma2d) != HAL_OK) {
+            // 初始化错误处理
+        }
         // 清理/准备图层
         HAL_DMA2D_ConfigLayer(&hdma2d, 1);
         // 这里的lcd_fg_buffer为800*480*3字节的全屏缓冲

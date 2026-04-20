@@ -1,6 +1,6 @@
 ST Edge AI Core v2.2.0-20266 2adc00962
-Created date          : 2026-04-19 19:39:01
-Parameters            : generate --target stm32n6 --name network -m C:/Users/96022/Desktop/Software_Package/Projects/99_Applications/991_AI_People_Detection/Model/tiny_yolo_v2_224_int8.tflite --st-neural-art n6-allmems-O3@C:/Users/96022/STM32Cube/Repository/Packs/STMicroelectronics/X-CUBE-AI/10.2.0/scripts/N6_scripts/user_neuralart.json --workspace C:/Users/96022/AppData/Local/Temp/mxAI_workspace3812124056380014204533013122789103 --output C:/Users/96022/.stm32cubemx/network_output
+Created date          : 2026-04-20 10:03:11
+Parameters            : generate --target stm32n6 --name network -m C:/Users/96022/Desktop/Software_Package/Projects/99_Applications/991_AI_People_Detection/Model/tiny_yolo_v2_224_int8.tflite --st-neural-art n6-allmems-O3@C:/Users/96022/STM32Cube/Repository/Packs/STMicroelectronics/X-CUBE-AI/10.2.0/scripts/N6_scripts/user_neuralart.json --workspace C:/Users/96022/AppData/Local/Temp/mxAI_workspace105815893639914888106322496606356 --output C:/Users/96022/.stm32cubemx/network_output
 
 Model name - tiny_yolo_v2_224_int8
 ------ ----------------------------- ------------------------ --------------------- ------------- -------------------------- 
@@ -66,7 +66,7 @@ model: macc=777,482,634 weights=11,034,600 activations=-- io=--
 Compilation details
 ------------------------------------------------------------------------------------
 Compiler version: 1.1.1-14
-Compiler arguments:  -i C:\Users\96022\.stm32cubemx\network_output\tiny_yolo_v2_224_int8_OE_3_3_0.onnx --json-quant-file C:\Users\96022\.stm32cubemx\network_output\tiny_yolo_v2_224_int8_OE_3_3_0_Q.json -g network.c --load-mdesc C:\Users\96022\STM32Cube\Repository\Packs\STMicroelectronics\X-CUBE-AI\10.2.0\scripts\N6_scripts\my_mdescs\stm32n6.mdesc --load-mpool C:\Users\96022\STM32Cube\Repository\Packs\STMicroelectronics\X-CUBE-AI\10.2.0\scripts\N6_scripts\my_mpools\stm32n6.mpool --save-mpool-file C:\Users\96022\AppData\Local\Temp\mxAI_workspace3812124056380014204533013122789103\neural_art__network\stm32n6.mpool --out-dir-prefix C:\Users\96022\AppData\Local\Temp\mxAI_workspace3812124056380014204533013122789103\neural_art__network/ --optimization 3 --all-buffers-info --mvei --cache-maintenance --Oauto-sched --native-float --enable-virtual-mem-pools --Omax-ca-pipe 4 --Ocache-opt --Os --output-info-file c_info.json
+Compiler arguments:  -i C:\Users\96022\.stm32cubemx\network_output\tiny_yolo_v2_224_int8_OE_3_3_0.onnx --json-quant-file C:\Users\96022\.stm32cubemx\network_output\tiny_yolo_v2_224_int8_OE_3_3_0_Q.json -g network.c --load-mdesc C:\Users\96022\STM32Cube\Repository\Packs\STMicroelectronics\X-CUBE-AI\10.2.0\scripts\N6_scripts\my_mdescs\stm32n6.mdesc --load-mpool C:\Users\96022\STM32Cube\Repository\Packs\STMicroelectronics\X-CUBE-AI\10.2.0\scripts\N6_scripts\my_mpools\stm32n6.mpool --save-mpool-file C:\Users\96022\AppData\Local\Temp\mxAI_workspace105815893639914888106322496606356\neural_art__network\stm32n6.mpool --out-dir-prefix C:\Users\96022\AppData\Local\Temp\mxAI_workspace105815893639914888106322496606356\neural_art__network/ --optimization 3 --all-buffers-info --mvei --cache-maintenance --Oauto-sched --native-float --enable-virtual-mem-pools --Omax-ca-pipe 4 --Ocache-opt --Os --output-info-file c_info.json
 ====================================================================================
 
 Memory usage information  (input/output buffers are included in activations)

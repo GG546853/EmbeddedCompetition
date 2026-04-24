@@ -203,16 +203,20 @@ void MX_X_CUBE_AI_Process(void)
     buff_in_len = ibuffersInfos->offset_end - ibuffersInfos->offset_start;
     buff_out_len = obuffersInfos->offset_end - obuffersInfos->offset_start;
 
+    memset(buffer_in, 0xAA, buff_in_len);
     SCB_CleanDCache_by_Addr((uint32_t*)buffer_in, buff_in_len);
     SCB_InvalidateDCache_by_Addr((uint32_t*)buffer_in, buff_in_len);
 
-    HAL_DCMIPP_CSI_PIPE_Start(&hdcmipp, DCMIPP_PIPE2, DCMIPP_VIRTUAL_CHANNEL0, (uint32_t)buffer_in, DCMIPP_MODE_SNAPSHOT);
+    if (HAL_DCMIPP_CSI_PIPE_Start(&hdcmipp, DCMIPP_PIPE2, DCMIPP_VIRTUAL_CHANNEL0, (uint32_t)buffer_in, DCMIPP_MODE_SNAPSHOT) != HAL_OK) {
+        printf("ERROR: DCMIPP PIPE2 Start Failed!\r\n"); // 看看会不会打印这个错误
+    }
 
     if(osSemaphoreAcquire(cam_frame_sem, pdMS_TO_TICKS(100)) != osOK) {
+    	printf("ERROR: Camera Timeout!\r\n");
         return;
     }
 
-    SCB_CleanDCache_by_Addr((uint32_t*)buffer_in, buff_in_len);
+    //SCB_CleanDCache_by_Addr((uint32_t*)buffer_in, buff_in_len);
     SCB_InvalidateDCache_by_Addr((uint32_t*)buffer_in, buff_in_len);
 
     LL_ATON_RT_Init_Network(&NN_Instance_Default);
@@ -223,9 +227,19 @@ void MX_X_CUBE_AI_Process(void)
        }
      } while (ll_aton_rt_ret != LL_ATON_RT_DONE);
 
+    SCB_InvalidateDCache_by_Addr((uint32_t*)buffer_out, buff_out_len);
+
+
+
     // 1. 获取输出缓冲区 (1x7x7x30 f32)
         float *out_data = (float *)buffer_out;
         result_count = 0;
+
+        printf("--- NPU RAW Output Check ---\r\n");
+        for(int i = 0; i < 10; i++) {
+            printf("out_data[%d] = %f\r\n", i, out_data[i]);
+        }
+        printf("----------------------------\r\n");
 
         // 2. 解码 YOLO 输出
         for (int y = 0; y < GRID_SIZE; y++) {
@@ -240,6 +254,12 @@ void MX_X_CUBE_AI_Process(void)
                     float th = out_data[base + 3];
                     float tc = out_data[base + 4];
                     float tclass = out_data[base + 5];
+
+                    if (tw > 10.0f) tw = 10.0f;
+                    else if (tw < -10.0f) tw = -10.0f;
+
+                    if (th > 10.0f) th = 10.0f;
+                    else if (th < -10.0f) th = -10.0f;
 
                     float obj_conf = 1.0f / (1.0f + expf(-tc));
                     float class_prob = 1.0f / (1.0f + expf(-tclass));

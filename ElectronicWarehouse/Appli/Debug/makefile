@@ -82,7 +82,7 @@ main-build: ElectronicWarehouse_Appli.elf secondary-outputs
 
 # Tool invocations
 ElectronicWarehouse_Appli.elf ElectronicWarehouse_Appli.map: $(OBJS) $(USER_OBJS) C:\Users\96022\Desktop\EmbeddedCompetition\ElectronicWarehouse\Appli\STM32N647X0HXQ_LRUN_RAMxspi1.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "ElectronicWarehouse_Appli.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m55 -T"C:\Users\96022\Desktop\EmbeddedCompetition\ElectronicWarehouse\Appli\STM32N647X0HXQ_LRUN_RAMxspi1.ld" --specs=nosys.specs -Wl,-Map="ElectronicWarehouse_Appli.map" -Wl,--gc-sections -static -Wl,--cmse-implib -Wl,--out-implib=./secure_nsclib.o -L"C:\Users\96022\Desktop\EmbeddedCompetition\ElectronicWarehouse\Appli\Middlewares\STM32_MW_ISP\evision\Lib" -L../../Middlewares/ST/AI/Lib --specs=nano.specs -mfpu=fpv5-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+	arm-none-eabi-gcc -o "ElectronicWarehouse_Appli.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m55 -T"C:\Users\96022\Desktop\EmbeddedCompetition\ElectronicWarehouse\Appli\STM32N647X0HXQ_LRUN_RAMxspi1.ld" --specs=nosys.specs -Wl,-Map="ElectronicWarehouse_Appli.map" -Wl,--gc-sections -static -Wl,--cmse-implib -Wl,--out-implib=./secure_nsclib.o -L"C:\Users\96022\Desktop\EmbeddedCompetition\ElectronicWarehouse\Appli\Middlewares\STM32_MW_ISP\evision\Lib" -L../../Middlewares/ST/AI/Lib --specs=nano.specs -mfpu=fpv5-d16 -mfloat-abi=hard -mthumb -u _printf_float -u _scanf_float -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 

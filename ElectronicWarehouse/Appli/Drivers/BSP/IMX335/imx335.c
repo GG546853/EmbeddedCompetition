@@ -34,7 +34,9 @@ static int32_t imx335_isp_exposure;
 
 //uint8_t g_ai_cam_buf[224 * 224 * 3] __attribute__((section(".noncacheable"), aligned(32)));
 //uint8_t g_ai_cam_buf[400 * 240 * 3] __attribute__((section(".noncacheable"), aligned(32)));
-//uint8_t g_ai_cam_buf[224 * 224 * 3] __attribute__((section(".noncacheable"), aligned(32)));
+uint8_t g_ai_cam_buf[224 * 224 * 3] __attribute__((section(".noncacheable"), aligned(32)));
+
+extern uint8_t *buffer_in;
 static uint8_t imx335_dcmipp_init(void);
 static int32_t imx335_io_init(void);
 static int32_t imx335_io_deinit(void);
@@ -152,10 +154,10 @@ uint8_t imx335_start_capture(uint32_t address)
          return 1;
      }
 
-//    if (HAL_DCMIPP_CSI_PIPE_Start(&hdcmipp, DCMIPP_PIPE2, DCMIPP_VIRTUAL_CHANNEL0, (uint32_t)g_ai_cam_buf, DCMIPP_MODE_CONTINUOUS) != HAL_OK)
-//    {
-//        return 1;
-//    }
+    if (HAL_DCMIPP_CSI_PIPE_Start(&hdcmipp, DCMIPP_PIPE2, DCMIPP_VIRTUAL_CHANNEL0, (uint32_t)buffer_in, DCMIPP_MODE_CONTINUOUS) != HAL_OK)
+    {
+        return 1;
+    }
 
     return 0;
 }

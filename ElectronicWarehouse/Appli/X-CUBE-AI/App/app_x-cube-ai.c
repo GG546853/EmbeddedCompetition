@@ -85,7 +85,7 @@ static inline float sigmoid(float x) {
 
  int result_count = 0;
 
-
+LL_Buffer_InfoTypeDef * ibuffersInfos;
 
 
 /* USER CODE END includes */
@@ -183,6 +183,11 @@ void MX_X_CUBE_AI_Init(void)
 
     LL_ATON_RT_RuntimeInit();
     LL_ATON_RT_Init_Network(&NN_Instance_Default);
+
+
+    ibuffersInfos = NN_Interface_Default.input_buffers_info();
+    buffer_in = (uint8_t *)LL_Buffer_addr_start(&ibuffersInfos[0]);
+
     /* USER CODE END 5 */
 }
 
@@ -194,22 +199,22 @@ void MX_X_CUBE_AI_Process(void)
 
 
     LL_ATON_RT_RetValues_t ll_aton_rt_ret = LL_ATON_RT_DONE;
-    const LL_Buffer_InfoTypeDef * ibuffersInfos = NN_Interface_Default.input_buffers_info();
+//    const LL_Buffer_InfoTypeDef * ibuffersInfos = NN_Interface_Default.input_buffers_info();
     const LL_Buffer_InfoTypeDef * obuffersInfos = NN_Interface_Default.output_buffers_info();
-    buffer_in = (uint8_t *)LL_Buffer_addr_start(&ibuffersInfos[0]);
+//    buffer_in = (uint8_t *)LL_Buffer_addr_start(&ibuffersInfos[0]);
     buffer_out = (uint8_t *)LL_Buffer_addr_start(&obuffersInfos[0]);
 
     LL_ATON_RT_RuntimeInit();
     buff_in_len = ibuffersInfos->offset_end - ibuffersInfos->offset_start;
     buff_out_len = obuffersInfos->offset_end - obuffersInfos->offset_start;
 
-    memset(buffer_in, 0xAA, buff_in_len);
+//    memset(buffer_in, 0xAA, buff_in_len);
     SCB_CleanDCache_by_Addr((uint32_t*)buffer_in, buff_in_len);
     SCB_InvalidateDCache_by_Addr((uint32_t*)buffer_in, buff_in_len);
 
-    if (HAL_DCMIPP_CSI_PIPE_Start(&hdcmipp, DCMIPP_PIPE2, DCMIPP_VIRTUAL_CHANNEL0, (uint32_t)buffer_in, DCMIPP_MODE_SNAPSHOT) != HAL_OK) {
-        printf("ERROR: DCMIPP PIPE2 Start Failed!\r\n"); // 看看会不会打印这个错误
-    }
+//    if (HAL_DCMIPP_CSI_PIPE_Start(&hdcmipp, DCMIPP_PIPE2, DCMIPP_VIRTUAL_CHANNEL0, (uint32_t)buffer_in, DCMIPP_MODE_SNAPSHOT) != HAL_OK) {
+//        printf("ERROR: DCMIPP PIPE2 Start Failed!\r\n");
+//    }
 
     if(osSemaphoreAcquire(cam_frame_sem, pdMS_TO_TICKS(100)) != osOK) {
     	printf("ERROR: Camera Timeout!\r\n");

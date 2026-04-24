@@ -11,6 +11,6 @@
 ../../Drivers/STM32N6xx_HAL_Driver/Inc/stm32n6xx_ll_bus.h:3915:22:LL_MISC_EnableClockLowPower	24	static
 ../../Middlewares/ST/AI/Npu/ll_aton/ll_aton_NN_interface.h:479:32:LL_Buffer_addr_base	24	static
 ../../Middlewares/ST/AI/Npu/ll_aton/ll_aton_NN_interface.h:489:32:LL_Buffer_addr_start	16	static
-../X-CUBE-AI/App/app_x-cube-ai.c:99:6:set_clk_sleep_mode	8	static
-../X-CUBE-AI/App/app_x-cube-ai.c:138:6:MX_X_CUBE_AI_Init	24	static
-../X-CUBE-AI/App/app_x-cube-ai.c:194:6:MX_X_CUBE_AI_Process	328	static,ignoring_inline_asm
+../X-CUBE-AI/App/app_x-cube-ai.c:100:6:set_clk_sleep_mode	8	static
+../X-CUBE-AI/App/app_x-cube-ai.c:139:6:MX_X_CUBE_AI_Init	24	static
+../X-CUBE-AI/App/app_x-cube-ai.c:193:6:MX_X_CUBE_AI_Process	344	static,ignoring_inline_asm

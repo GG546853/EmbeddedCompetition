@@ -39,7 +39,7 @@
  * --Ocache-opt = true
  * --output-info-file = "c_info"
  * --onnx-input = "C:/Users/96022/.stm32cubemx/network_output/tiny_yolo_v2_224_int8_OE_3_3_0.onnx"
- * --out-dir-prefix = "C:/Users/96022/AppData/Local/Temp/mxAI_workspace19848397078002635033670677334622/neural_art__network/"
+ * --out-dir-prefix = "C:/Users/96022/AppData/Local/Temp/mxAI_workspace1277636258890015046898655325780395/neural_art__network/"
  * --all-buffers-info = true
  * --mvei = true
  * --Oauto-sched = true

@@ -74,6 +74,7 @@ extern uint8_t g_ltdc_layer2_framebuf[480 * 800 * 3];
 extern DCMIPP_HandleTypeDef hdcmipp;
 extern osSemaphoreId_t cam_frame_sem; // 确保在 main.c 中创建了这个信号量并在此声明
 extern DMA2D_HandleTypeDef hdma2d;
+extern uint8_t g_ai_cam_buf[224 * 224 * 3];
 
 static inline float sigmoid(float x) {
     return 1.0f / (1.0f + expf(-x));
@@ -85,7 +86,7 @@ static inline float sigmoid(float x) {
 
  int result_count = 0;
 
-LL_Buffer_InfoTypeDef * ibuffersInfos;
+
 
 
 /* USER CODE END includes */
@@ -185,8 +186,6 @@ void MX_X_CUBE_AI_Init(void)
     LL_ATON_RT_Init_Network(&NN_Instance_Default);
 
 
-    ibuffersInfos = NN_Interface_Default.input_buffers_info();
-    buffer_in = (uint8_t *)LL_Buffer_addr_start(&ibuffersInfos[0]);
 
     /* USER CODE END 5 */
 }
@@ -199,9 +198,9 @@ void MX_X_CUBE_AI_Process(void)
 
 
     LL_ATON_RT_RetValues_t ll_aton_rt_ret = LL_ATON_RT_DONE;
-//    const LL_Buffer_InfoTypeDef * ibuffersInfos = NN_Interface_Default.input_buffers_info();
+    const LL_Buffer_InfoTypeDef * ibuffersInfos = NN_Interface_Default.input_buffers_info();
     const LL_Buffer_InfoTypeDef * obuffersInfos = NN_Interface_Default.output_buffers_info();
-//    buffer_in = (uint8_t *)LL_Buffer_addr_start(&ibuffersInfos[0]);
+    buffer_in = (uint8_t *)LL_Buffer_addr_start(&ibuffersInfos[0]);
     buffer_out = (uint8_t *)LL_Buffer_addr_start(&obuffersInfos[0]);
 
     LL_ATON_RT_RuntimeInit();
@@ -212,16 +211,19 @@ void MX_X_CUBE_AI_Process(void)
     SCB_CleanDCache_by_Addr((uint32_t*)buffer_in, buff_in_len);
     SCB_InvalidateDCache_by_Addr((uint32_t*)buffer_in, buff_in_len);
 
-//    if (HAL_DCMIPP_CSI_PIPE_Start(&hdcmipp, DCMIPP_PIPE2, DCMIPP_VIRTUAL_CHANNEL0, (uint32_t)buffer_in, DCMIPP_MODE_SNAPSHOT) != HAL_OK) {
-//        printf("ERROR: DCMIPP PIPE2 Start Failed!\r\n");
-//    }
-
-    if(osSemaphoreAcquire(cam_frame_sem, pdMS_TO_TICKS(100)) != osOK) {
-    	printf("ERROR: Camera Timeout!\r\n");
-        return;
+    if (HAL_DCMIPP_CSI_PIPE_Start(&hdcmipp, DCMIPP_PIPE2, DCMIPP_VIRTUAL_CHANNEL0, (uint32_t)buffer_in, DCMIPP_MODE_SNAPSHOT) != HAL_OK) {
+        printf("ERROR: DCMIPP PIPE2 Start Failed!\r\n");
     }
 
-    //SCB_CleanDCache_by_Addr((uint32_t*)buffer_in, buff_in_len);
+    vTaskDelay(pdMS_TO_TICKS(10));
+
+//    int8_t *ai_input = (int8_t *)buffer_in;
+//    for(int i = 0; i < 224 * 224 * 3; i++) {
+//        ai_input[i] = (int8_t)((int16_t)g_ai_cam_buf[i] - 128);
+//    }
+
+
+    SCB_CleanDCache_by_Addr((uint32_t*)buffer_in, buff_in_len);
     SCB_InvalidateDCache_by_Addr((uint32_t*)buffer_in, buff_in_len);
 
     LL_ATON_RT_Init_Network(&NN_Instance_Default);
@@ -240,11 +242,11 @@ void MX_X_CUBE_AI_Process(void)
         float *out_data = (float *)buffer_out;
         result_count = 0;
 
-        printf("--- NPU RAW Output Check ---\r\n");
-        for(int i = 0; i < 10; i++) {
-            printf("out_data[%d] = %f\r\n", i, out_data[i]);
-        }
-        printf("----------------------------\r\n");
+//        printf("--- NPU RAW Output Check ---\r\n");
+//        for(int i = 0; i < 10; i++) {
+//            printf("out_data[%d] = %f\r\n", i, out_data[i]);
+//        }
+//        printf("----------------------------\r\n");
 
         // 2. 解码 YOLO 输出
         for (int y = 0; y < GRID_SIZE; y++) {
@@ -269,7 +271,7 @@ void MX_X_CUBE_AI_Process(void)
                     float obj_conf = 1.0f / (1.0f + expf(-tc));
                     float class_prob = 1.0f / (1.0f + expf(-tclass));
                     float conf = obj_conf * class_prob;
-                    if (conf > 0.75f) {
+                    if (conf > 0.3f) {
                         // 解码中心点坐标 (Sigmoid后加上网格偏移，再除以网格总数归一化)
                         float bx = (1.0f / (1.0f + expf(-tx)) + x) / GRID_SIZE;
                         float by = (1.0f / (1.0f + expf(-ty)) + y) / GRID_SIZE;

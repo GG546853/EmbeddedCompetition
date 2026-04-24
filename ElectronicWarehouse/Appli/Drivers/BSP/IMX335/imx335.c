@@ -154,10 +154,10 @@ uint8_t imx335_start_capture(uint32_t address)
          return 1;
      }
 
-    if (HAL_DCMIPP_CSI_PIPE_Start(&hdcmipp, DCMIPP_PIPE2, DCMIPP_VIRTUAL_CHANNEL0, (uint32_t)buffer_in, DCMIPP_MODE_CONTINUOUS) != HAL_OK)
-    {
-        return 1;
-    }
+//    if (HAL_DCMIPP_CSI_PIPE_Start(&hdcmipp, DCMIPP_PIPE2, DCMIPP_VIRTUAL_CHANNEL0, (uint32_t)buffer_in, DCMIPP_MODE_CONTINUOUS) != HAL_OK)
+//    {
+//        return 1;
+//    }
 
     return 0;
 }

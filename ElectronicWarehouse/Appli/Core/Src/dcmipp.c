@@ -90,7 +90,6 @@ void MX_DCMIPP_Init(void)
 }
 
 
-
 /* USER CODE BEGIN 1 */
 /**
 * @brief DCMIPP MSP Initialization

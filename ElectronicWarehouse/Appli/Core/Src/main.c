@@ -131,24 +131,24 @@ int main(void)
   MX_DMA2D_Init();
   MX_I2C2_Init();
   MX_I2C4_Init();
-  //MX_XSPI1_Init();
+  MX_XSPI1_Init();
   MX_LTDC_Init();
   MX_USART1_UART_Init();
-  //MX_XSPI2_Init();
+  MX_XSPI2_Init();
   MX_CACHEAXI_Init();
   MX_RAMCFG_Init();
   MX_X_CUBE_AI_Init();
   SystemIsolation_Config();
   /* USER CODE BEGIN 2 */
 #ifdef DEBUG
-  MX_XSPI1_Init();
+  //MX_XSPI1_Init();
   if (HyperRAM_Init(&HyperRAMObject, &hxspi1) != HyperRAM_OK)
   {
       Error_Handler();
   }
   HyperRAM_EnableMemoryMappedMode(&HyperRAMObject);
 
-  MX_XSPI2_Init();
+  //MX_XSPI2_Init();
   uint32_t xspi2_clk = HAL_RCCEx_GetPeriphCLKFreq(RCC_PERIPHCLK_XSPI2);
   if (NORFlash_Init(&NORFlashObject, &hxspi2, xspi2_clk) != NORFlash_OK)
     {

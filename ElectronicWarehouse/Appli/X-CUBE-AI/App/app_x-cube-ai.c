@@ -207,7 +207,7 @@ void MX_X_CUBE_AI_Process(void)
     buff_in_len = ibuffersInfos->offset_end - ibuffersInfos->offset_start;
     buff_out_len = obuffersInfos->offset_end - obuffersInfos->offset_start;
 
-//    memset(buffer_in, 0xAA, buff_in_len);
+    //memset(buffer_in, 0xAA, buff_in_len);
     SCB_CleanDCache_by_Addr((uint32_t*)buffer_in, buff_in_len);
     SCB_InvalidateDCache_by_Addr((uint32_t*)buffer_in, buff_in_len);
 

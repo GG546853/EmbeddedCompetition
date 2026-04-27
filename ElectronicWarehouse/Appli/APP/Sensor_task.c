@@ -10,7 +10,7 @@ const osThreadAttr_t SensorTask_attributes = {
 };
 
 extern DMA2D_HandleTypeDef hdma2d;
-
+extern uint8_t *buffer_in;
 void Sensor_Task(void *argument)
 {
 	  rgblcd_show_string(30, 110, 200, 16, 16, "IMX335 OK!   ", RED);
@@ -19,7 +19,7 @@ void Sensor_Task(void *argument)
 	while(1)
 	{
 		imx335_isp_background_process();
-		//MX_X_CUBE_AI_Process();
+		MX_X_CUBE_AI_Process();
 		vTaskDelay(pdMS_TO_TICKS(1));
 	}
 }

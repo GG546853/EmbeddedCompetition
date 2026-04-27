@@ -26,6 +26,9 @@
 extern I2C_HandleTypeDef hi2c2; /* I2C句柄 */
 
 extern DCMIPP_HandleTypeDef hdcmipp;
+
+extern uint8_t *buffer_in;
+
 static __IO uint32_t imx335_capture_frame_count = 0;
 static IMX335_Object_t imx335_object = {0};
 static ISP_HandleTypeDef imx335_hisp = {0};
@@ -151,7 +154,7 @@ uint8_t imx335_start_capture(uint32_t address)
         return 1;
     }
 
-        if (HAL_DCMIPP_CSI_PIPE_Start(&hdcmipp, DCMIPP_PIPE2, DCMIPP_VIRTUAL_CHANNEL0, (uint32_t)g_ai_cam_buf, DCMIPP_MODE_CONTINUOUS) != HAL_OK)
+        if (HAL_DCMIPP_CSI_PIPE_Start(&hdcmipp, DCMIPP_PIPE2, DCMIPP_VIRTUAL_CHANNEL0, g_ai_cam_buf, DCMIPP_MODE_CONTINUOUS) != HAL_OK)
         {
             return 1;
         }

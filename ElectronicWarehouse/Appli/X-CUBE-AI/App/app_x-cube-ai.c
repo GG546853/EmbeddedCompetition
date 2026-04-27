@@ -166,14 +166,6 @@ void MX_X_CUBE_AI_Init(void)
     __HAL_RCC_DMA2D_CLK_SLEEP_ENABLE();    /* For display */
     __HAL_RCC_DCMIPP_CLK_SLEEP_ENABLE();   /* For camera configuration retention */
     __HAL_RCC_CSI_CLK_SLEEP_ENABLE();      /* For camera configuration retention */
-    __HAL_RCC_XSPI1_CLK_SLEEP_ENABLE();    /* For display frame buffer */
-    __HAL_RCC_XSPI2_CLK_SLEEP_ENABLE();    /* For NN weights */
-    __HAL_RCC_NPU_CLK_SLEEP_ENABLE();      /* For NN inference */
-    __HAL_RCC_CACHEAXI_CLK_SLEEP_ENABLE(); /* For NN inference */
-    __HAL_RCC_LTDC_CLK_SLEEP_ENABLE();     /* For display */
-    __HAL_RCC_DMA2D_CLK_SLEEP_ENABLE();    /* For display */
-    __HAL_RCC_DCMIPP_CLK_SLEEP_ENABLE();   /* For camera configuration retention */
-    __HAL_RCC_CSI_CLK_SLEEP_ENABLE();      /* For camera configuration retention */
 
     LL_ATON_RT_RuntimeInit();
     LL_ATON_RT_Init_Network(&NN_Instance_Default);
@@ -204,16 +196,19 @@ void MX_X_CUBE_AI_Process(void)
     SCB_CleanDCache_by_Addr((uint32_t*)buffer_in, buff_in_len);
     SCB_InvalidateDCache_by_Addr((uint32_t*)buffer_in, buff_in_len);
 
-    if (HAL_DCMIPP_CSI_PIPE_Start(&hdcmipp, DCMIPP_PIPE2, DCMIPP_VIRTUAL_CHANNEL0, (uint32_t)buffer_in, DCMIPP_MODE_SNAPSHOT) != HAL_OK) {
-        printf("ERROR: DCMIPP PIPE2 Start Failed!\r\n");
-    }
+//    if (HAL_DCMIPP_CSI_PIPE_Start(&hdcmipp, DCMIPP_PIPE2, DCMIPP_VIRTUAL_CHANNEL0, (uint32_t)buffer_in, DCMIPP_MODE_SNAPSHOT) != HAL_OK) {
+//        printf("ERROR: DCMIPP PIPE2 Start Failed!\r\n");
+//    }
 
-    vTaskDelay(pdMS_TO_TICKS(5));
+    //vTaskDelay(pdMS_TO_TICKS(5));
 
-    SCB_CleanDCache_by_Addr((uint32_t*)buffer_in, buff_in_len);
-    SCB_InvalidateDCache_by_Addr((uint32_t*)buffer_in, buff_in_len);
+//    SCB_CleanDCache_by_Addr((uint32_t*)buffer_in, buff_in_len);
+//    SCB_InvalidateDCache_by_Addr((uint32_t*)buffer_in, buff_in_len);
 
 	for (int inferenceNb=0;inferenceNb<1;++inferenceNb){
+		 memcpy(buffer_in, g_ai_cam_buf, buff_in_len);
+	        SCB_CleanDCache_by_Addr((uint32_t*)buffer_in, buff_in_len);
+	        SCB_InvalidateDCache_by_Addr((uint32_t*)buffer_in, buff_in_len);
     LL_ATON_RT_Init_Network(&NN_Instance_Default);
     do {
        ll_aton_rt_ret = LL_ATON_RT_RunEpochBlock(&NN_Instance_Default);
@@ -222,17 +217,20 @@ void MX_X_CUBE_AI_Process(void)
        }
      } while (ll_aton_rt_ret != LL_ATON_RT_DONE);
 
-    SCB_InvalidateDCache_by_Addr((uint32_t*)buffer_out, buff_out_len);
+//    SCB_InvalidateDCache_by_Addr((uint32_t*)buffer_out, buff_out_len);
 
     float *floatout = (float *)buffer_out;
-    int valid_count = 0;
-
-    for (int i = 0; i < 2100; ++i){
-    	float cx = floatout[i = 0 * 2100];
-    	float cy = floatout[i = 1 * 2100];
-    	float w = floatout[i = 2 * 2100];
-    	float h = floatout[i = 3 * 2100];
-    	float conf = floatout[i = 4 * 2100];
+//    for(int i = 0;i<2100;i++)
+//    {
+//    	printf("index:%d [%.2f %.2f %.2f %.2f %.2f]\r\n",i,floatout[i*5],floatout[i*5+1],floatout[i*5+2],floatout[i*5+3],floatout[i*5+4]);
+//    }
+    	int valid_count = 0;
+        for (int i = 0; i < 2100; ++i){
+    	float cx = floatout[i + 0 * 2100];
+    	float cy = floatout[i + 1 * 2100];
+    	float w = floatout[i + 2 * 2100];
+    	float h = floatout[i + 3 * 2100];
+    	float conf = floatout[i + 4 * 2100];
     	if(conf > 0.3f){
     		float cx_input = cx * 320.0f;
     		float cy_input = cy * 320.0f;
@@ -240,8 +238,8 @@ void MX_X_CUBE_AI_Process(void)
     		float h_input = h * 320.0f;
     		boxes[valid_count].x1 = cx_input - w_input / 2.0f;
     		boxes[valid_count].y1 = cy_input - h_input / 2.0f;
-    		boxes[valid_count].x2 = cx_input - w_input / 2.0f;
-    		boxes[valid_count].y2 = cy_input - h_input / 2.0f;
+    		boxes[valid_count].x2 = cx_input + w_input / 2.0f;
+    		boxes[valid_count].y2 = cy_input + h_input / 2.0f;
     		boxes[valid_count].conf = conf;
     		boxes[valid_count].keep = 1;
     		valid_count++;
@@ -255,8 +253,8 @@ void MX_X_CUBE_AI_Process(void)
     			if(boxes[j].keep){
     				float x1 = (boxes[i].x1 > boxes[j].x1) ? boxes[i].x1 : boxes[j].x1;
     				float y1 = (boxes[i].y1 > boxes[j].y1) ? boxes[i].y1 : boxes[j].y1;
-    				float x2 = (boxes[i].x2 > boxes[j].x2) ? boxes[i].x2 : boxes[j].x2;
-    				float y2 = (boxes[i].y2 > boxes[j].y2) ? boxes[i].y2 : boxes[j].y2;
+    				float x2 = (boxes[i].x2 < boxes[j].x2) ? boxes[i].x2 : boxes[j].x2;
+    				float y2 = (boxes[i].y2 < boxes[j].y2) ? boxes[i].y2 : boxes[j].y2;
     				float intersection = (x2 - x1) * (y2 - y1);
     				if (intersection < 0) intersection = 0;
     				float area_i = (boxes[i].x2 - boxes[i].x1) * (boxes[i].y2 - boxes[i].y1);
@@ -271,6 +269,14 @@ void MX_X_CUBE_AI_Process(void)
     	}
     }
     int final_count = 0;
+
+    hdma2d.Init.Mode = DMA2D_R2M;                 // 寄存器到内存(纯色填充)
+    hdma2d.Init.ColorMode = DMA2D_OUTPUT_RGB888;  // 设定输出颜色格式
+    hdma2d.Init.OutputOffset = 0;                 // 【关键】重置偏移量为0，否则清屏会错乱
+    if (HAL_DMA2D_Init(&hdma2d) != HAL_OK) {
+        // 初始化错误处理
+    }
+
     HAL_DMA2D_ConfigLayer(&hdma2d,1);
     HAL_DMA2D_Start(&hdma2d, 0x00000000, (uint32_t)g_ltdc_layer2_framebuf, 800, 480);
     HAL_DMA2D_PollForTransfer(&hdma2d, 1000);
@@ -279,16 +285,16 @@ void MX_X_CUBE_AI_Process(void)
     	if(boxes[i].keep){
     		final_count++;
     		int display_x1 = (int)(boxes[i].x1 * 2.5);
-    		int display_y1 = (int)(boxes[i].x1 * 1.5);
-    		int display_x2 = (int)(boxes[i].x1 * 2.5);
-    		int display_y2 = (int)(boxes[i].x1 * 1.5);
+    		int display_y1 = (int)(boxes[i].y1 * 1.5);
+    		int display_x2 = (int)(boxes[i].x2 * 2.5);
+    		int display_y2 = (int)(boxes[i].y2 * 1.5);
     		int display_width = display_x2 - display_x1;
     		int display_height = display_y2 - display_y1;
 
     		if (display_x1 < 0) display_x1 = 0;
-    		if (display_y1 < 0) display_x2 = 0;
-    		if (display_x2 < 0) display_y1 = 800;
-    		if (display_y2 < 0) display_y2 = 480;
+    		if (display_y1 < 0) display_y1 = 0;
+    		if (display_x2 > 800) display_x2 = 800;
+    		if (display_y2 > 480) display_y2 = 480;
     		display_width = display_x2 - display_x1;
     		display_height = display_y2 - display_y1;
     		if (display_width < 0) display_width = 0;
@@ -334,6 +340,7 @@ void MX_X_CUBE_AI_Process(void)
 
     	}
     }
+
 
         LL_ATON_RT_Reset_Network(&NN_Instance_Default);
         vTaskDelay(pdMS_TO_TICKS(10));

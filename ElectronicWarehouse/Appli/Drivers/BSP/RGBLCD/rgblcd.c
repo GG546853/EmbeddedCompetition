@@ -186,13 +186,13 @@ void rgblcd_init(void)
     layer2_cfg.Alpha0 = 0;
     layer2_cfg.BlendingFactor1 = LTDC_BLENDING_FACTOR1_PAxCA;
     layer2_cfg.BlendingFactor2 = LTDC_BLENDING_FACTOR2_PAxCA;
-//    layer2_cfg.FBStartAdress = (uint32_t)g_ltdc_layer2_framebuf;
+    layer2_cfg.FBStartAdress = (uint32_t)g_ltdc_layer2_framebuf;
     //layer2_cfg.FBStartAdress = (uint32_t)buffer_in;
-    layer2_cfg.FBStartAdress = (uint32_t)g_ai_cam_buf;
+//    layer2_cfg.FBStartAdress = (uint32_t)g_ai_cam_buf;
 //    layer2_cfg.ImageWidth = rgblcddev.pwidth;
 //    layer2_cfg.ImageHeight = rgblcddev.pheight;
-    layer2_cfg.ImageWidth = 320;
-    layer2_cfg.ImageHeight = 320;
+    layer2_cfg.ImageWidth = 800;
+    layer2_cfg.ImageHeight = 480;
     layer2_cfg.Backcolor.Blue = 0;
     layer2_cfg.Backcolor.Green = 0;
     layer2_cfg.Backcolor.Red = 0;
@@ -201,7 +201,7 @@ void rgblcd_init(void)
     HAL_LTDC_ConfigColorKeying(&hltdc, 0x000000, 1);
     HAL_LTDC_EnableColorKeying(&hltdc, 1);
 
-    HAL_LTDC_DisableColorKeying(&hltdc, 1);
+    //HAL_LTDC_DisableColorKeying(&hltdc, 1);
     /* 清空图层2（全涂黑，即全透明） */
     memset(g_ltdc_layer2_framebuf, 0, sizeof(g_ltdc_layer2_framebuf));
     HAL_LTDC_Reload(&hltdc, LTDC_RELOAD_IMMEDIATE);

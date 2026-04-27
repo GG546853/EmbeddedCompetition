@@ -26,6 +26,8 @@
 #include "Sensor_task.h"
 #include "imx335.h"
 #include "rgblcd.h"
+#include <stdio.h>
+#include "uart.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -147,10 +149,11 @@ void MX_FREERTOS_Init(void) {
 void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN defaultTask */
+	uart_init(115200);
   /* Infinite loop */
   for(;;)
   {
-    osDelay(1);
+    osDelay(100);
   }
   /* USER CODE END defaultTask */
 }

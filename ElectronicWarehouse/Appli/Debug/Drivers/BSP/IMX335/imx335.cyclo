@@ -1,6 +1,6 @@
 ../Drivers/BSP/IMX335/imx335.c:60:9:imx335_init	8
 ../Drivers/BSP/IMX335/imx335.c:131:9:imx335_get_capture	2
-../Drivers/BSP/IMX335/imx335.c:149:9:imx335_start_capture	3
+../Drivers/BSP/IMX335/imx335.c:149:9:imx335_start_capture	2
 ../Drivers/BSP/IMX335/imx335.c:169:6:imx335_stop_capture	1
 ../Drivers/BSP/IMX335/imx335.c:179:10:imx335_get_capture_frame_count	1
 ../Drivers/BSP/IMX335/imx335.c:191:9:imx335_isp_background_process	2

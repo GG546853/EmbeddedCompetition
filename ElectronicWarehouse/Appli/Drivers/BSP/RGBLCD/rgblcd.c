@@ -174,12 +174,12 @@ void rgblcd_init(void)
 
     LTDC_LayerCfgTypeDef layer2_cfg = {0};
     layer2_cfg.WindowX0 = 0;
-    //layer2_cfg.WindowX1 = rgblcddev.pwidth;
-    layer2_cfg.WindowX1 = 320;
+    layer2_cfg.WindowX1 = rgblcddev.pwidth;
+    //layer2_cfg.WindowX1 = 320;
     layer2_cfg.WindowY0 = 0;
 
-    //layer2_cfg.WindowY1 = rgblcddev.pheight;
-    layer2_cfg.WindowY1 = 320;
+    layer2_cfg.WindowY1 = rgblcddev.pheight;
+    //layer2_cfg.WindowY1 = 320;
 //    layer2_cfg.PixelFormat = LTDC_PIXEL_FORMAT_RGB565; // 格式保持一致
     layer2_cfg.PixelFormat = LTDC_PIXEL_FORMAT_RGB888;
     layer2_cfg.Alpha = 255;

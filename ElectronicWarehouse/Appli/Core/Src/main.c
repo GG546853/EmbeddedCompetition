@@ -321,12 +321,18 @@ void PeriphCommonClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+extern osSemaphoreId_t cam_frame_sem;
+
   void HAL_DCMIPP_PIPE_FrameEventCallback(DCMIPP_HandleTypeDef *hdcmipp, uint32_t Pipe)
   {
     imx335_dcmipp_pipe_frame_cb(hdcmipp, Pipe);
-//    if (Pipe == DCMIPP_PIPE2 && cam_frame_sem != NULL) {
-//        osSemaphoreRelease(cam_frame_sem);
-//    }
+    if (Pipe == DCMIPP_PIPE2)
+    {
+        // 释放信号量，通知 AI 任务“图像写完了，可以开始推理了！”
+        if (cam_frame_sem != NULL) {
+            osSemaphoreRelease(cam_frame_sem);
+        }
+    }
     __NOP();
   }
 

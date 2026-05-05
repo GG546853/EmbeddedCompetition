@@ -192,21 +192,21 @@ void MX_X_CUBE_AI_Process(void)
     buff_in_len = ibuffersInfos->offset_end - ibuffersInfos->offset_start;
     buff_out_len = obuffersInfos->offset_end - obuffersInfos->offset_start;
 
-    //memset(buffer_in, 0xAA, buff_in_len);
     SCB_CleanDCache_by_Addr((uint32_t*)buffer_in, buff_in_len);
     SCB_InvalidateDCache_by_Addr((uint32_t*)buffer_in, buff_in_len);
 
-//    if (HAL_DCMIPP_CSI_PIPE_Start(&hdcmipp, DCMIPP_PIPE2, DCMIPP_VIRTUAL_CHANNEL0, (uint32_t)buffer_in, DCMIPP_MODE_SNAPSHOT) != HAL_OK) {
-//        printf("ERROR: DCMIPP PIPE2 Start Failed!\r\n");
-//    }
+    if (HAL_DCMIPP_CSI_PIPE_Start(&hdcmipp, DCMIPP_PIPE2, DCMIPP_VIRTUAL_CHANNEL0, (uint32_t)buffer_in, DCMIPP_MODE_SNAPSHOT) != HAL_OK) {
+        printf("ERROR: DCMIPP PIPE2 Start Failed!\r\n");
+    }
 
-    //vTaskDelay(pdMS_TO_TICKS(5));
+    if(osSemaphoreAcquire(cam_frame_sem, pdMS_TO_TICKS(100)) != osOK)
+    	while(1);
 
-//    SCB_CleanDCache_by_Addr((uint32_t*)buffer_in, buff_in_len);
+    SCB_CleanDCache_by_Addr((uint32_t*)buffer_in, buff_in_len);
 //    SCB_InvalidateDCache_by_Addr((uint32_t*)buffer_in, buff_in_len);
 
 	for (int inferenceNb=0;inferenceNb<1;++inferenceNb){
-		 memcpy(buffer_in, g_ai_cam_buf, buff_in_len);
+		 //memcpy(buffer_in, g_ai_cam_buf, buff_in_len);
 	        SCB_CleanDCache_by_Addr((uint32_t*)buffer_in, buff_in_len);
 	        SCB_InvalidateDCache_by_Addr((uint32_t*)buffer_in, buff_in_len);
     LL_ATON_RT_Init_Network(&NN_Instance_Default);
@@ -217,13 +217,8 @@ void MX_X_CUBE_AI_Process(void)
        }
      } while (ll_aton_rt_ret != LL_ATON_RT_DONE);
 
-//    SCB_InvalidateDCache_by_Addr((uint32_t*)buffer_out, buff_out_len);
-
     float *floatout = (float *)buffer_out;
-//    for(int i = 0;i<2100;i++)
-//    {
-//    	printf("index:%d [%.2f %.2f %.2f %.2f %.2f]\r\n",i,floatout[i*5],floatout[i*5+1],floatout[i*5+2],floatout[i*5+3],floatout[i*5+4]);
-//    }
+
     	int valid_count = 0;
         for (int i = 0; i < 2100; ++i){
     	float cx = floatout[i + 0 * 2100];

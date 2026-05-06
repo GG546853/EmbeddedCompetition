@@ -25,7 +25,11 @@ C:/Users/96022/Desktop/EmbeddedCompetition/ElectronicWarehouse/Middlewares/Third
 C:/Users/96022/Desktop/EmbeddedCompetition/ElectronicWarehouse/Middlewares/Third_Party/FreeRTOS/Source/tasks.c:2550:17:uxTaskGetSystemState	4
 C:/Users/96022/Desktop/EmbeddedCompetition/ElectronicWarehouse/Middlewares/Third_Party/FreeRTOS/Source/tasks.c:2677:12:xTaskCatchUpTicks	2
 C:/Users/96022/Desktop/EmbeddedCompetition/ElectronicWarehouse/Middlewares/Third_Party/FreeRTOS/Source/tasks.c:2781:12:xTaskIncrementTick	14
-C:/Users/96022/Desktop/EmbeddedCompetition/ElectronicWarehouse/Middlewares/Third_Party/FreeRTOS/Source/tasks.c:3070:6:vTaskSwitchContext	10
+C:/Users/96022/Desktop/EmbeddedCompetition/ElectronicWarehouse/Middlewares/Third_Party/FreeRTOS/Source/tasks.c:2960:10:vTaskSetApplicationTaskTag	2
+C:/Users/96022/Desktop/EmbeddedCompetition/ElectronicWarehouse/Middlewares/Third_Party/FreeRTOS/Source/tasks.c:2990:24:xTaskGetApplicationTaskTag	2
+C:/Users/96022/Desktop/EmbeddedCompetition/ElectronicWarehouse/Middlewares/Third_Party/FreeRTOS/Source/tasks.c:3014:24:xTaskGetApplicationTaskTagFromISR	2
+C:/Users/96022/Desktop/EmbeddedCompetition/ElectronicWarehouse/Middlewares/Third_Party/FreeRTOS/Source/tasks.c:3039:16:xTaskCallApplicationTaskHook	3
+C:/Users/96022/Desktop/EmbeddedCompetition/ElectronicWarehouse/Middlewares/Third_Party/FreeRTOS/Source/tasks.c:3070:6:vTaskSwitchContext	6
 C:/Users/96022/Desktop/EmbeddedCompetition/ElectronicWarehouse/Middlewares/Third_Party/FreeRTOS/Source/tasks.c:3144:6:vTaskPlaceOnEventList	2
 C:/Users/96022/Desktop/EmbeddedCompetition/ElectronicWarehouse/Middlewares/Third_Party/FreeRTOS/Source/tasks.c:3169:6:vTaskPlaceOnUnorderedEventList	3
 C:/Users/96022/Desktop/EmbeddedCompetition/ElectronicWarehouse/Middlewares/Third_Party/FreeRTOS/Source/tasks.c:3197:10:vTaskPlaceOnEventListRestricted	3

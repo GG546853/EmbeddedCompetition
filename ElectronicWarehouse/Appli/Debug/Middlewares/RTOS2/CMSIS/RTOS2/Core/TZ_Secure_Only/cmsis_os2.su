@@ -79,7 +79,7 @@ C:/Users/96022/Desktop/EmbeddedCompetition/ElectronicWarehouse/Middlewares/Third
 C:/Users/96022/Desktop/EmbeddedCompetition/ElectronicWarehouse/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.c:2833:14:CreateBlock	24	static
 C:/Users/96022/Desktop/EmbeddedCompetition/ElectronicWarehouse/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.c:2850:14:AllocBlock	24	static
 C:/Users/96022/Desktop/EmbeddedCompetition/ElectronicWarehouse/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.c:2867:13:FreeBlock	24	static
+C:/Users/96022/Desktop/EmbeddedCompetition/ElectronicWarehouse/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.c:2888:13:vApplicationIdleHook	4	static
 C:/Users/96022/Desktop/EmbeddedCompetition/ElectronicWarehouse/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.c:2902:13:vApplicationMallocFailedHook	8	static
-C:/Users/96022/Desktop/EmbeddedCompetition/ElectronicWarehouse/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.c:2919:13:vApplicationStackOverflowHook	16	static
 C:/Users/96022/Desktop/EmbeddedCompetition/ElectronicWarehouse/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.c:2934:13:vApplicationGetIdleTaskMemory	24	static
 C:/Users/96022/Desktop/EmbeddedCompetition/ElectronicWarehouse/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.c:2948:13:vApplicationGetTimerTaskMemory	24	static

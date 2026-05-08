@@ -20,6 +20,9 @@ all clean assets:
 $(error Spaces not allowed in path)
 else
 
+APPLICATION_PATH := Appli
+export APPLICATION_PATH
+
 ADDITIONAL_SOURCES := 
 ADDITIONAL_INCLUDE_PATHS := 
 ADDITIONAL_LIBRARY_PATHS := 

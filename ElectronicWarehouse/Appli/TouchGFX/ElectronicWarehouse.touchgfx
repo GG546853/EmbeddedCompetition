@@ -87,7 +87,7 @@
     "SubFamily": "STM32N6x7",
     "Toolchain": "STM32CubeIDE",
     "Platform": "m55",
-    "ProjectFile": "../../ElectronicWarehouse.ioc",
+    "ProjectFile": "../.cproject",
     "OptionalComponentsRoot": "../Middlewares/ST/touchgfx_components",
     "OptionalComponents": [],
     "AdditionalFeatures": []

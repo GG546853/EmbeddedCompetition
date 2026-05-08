@@ -19,6 +19,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "cmsis_os2.h"
+#include "crc.h"
 #include "csi.h"
 #include "dcmipp.h"
 #include "dma2d.h"
@@ -28,6 +29,7 @@
 #include "xspi.h"
 #include "xspim.h"
 #include "gpio.h"
+#include "app_touchgfx.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -126,11 +128,15 @@ int main(void)
   MX_DMA2D_Init();
   MX_I2C2_Init();
   MX_I2C4_Init();
-  //MX_XSPI1_Init();
+  MX_XSPI1_Init();
   MX_LTDC_Init();
   MX_USART1_UART_Init();
-  //MX_XSPI2_Init();
+  MX_XSPI2_Init();
+  MX_CRC_Init();
+  MX_TouchGFX_Init();
   SystemIsolation_Config();
+  /* Call PreOsInit function */
+  MX_TouchGFX_PreOSInit();
   /* USER CODE BEGIN 2 */
 #ifdef DEBUG
   MX_XSPI1_Init();

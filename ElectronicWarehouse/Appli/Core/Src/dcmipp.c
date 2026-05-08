@@ -77,6 +77,65 @@ void MX_DCMIPP_Init(void)
 
 }
 
+void HAL_DCMIPP_MspInit(DCMIPP_HandleTypeDef* dcmippHandle)
+{
+
+  RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
+  if(dcmippHandle->Instance==DCMIPP)
+  {
+  /* USER CODE BEGIN DCMIPP_MspInit 0 */
+
+  /* USER CODE END DCMIPP_MspInit 0 */
+
+  /** Initializes the peripherals clock
+  */
+    PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_DCMIPP|RCC_PERIPHCLK_CSI;
+    PeriphClkInitStruct.DcmippClockSelection = RCC_DCMIPPCLKSOURCE_IC17;
+    PeriphClkInitStruct.ICSelection[RCC_IC17].ClockSelection = RCC_ICCLKSOURCE_PLL1;
+    PeriphClkInitStruct.ICSelection[RCC_IC17].ClockDivider = 4;
+    PeriphClkInitStruct.ICSelection[RCC_IC18].ClockSelection = RCC_ICCLKSOURCE_PLL4;
+    PeriphClkInitStruct.ICSelection[RCC_IC18].ClockDivider = 1;
+    if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
+    {
+      Error_Handler();
+    }
+
+    /* DCMIPP clock enable */
+    __HAL_RCC_DCMIPP_CLK_ENABLE();
+    __HAL_RCC_CSI_CLK_ENABLE();
+    __HAL_RCC_CSI_FORCE_RESET();
+    __HAL_RCC_CSI_RELEASE_RESET();
+
+    /* DCMIPP interrupt Init */
+    HAL_NVIC_SetPriority(DCMIPP_IRQn, 0, 0);
+    HAL_NVIC_EnableIRQ(DCMIPP_IRQn);
+  /* USER CODE BEGIN DCMIPP_MspInit 1 */
+
+  /* USER CODE END DCMIPP_MspInit 1 */
+  }
+}
+
+void HAL_DCMIPP_MspDeInit(DCMIPP_HandleTypeDef* dcmippHandle)
+{
+
+  if(dcmippHandle->Instance==DCMIPP)
+  {
+  /* USER CODE BEGIN DCMIPP_MspDeInit 0 */
+
+  /* USER CODE END DCMIPP_MspDeInit 0 */
+    /* Peripheral clock disable */
+    __HAL_RCC_CSI_CLK_DISABLE();
+    __HAL_RCC_CSI_FORCE_RESET();
+    __HAL_RCC_CSI_RELEASE_RESET();
+
+    /* DCMIPP interrupt Deinit */
+    HAL_NVIC_DisableIRQ(DCMIPP_IRQn);
+  /* USER CODE BEGIN DCMIPP_MspDeInit 1 */
+
+  /* USER CODE END DCMIPP_MspDeInit 1 */
+  }
+}
+
 /* USER CODE BEGIN 1 */
 /**
 * @brief DCMIPP MSP Initialization

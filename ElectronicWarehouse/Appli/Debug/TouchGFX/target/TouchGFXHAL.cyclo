@@ -11,7 +11,6 @@
 ../Middlewares/ST/touchgfx/framework/include/touchgfx/hal/HAL.hpp:820:18:virtual void touchgfx::HAL::waitForLTDCLines(uint16_t)	1
 ../Middlewares/ST/touchgfx/framework/include/touchgfx/hal/HAL.hpp:943:30:virtual touchgfx::FlashDataReader* touchgfx::HAL::getFlashDataReader() const	1
 ../Middlewares/ST/touchgfx/framework/include/touchgfx/hal/HAL.hpp:1105:18:virtual void touchgfx::HAL::taskDelay(uint16_t)	2
-../Middlewares/ST/touchgfx/framework/include/touchgfx/hal/HAL.hpp:1132:22:virtual uint16_t touchgfx::HAL::getTFTCurrentLine()	1
 ../Middlewares/ST/touchgfx/framework/include/touchgfx/hal/HAL.hpp:1143:21:virtual touchgfx::DMAType touchgfx::HAL::getDMAType()	1
 ../Middlewares/ST/touchgfx/framework/include/touchgfx/hal/HAL.hpp:1290:18:virtual void touchgfx::HAL::partialLTDCDeadlineMissed()	1
 ../Middlewares/ST/touchgfx/framework/include/touchgfx/hal/HAL.hpp:1341:18:virtual void touchgfx::HAL::performDisplayOrientationChange()	4

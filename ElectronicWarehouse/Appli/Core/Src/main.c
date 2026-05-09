@@ -133,20 +133,20 @@ int main(void)
   MX_USART1_UART_Init();
   MX_XSPI2_Init();
   MX_CRC_Init();
-  MX_TouchGFX_Init();
+  //MX_TouchGFX_Init();
   SystemIsolation_Config();
   /* Call PreOsInit function */
-  MX_TouchGFX_PreOSInit();
+  //MX_TouchGFX_PreOSInit();
   /* USER CODE BEGIN 2 */
 #ifdef DEBUG
-  MX_XSPI1_Init();
+  //MX_XSPI1_Init();
   if (HyperRAM_Init(&HyperRAMObject, &hxspi1) != HyperRAM_OK)
   {
       Error_Handler();
   }
   HyperRAM_EnableMemoryMappedMode(&HyperRAMObject);
 
-  MX_XSPI2_Init();
+  //MX_XSPI2_Init();
   uint32_t xspi2_clk = HAL_RCCEx_GetPeriphCLKFreq(RCC_PERIPHCLK_XSPI2);
   if (NORFlash_Init(&NORFlashObject, &hxspi2, xspi2_clk) != NORFlash_OK)
     {
@@ -157,6 +157,20 @@ int main(void)
       Error_Handler();
   }
 #endif
+  HAL_CRC_DeInit(&hcrc);
+
+  /* 如果有必要，重新配置为库要求的标准默认值 */
+  hcrc.Instance = CRC;
+  hcrc.Init.DefaultPolynomialUse = DEFAULT_POLYNOMIAL_ENABLE;
+  hcrc.Init.DefaultInitValueUse = DEFAULT_INIT_VALUE_ENABLE;
+  hcrc.Init.InputDataInversionMode = CRC_INPUTDATA_INVERSION_NONE;
+  hcrc.Init.OutputDataInversionMode = CRC_OUTPUTDATA_INVERSION_DISABLE;
+  hcrc.InputDataFormat = CRC_INPUTDATA_FORMAT_BYTES;
+  if (HAL_CRC_Init(&hcrc) != HAL_OK)
+  {
+      Error_Handler();
+  }
+
 
   rgblcd_init();
   rgblcd_display_dir(1);  /* 设置RGB LCD显示方向 */
@@ -166,6 +180,11 @@ int main(void)
   {
 	    __NOP();
   }
+
+
+  MX_TouchGFX_Init();
+  MX_TouchGFX_PreOSInit();
+
 
   /* USER CODE END 2 */
 

@@ -36,7 +36,12 @@ void TouchGFXGeneratedHAL::initialize()
 {
     HAL::initialize();
     registerEventListener(*(Application::getInstance()));
-    setFrameBufferStartAddresses((void*)0x90000000, (void*)0x900BB800, (void*)0);
+    registerTaskDelayFunction(&OSWrappers::taskDelay);
+    if (!setFrameRefreshStrategy(HAL::REFRESH_STRATEGY_OPTIM_SINGLE_BUFFER_TFT_CTRL))
+    {
+        while (1);
+    }
+    setFrameBufferStartAddresses((void*)0x91000000, (void*)0, (void*)0);
 }
 
 void TouchGFXGeneratedHAL::configureInterrupts()
@@ -60,7 +65,7 @@ void TouchGFXGeneratedHAL::disableInterrupts()
 void TouchGFXGeneratedHAL::enableLCDControllerInterrupt()
 {
     lcd_int_active_line = (LTDC->BPCR & LTDC_BPCR_AVBP_Msk) - 1;
-    lcd_int_porch_line = (LTDC->AWCR & LTDC_AWCR_AAH_Msk);
+    lcd_int_porch_line = (LTDC->AWCR & LTDC_AWCR_AAH_Msk) - 1;
 
     /* Sets the Line Interrupt position */
     LTDC->LIPCR = lcd_int_active_line;
@@ -101,6 +106,20 @@ bool TouchGFXGeneratedHAL::blockCopy(void* RESTRICT dest, const void* RESTRICT s
     return HAL::blockCopy(dest, src, numBytes);
 }
 
+uint16_t TouchGFXGeneratedHAL::getTFTCurrentLine()
+{
+    // This function only requires an implementation if single buffering
+    // on LTDC display is being used (REFRESH_STRATEGY_OPTIM_SINGLE_BUFFER_TFT_CTRL).
+
+    // The CPSR register (bits 15:0) specify current line of TFT controller.
+    uint16_t curr = (uint16_t)(LTDC->CPSR & LTDC_CPSR_CYPOS_Msk);
+    uint16_t backPorchY = (uint16_t)(LTDC->BPCR & LTDC_BPCR_AVBP_Msk) + 1;
+
+    // The semantics of the getTFTCurrentLine() function is to return a value
+    // in the range of 0-totalheight. If we are still in back porch area, return 0.
+    return (curr < backPorchY) ? 0 : (curr - backPorchY);
+}
+
 void TouchGFXGeneratedHAL::InvalidateCache()
 {
     // Because DMA2D access main memory directly, the DCache must be invalidated
@@ -138,19 +157,8 @@ extern "C"
 
         if (LTDC->LIPCR == lcd_int_active_line)
         {
-            GPIO::clear(GPIO::VSYNC_FREQ);
-
             //entering active area
             HAL_LTDC_ProgramLineEvent(hltdc, lcd_int_porch_line);
-        }
-        else
-        {
-            //exiting active area
-            HAL_LTDC_ProgramLineEvent(hltdc, lcd_int_active_line);
-
-            // Signal to the framework that display update has finished.
-            HAL::getInstance()->frontPorchEntered();
-
             HAL::getInstance()->vSync();
             OSWrappers::signalVSync();
 
@@ -159,6 +167,15 @@ extern "C"
             // any effect if already swapped.
             HAL::getInstance()->swapFrameBuffers();
             GPIO::set(GPIO::VSYNC_FREQ);
+        }
+        else
+        {
+            //exiting active area
+            HAL_LTDC_ProgramLineEvent(hltdc, lcd_int_active_line);
+
+            // Signal to the framework that display update has finished.
+            HAL::getInstance()->frontPorchEntered();
+            GPIO::clear(GPIO::VSYNC_FREQ);
         }
     }
 }

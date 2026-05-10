@@ -35,7 +35,6 @@ _rgblcd_dev rgblcddev;
 
 /* LTDC帧缓冲区 */
 uint16_t g_ltdc_lcd_framebuf[480 * 800] __attribute__((section(".EXTRAM")));
-uint16_t internal_test_buf[480][800] __attribute__((section(".noncacheable"), aligned(32)));
 /* 函数声明 */
 static uint16_t rgblcd_panelid_read(void);
 static uint8_t rgblcd_ltdc_clk_set(uint32_t clock);

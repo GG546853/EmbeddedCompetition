@@ -3,5 +3,5 @@
 ../../Drivers/STM32N6xx_HAL_Driver/Inc/stm32n6xx_ll_bus.h:3703:22:LL_APB5_GRP1_ForceReset	1
 ../../Drivers/STM32N6xx_HAL_Driver/Inc/stm32n6xx_ll_bus.h:3723:22:LL_APB5_GRP1_ReleaseReset	1
 ../Core/Src/dcmipp.c:30:6:MX_DCMIPP_Init	5
-../Core/Src/dcmipp.c:87:6:HAL_DCMIPP_MspInit	3
-../Core/Src/dcmipp.c:136:6:HAL_DCMIPP_MspDeInit	2
+../Core/Src/dcmipp.c:86:6:HAL_DCMIPP_MspInit	3
+../Core/Src/dcmipp.c:135:6:HAL_DCMIPP_MspDeInit	2

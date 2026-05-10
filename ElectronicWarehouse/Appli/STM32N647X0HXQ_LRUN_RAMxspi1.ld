@@ -187,6 +187,15 @@ SECTIONS
     __bss_end__ = _ebss;
   } >RAM
 
+  .framebuffer (NOLOAD) :
+  {
+    . = ALIGN(32);
+    _sfb = .;
+    . = . + 800 * 480 * 2; /* 预留 768KB 空间 */
+    . = ALIGN(32);
+    _efb = .;
+  } >RAM
+  
   /* User_heap_stack section, used to check that there is enough "RAM" Ram  type memory left */
   ._user_heap_stack :
   {

@@ -3,7 +3,7 @@ ElectronicWarehouse_Appli.elf:     file format elf32-littlearm
 
 Sections:
 Idx Name          Size      VMA       LMA       File off  Algn
-  0 .EXTRAM       000bb800  90000000  90000000  001ce000  2**2
+  0 .EXTRAM       000bb800  90000000  90000000  00112000  2**2
                   ALLOC
   1 .isr_vector   0000034c  34000400  34000400  00000400  2**0
                   CONTENTS, ALLOC, LOAD, READONLY, DATA
@@ -21,11 +21,11 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, ALLOC, LOAD, READONLY, DATA
   8 .version      0000000c  3411149c  3411149c  0011149c  2**0
                   CONTENTS, ALLOC, LOAD, READONLY, DATA
-  9 .ARM.extab    00000000  341114a8  341114a8  001cd0c0  2**0
+  9 .ARM.extab    00000000  341114a8  341114a8  001118c0  2**0
                   CONTENTS, READONLY
  10 .ARM          00000008  341114a8  341114a8  001114a8  2**2
                   CONTENTS, ALLOC, LOAD, READONLY, DATA
- 11 .preinit_array 00000000  341114b0  341cd0c0  001cd0c0  2**0
+ 11 .preinit_array 00000000  341114b0  341118c0  001118c0  2**0
                   CONTENTS, ALLOC, LOAD, DATA
  12 .init_array   00000014  341114b0  341114b0  001114b0  2**2
                   CONTENTS, ALLOC, LOAD, READONLY, DATA
@@ -37,35 +37,37 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, ALLOC, LOAD, DATA
  16 TouchGFX_ScratchbufferB 00000100  341117a0  341117a0  001117a0  2**5
                   CONTENTS, ALLOC, LOAD, DATA
- 17 .noncacheable 000bb800  341118a0  341118a0  001118a0  2**5
-                  CONTENTS, ALLOC, LOAD, DATA
- 18 .gnu.sgstubs  00000020  341cd0a0  341cd0a0  001cd0a0  2**5
+ 17 .noncacheable 00000000  341118a0  341118a0  001118c0  2**0
+                  CONTENTS
+ 18 .gnu.sgstubs  00000020  341118a0  341118a0  001118a0  2**5
                   CONTENTS, ALLOC, LOAD, READONLY, CODE
- 19 .bss          00008934  341cd0c0  341cd0c0  001cd0c0  2**3
+ 19 .bss          00008934  341118c0  341118c0  001118c0  2**3
                   ALLOC
- 20 ._user_heap_stack 00004004  341d59f4  341d59f4  001cd0c0  2**0
+ 20 .framebuffer  000bb80c  3411a1f4  3411a1f4  001118c0  2**0
                   ALLOC
- 21 .ARM.attributes 0000003a  00000000  00000000  001cd0c0  2**0
+ 21 ._user_heap_stack 00004000  341d5a00  341d5a00  001118c0  2**0
+                  ALLOC
+ 22 .ARM.attributes 0000003a  00000000  00000000  001118c0  2**0
                   CONTENTS, READONLY
- 22 .debug_info   000c42b9  00000000  00000000  001cd0fa  2**0
+ 23 .debug_info   000c4287  00000000  00000000  001118fa  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 23 .debug_abbrev 000143ee  00000000  00000000  002913b3  2**0
+ 24 .debug_abbrev 000143cf  00000000  00000000  001d5b81  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 24 .debug_aranges 00005638  00000000  00000000  002a57a8  2**3
+ 25 .debug_aranges 00005638  00000000  00000000  001e9f50  2**3
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 25 .debug_rnglists 00004117  00000000  00000000  002aade0  2**0
+ 26 .debug_rnglists 00004117  00000000  00000000  001ef588  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 26 .debug_macro  000185a7  00000000  00000000  002aeef7  2**0
+ 27 .debug_macro  000185a7  00000000  00000000  001f369f  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 27 .debug_line   00065682  00000000  00000000  002c749e  2**0
+ 28 .debug_line   00065682  00000000  00000000  0020bc46  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 28 .debug_str    00261ac4  00000000  00000000  0032cb20  2**0
+ 29 .debug_str    00261ab2  00000000  00000000  002712c8  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 29 .comment      00000105  00000000  00000000  0058e5e4  2**0
+ 30 .comment      00000105  00000000  00000000  004d2d7a  2**0
                   CONTENTS, READONLY
- 30 .debug_frame  00017de0  00000000  00000000  0058e6ec  2**2
+ 31 .debug_frame  00017de0  00000000  00000000  004d2e80  2**2
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 31 .debug_line_str 00000074  00000000  00000000  005a64cc  2**0
+ 32 .debug_line_str 00000074  00000000  00000000  004eac60  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
 
 Disassembly of section .text:
@@ -82,7 +84,7 @@ Disassembly of section .text:
 34000762:	2301      	movs	r3, #1
 34000764:	7023      	strb	r3, [r4, #0]
 34000766:	bd10      	pop	{r4, pc}
-34000768:	341cd0c0 	.word	0x341cd0c0
+34000768:	341118c0 	.word	0x341118c0
 3400076c:	00000000 	.word	0x00000000
 34000770:	340392b4 	.word	0x340392b4
 
@@ -95,7 +97,7 @@ Disassembly of section .text:
 3400077e:	f3af 8000 	nop.w
 34000782:	bd08      	pop	{r3, pc}
 34000784:	00000000 	.word	0x00000000
-34000788:	341cd0c4 	.word	0x341cd0c4
+34000788:	341118c4 	.word	0x341118c4
 3400078c:	340392b4 	.word	0x340392b4
 
 34000790 <vsvAKZpqpB>:
@@ -477,7 +479,7 @@ Disassembly of section .text:
 34000c96:	b010      	add	sp, #64	@ 0x40
 34000c98:	bd10      	pop	{r4, pc}
 34000c9a:	bf00      	nop
-34000c9c:	341cd0e0 	.word	0x341cd0e0
+34000c9c:	341118e0 	.word	0x341118e0
 34000ca0:	3411149c 	.word	0x3411149c
 34000ca4:	3403af24 	.word	0x3403af24
 
@@ -983,7 +985,7 @@ Disassembly of section .text:
 340012aa:	4620      	mov	r0, r4
 340012ac:	b010      	add	sp, #64	@ 0x40
 340012ae:	bd10      	pop	{r4, pc}
-340012b0:	341cd3b0 	.word	0x341cd3b0
+340012b0:	34111bb0 	.word	0x34111bb0
 340012b4:	341114a2 	.word	0x341114a2
 340012b8:	3403b577 	.word	0x3403b577
 
@@ -1761,13 +1763,13 @@ void MX_FREERTOS_Init(void) {
 340019fa:	bd80      	pop	{r7, pc}
 340019fc:	3403a23c 	.word	0x3403a23c
 34001a00:	34001a21 	.word	0x34001a21
-34001a04:	341cd418 	.word	0x341cd418
+34001a04:	34111c18 	.word	0x34111c18
 34001a08:	3403a1f4 	.word	0x3403a1f4
 34001a0c:	34001949 	.word	0x34001949
-34001a10:	341cd410 	.word	0x341cd410
+34001a10:	34111c10 	.word	0x34111c10
 34001a14:	3403a218 	.word	0x3403a218
 34001a18:	3400195d 	.word	0x3400195d
-34001a1c:	341cd414 	.word	0x341cd414
+34001a1c:	34111c14 	.word	0x34111c14
 
 34001a20 <StartDefaultTask>:
 * @param argument: Not used
@@ -1907,7 +1909,7 @@ void MX_CRC_Init(void)
 }
 34001ac4:	bf00      	nop
 34001ac6:	bd80      	pop	{r7, pc}
-34001ac8:	341cd41c 	.word	0x341cd41c
+34001ac8:	34111c1c 	.word	0x34111c1c
 34001acc:	56024c00 	.word	0x56024c00
 
 34001ad0 <HAL_CRC_MspInit>:
@@ -2195,7 +2197,7 @@ void MX_DCMIPP_Init(void)
 34001c4a:	46bd      	mov	sp, r7
 34001c4c:	bd80      	pop	{r7, pc}
 34001c4e:	bf00      	nop
-34001c50:	341cd440 	.word	0x341cd440
+34001c50:	34111c40 	.word	0x34111c40
 34001c54:	58002000 	.word	0x58002000
 
 34001c58 <HAL_DCMIPP_MspInit>:
@@ -2424,7 +2426,7 @@ void MX_DMA2D_Init(void)
 }
 34001dc8:	bf00      	nop
 34001dca:	bd80      	pop	{r7, pc}
-34001dcc:	341cd44c 	.word	0x341cd44c
+34001dcc:	34111c4c 	.word	0x34111c4c
 34001dd0:	58021000 	.word	0x58021000
 
 34001dd4 <HAL_DMA2D_MspInit>:
@@ -2918,7 +2920,7 @@ void MX_I2C2_Init(void)
 340020aa:	bf00      	nop
 340020ac:	bd80      	pop	{r7, pc}
 340020ae:	bf00      	nop
-340020b0:	341cd4b4 	.word	0x341cd4b4
+340020b0:	34111cb4 	.word	0x34111cb4
 340020b4:	50005800 	.word	0x50005800
 340020b8:	10707dbc 	.word	0x10707dbc
 
@@ -3015,7 +3017,7 @@ void MX_I2C4_Init(void)
 3400212a:	bf00      	nop
 3400212c:	bd80      	pop	{r7, pc}
 3400212e:	bf00      	nop
-34002130:	341cd508 	.word	0x341cd508
+34002130:	34111d08 	.word	0x34111d08
 34002134:	56001c00 	.word	0x56001c00
 34002138:	10707dbc 	.word	0x10707dbc
 
@@ -3425,7 +3427,7 @@ void MX_LTDC_Init(void)
 3400240e:	46bd      	mov	sp, r7
 34002410:	bd80      	pop	{r7, pc}
 34002412:	bf00      	nop
-34002414:	341cd55c 	.word	0x341cd55c
+34002414:	34111d5c 	.word	0x34111d5c
 34002418:	58001000 	.word	0x58001000
 
 3400241c <HAL_LTDC_MspInit>:
@@ -4132,11 +4134,11 @@ __STATIC_FORCEINLINE void __DSB(void)
 34002872:	bf00      	nop
 34002874:	e000ed00 	.word	0xe000ed00
 34002878:	34000400 	.word	0x34000400
-3400287c:	341cd784 	.word	0x341cd784
-34002880:	341cd604 	.word	0x341cd604
-34002884:	341cd7e8 	.word	0x341cd7e8
-34002888:	341cd624 	.word	0x341cd624
-3400288c:	341cd41c 	.word	0x341cd41c
+3400287c:	34111f84 	.word	0x34111f84
+34002880:	34111e04 	.word	0x34111e04
+34002884:	34111fe8 	.word	0x34111fe8
+34002888:	34111e24 	.word	0x34111e24
+3400288c:	34111c1c 	.word	0x34111c1c
 34002890:	56024c00 	.word	0x56024c00
 34002894:	56021800 	.word	0x56021800
 
@@ -4702,8 +4704,8 @@ CMSE_NS_ENTRY void SECURE_RegisterCallback(SECURE_CallbackIDTypeDef CallbackId, 
 34002cd6:	e89f 900f 	clrm	{r0, r1, r2, r3, ip, APSR}
 34002cda:	ecfd cf81 	vldr	FPCXTNS, [sp], #4
 34002cde:	4774      	bxns	lr
-34002ce0:	341cd698 	.word	0x341cd698
-34002ce4:	341cd69c 	.word	0x341cd69c
+34002ce0:	34111e98 	.word	0x34111e98
+34002ce4:	34111e9c 	.word	0x34111e9c
 
 34002ce8 <HAL_MspInit>:
 /* USER CODE END 0 */
@@ -4865,7 +4867,7 @@ HAL_StatusTypeDef HAL_InitTick(uint32_t TickPriority)
 34002da0:	46bd      	mov	sp, r7
 34002da2:	bd80      	pop	{r7, pc}
 34002da4:	431bde83 	.word	0x431bde83
-34002da8:	341cd6a0 	.word	0x341cd6a0
+34002da8:	34111ea0 	.word	0x34111ea0
 34002dac:	50001000 	.word	0x50001000
 
 34002db0 <NMI_Handler>:
@@ -5010,7 +5012,7 @@ void DCMIPP_IRQHandler(void)
 34002dfa:	bf00      	nop
 34002dfc:	bd80      	pop	{r7, pc}
 34002dfe:	bf00      	nop
-34002e00:	341cd440 	.word	0x341cd440
+34002e00:	34111c40 	.word	0x34111c40
 
 34002e04 <DMA2D_IRQHandler>:
 
@@ -5034,7 +5036,7 @@ void DMA2D_IRQHandler(void)
 34002e0e:	bf00      	nop
 34002e10:	bd80      	pop	{r7, pc}
 34002e12:	bf00      	nop
-34002e14:	341cd44c 	.word	0x341cd44c
+34002e14:	34111c4c 	.word	0x34111c4c
 
 34002e18 <TIM6_IRQHandler>:
 
@@ -5058,7 +5060,7 @@ void TIM6_IRQHandler(void)
 34002e22:	bf00      	nop
 34002e24:	bd80      	pop	{r7, pc}
 34002e26:	bf00      	nop
-34002e28:	341cd6a0 	.word	0x341cd6a0
+34002e28:	34111ea0 	.word	0x34111ea0
 
 34002e2c <USART1_IRQHandler>:
 
@@ -5082,7 +5084,7 @@ void USART1_IRQHandler(void)
 34002e36:	bf00      	nop
 34002e38:	bd80      	pop	{r7, pc}
 34002e3a:	bf00      	nop
-34002e3c:	341cd6f0 	.word	0x341cd6f0
+34002e3c:	34111ef0 	.word	0x34111ef0
 
 34002e40 <_getpid>:
 void initialise_monitor_handles()
@@ -5388,8 +5390,8 @@ void *_sbrk(ptrdiff_t incr)
 34002fba:	bd80      	pop	{r7, pc}
 34002fbc:	34200000 	.word	0x34200000
 34002fc0:	00002000 	.word	0x00002000
-34002fc4:	341cd6ec 	.word	0x341cd6ec
-34002fc8:	341d59f8 	.word	0x341d59f8
+34002fc4:	34111eec 	.word	0x34111eec
+34002fc8:	341d5a00 	.word	0x341d5a00
 
 34002fcc <TZ_SAU_Setup>:
   \brief   Setup a SAU Region
@@ -6179,7 +6181,7 @@ void MX_USART1_UART_Init(void)
 }
 34003510:	bf00      	nop
 34003512:	bd80      	pop	{r7, pc}
-34003514:	341cd6f0 	.word	0x341cd6f0
+34003514:	34111ef0 	.word	0x34111ef0
 34003518:	52001000 	.word	0x52001000
 
 3400351c <HAL_UART_MspInit>:
@@ -6513,7 +6515,7 @@ void MX_XSPI1_Init(void)
 34003732:	3720      	adds	r7, #32
 34003734:	46bd      	mov	sp, r7
 34003736:	bd80      	pop	{r7, pc}
-34003738:	341cd784 	.word	0x341cd784
+34003738:	34111f84 	.word	0x34111f84
 3400373c:	58025000 	.word	0x58025000
 
 34003740 <MX_XSPI2_Init>:
@@ -6644,7 +6646,7 @@ void MX_XSPI2_Init(void)
 340037ea:	46bd      	mov	sp, r7
 340037ec:	bd80      	pop	{r7, pc}
 340037ee:	bf00      	nop
-340037f0:	341cd7e8 	.word	0x341cd7e8
+340037f0:	34111fe8 	.word	0x34111fe8
 340037f4:	5802a000 	.word	0x5802a000
 
 340037f8 <HAL_XSPI_MspInit>:
@@ -6887,7 +6889,7 @@ void HAL_XSPI_MspInit(XSPI_HandleTypeDef* xspiHandle)
 340039d2:	bd80      	pop	{r7, pc}
 340039d4:	58025000 	.word	0x58025000
 340039d8:	03030014 	.word	0x03030014
-340039dc:	341cd84c 	.word	0x341cd84c
+340039dc:	3411204c 	.word	0x3411204c
 340039e0:	56023c00 	.word	0x56023c00
 340039e4:	56023800 	.word	0x56023800
 340039e8:	5802a000 	.word	0x5802a000
@@ -6994,9 +6996,9 @@ LoopForever:
   ldr r2, =_sidata
 34003a44:	341114cc 	.word	0x341114cc
   ldr r2, =_sbss
-34003a48:	341cd0c0 	.word	0x341cd0c0
+34003a48:	341118c0 	.word	0x341118c0
   ldr r4, =_ebss
-34003a4c:	341d59f4 	.word	0x341d59f4
+34003a4c:	3411a1f4 	.word	0x3411a1f4
 
 34003a50 <ADC1_2_IRQHandler>:
  * @retval : None
@@ -8719,15 +8721,15 @@ uint8_t imx335_init(void)
 340043f8:	34004675 	.word	0x34004675
 340043fc:	340046bd 	.word	0x340046bd
 34004400:	34004711 	.word	0x34004711
-34004404:	341cd854 	.word	0x341cd854
+34004404:	34112054 	.word	0x34112054
 34004408:	34004721 	.word	0x34004721
 3400440c:	34004745 	.word	0x34004745
 34004410:	34004771 	.word	0x34004771
 34004414:	34004795 	.word	0x34004795
 34004418:	340047c1 	.word	0x340047c1
 3400441c:	341114d4 	.word	0x341114d4
-34004420:	341cd440 	.word	0x341cd440
-34004424:	341cd87c 	.word	0x341cd87c
+34004420:	34111c40 	.word	0x34111c40
+34004424:	3411207c 	.word	0x3411207c
 
 34004428 <imx335_start_capture>:
  * @retval  启动结果
@@ -8769,8 +8771,8 @@ uint8_t imx335_start_capture(uint32_t address)
 34004456:	46bd      	mov	sp, r7
 34004458:	bd80      	pop	{r7, pc}
 3400445a:	bf00      	nop
-3400445c:	341cd850 	.word	0x341cd850
-34004460:	341cd440 	.word	0x341cd440
+3400445c:	34112050 	.word	0x34112050
+34004460:	34111c40 	.word	0x34111c40
 
 34004464 <imx335_isp_background_process>:
  * @retval  处理结果
@@ -8799,7 +8801,7 @@ uint8_t imx335_isp_background_process(void)
 3400447a:	4618      	mov	r0, r3
 3400447c:	bd80      	pop	{r7, pc}
 3400447e:	bf00      	nop
-34004480:	341cd87c 	.word	0x341cd87c
+34004480:	3411207c 	.word	0x3411207c
 
 34004484 <imx335_dcmipp_pipe_frame_cb>:
  * @param   pHdcmipp: DCMIPP句柄指针
@@ -8828,7 +8830,7 @@ void imx335_dcmipp_pipe_frame_cb(DCMIPP_HandleTypeDef *hdcmipp, uint32_t pipe)
 3400449c:	46bd      	mov	sp, r7
 3400449e:	f85d 7b04 	ldr.w	r7, [sp], #4
 340044a2:	4770      	bx	lr
-340044a4:	341cd850 	.word	0x341cd850
+340044a4:	34112050 	.word	0x34112050
 
 340044a8 <imx335_dcmipp_pipe_vsync_cb>:
  * @param   pHdcmipp: DCMIPP句柄指针
@@ -8888,7 +8890,7 @@ void imx335_dcmipp_pipe_vsync_cb(DCMIPP_HandleTypeDef *hdcmipp, uint32_t pipe)
 340044ee:	46bd      	mov	sp, r7
 340044f0:	bd80      	pop	{r7, pc}
 340044f2:	bf00      	nop
-340044f4:	341cd87c 	.word	0x341cd87c
+340044f4:	3411207c 	.word	0x3411207c
 
 340044f8 <imx335_dcmipp_init>:
  * @retval  初始化结果
@@ -9106,7 +9108,7 @@ static uint8_t imx335_dcmipp_init(void)
 34004644:	46bd      	mov	sp, r7
 34004646:	bd80      	pop	{r7, pc}
 34004648:	56021800 	.word	0x56021800
-3400464c:	341cd440 	.word	0x341cd440
+3400464c:	34111c40 	.word	0x34111c40
 34004650:	58002000 	.word	0x58002000
 
 34004654 <imx335_io_init>:
@@ -9189,7 +9191,7 @@ static int32_t imx335_io_writereg(uint16_t dev_addr, uint16_t reg, uint8_t *data
 340046b2:	3710      	adds	r7, #16
 340046b4:	46bd      	mov	sp, r7
 340046b6:	bd80      	pop	{r7, pc}
-340046b8:	341cd4b4 	.word	0x341cd4b4
+340046b8:	34111cb4 	.word	0x34111cb4
 
 340046bc <imx335_io_readreg>:
  * @param   data: 数据
@@ -9250,7 +9252,7 @@ static int32_t imx335_io_readreg(uint16_t dev_addr, uint16_t reg, uint8_t *data,
 34004706:	46bd      	mov	sp, r7
 34004708:	bd80      	pop	{r7, pc}
 3400470a:	bf00      	nop
-3400470c:	341cd4b4 	.word	0x341cd4b4
+3400470c:	34111cb4 	.word	0x34111cb4
 
 34004710 <imx335_io_gettick>:
  * @brief   IMX335 IO获取Tick
@@ -9295,7 +9297,7 @@ static ISP_StatusTypeDef imx335_get_sensor_info_helper(uint32_t instance, ISP_Se
 3400473a:	46bd      	mov	sp, r7
 3400473c:	bd80      	pop	{r7, pc}
 3400473e:	bf00      	nop
-34004740:	341cd854 	.word	0x341cd854
+34004740:	34112054 	.word	0x34112054
 
 34004744 <imx335_set_sensor_gain_helper>:
  * @param   instance: 对象
@@ -9326,8 +9328,8 @@ static ISP_StatusTypeDef imx335_set_sensor_gain_helper(uint32_t instance, int32_
 34004762:	3708      	adds	r7, #8
 34004764:	46bd      	mov	sp, r7
 34004766:	bd80      	pop	{r7, pc}
-34004768:	341cd904 	.word	0x341cd904
-3400476c:	341cd854 	.word	0x341cd854
+34004768:	34112104 	.word	0x34112104
+3400476c:	34112054 	.word	0x34112054
 
 34004770 <imx335_get_sensor_gain_helper>:
  * @param   instance: 对象
@@ -9356,7 +9358,7 @@ static ISP_StatusTypeDef imx335_get_sensor_gain_helper(uint32_t instance, int32_
 34004788:	46bd      	mov	sp, r7
 3400478a:	f85d 7b04 	ldr.w	r7, [sp], #4
 3400478e:	4770      	bx	lr
-34004790:	341cd904 	.word	0x341cd904
+34004790:	34112104 	.word	0x34112104
 
 34004794 <imx335_set_sensor_exposure_helper>:
  * @param   instance: 对象
@@ -9387,8 +9389,8 @@ static ISP_StatusTypeDef imx335_set_sensor_exposure_helper(uint32_t instance, in
 340047b2:	3708      	adds	r7, #8
 340047b4:	46bd      	mov	sp, r7
 340047b6:	bd80      	pop	{r7, pc}
-340047b8:	341cd908 	.word	0x341cd908
-340047bc:	341cd854 	.word	0x341cd854
+340047b8:	34112108 	.word	0x34112108
+340047bc:	34112054 	.word	0x34112054
 
 340047c0 <imx335_get_sensor_exposure_helper>:
  * @param   instance: 对象
@@ -9417,7 +9419,7 @@ static ISP_StatusTypeDef imx335_get_sensor_exposure_helper(uint32_t instance, in
 340047d8:	46bd      	mov	sp, r7
 340047da:	f85d 7b04 	ldr.w	r7, [sp], #4
 340047de:	4770      	bx	lr
-340047e0:	341cd908 	.word	0x341cd908
+340047e0:	34112108 	.word	0x34112108
 
 340047e4 <NORFlash_Init>:
 #include "norflash_mx25um25645g.h"
@@ -11900,8 +11902,8 @@ void rgblcd_init(void)
 34005708:	4804      	ldr	r0, [pc, #16]	@ (3400571c <rgblcd_init+0x290>)
 3400570a:	f000 f9f3 	bl	34005af4 <rgblcd_ltdc_clk_set>
 3400570e:	e02a      	b.n	34005766 <rgblcd_init+0x2da>
-34005710:	341cd90c 	.word	0x341cd90c
-34005714:	341cd55c 	.word	0x341cd55c
+34005710:	3411210c 	.word	0x3411210c
+34005714:	34111d5c 	.word	0x34111d5c
 34005718:	00895440 	.word	0x00895440
 3400571c:	01fca055 	.word	0x01fca055
     }
@@ -12029,11 +12031,11 @@ void rgblcd_init(void)
 340057e6:	46bd      	mov	sp, r7
 340057e8:	bd80      	pop	{r7, pc}
 340057ea:	bf00      	nop
-340057ec:	341cd90c 	.word	0x341cd90c
+340057ec:	3411210c 	.word	0x3411210c
 340057f0:	02625a00 	.word	0x02625a00
 340057f4:	01fca055 	.word	0x01fca055
 340057f8:	02aea540 	.word	0x02aea540
-340057fc:	341cd55c 	.word	0x341cd55c
+340057fc:	34111d5c 	.word	0x34111d5c
 34005800:	90000000 	.word	0x90000000
 34005804:	56020000 	.word	0x56020000
 
@@ -12097,7 +12099,7 @@ void rgblcd_display_dir(uint8_t dir)
 34005850:	f85d 7b04 	ldr.w	r7, [sp], #4
 34005854:	4770      	bx	lr
 34005856:	bf00      	nop
-34005858:	341cd90c 	.word	0x341cd90c
+34005858:	3411210c 	.word	0x3411210c
 
 3400585c <rgblcd_fill>:
  * @param   ey: 指定区域的结束Y坐标
@@ -12261,8 +12263,8 @@ void rgblcd_fill(uint16_t sx, uint16_t sy, uint16_t ex, uint16_t ey, uint16_t co
 3400596a:	3714      	adds	r7, #20
 3400596c:	46bd      	mov	sp, r7
 3400596e:	bd90      	pop	{r4, r7, pc}
-34005970:	341cd90c 	.word	0x341cd90c
-34005974:	341cd44c 	.word	0x341cd44c
+34005970:	3411210c 	.word	0x3411210c
+34005974:	34111c4c 	.word	0x34111c4c
 34005978:	90000000 	.word	0x90000000
 
 3400597c <rgblcd_clear>:
@@ -12297,7 +12299,7 @@ void rgblcd_clear(uint16_t color)
 340059a6:	3708      	adds	r7, #8
 340059a8:	46bd      	mov	sp, r7
 340059aa:	bd80      	pop	{r7, pc}
-340059ac:	341cd90c 	.word	0x341cd90c
+340059ac:	3411210c 	.word	0x3411210c
 
 340059b0 <rgblcd_panelid_read>:
  * @brief   读取RGB LCD ID
@@ -12752,7 +12754,7 @@ int __io_putchar(int ch)
 34005cbe:	3708      	adds	r7, #8
 34005cc0:	46bd      	mov	sp, r7
 34005cc2:	bd80      	pop	{r7, pc}
-34005cc4:	341cd6f0 	.word	0x341cd6f0
+34005cc4:	34111ef0 	.word	0x34111ef0
 
 34005cc8 <HAL_Init>:
   *         each 1ms in the SysTick_Handler() interrupt handler.
@@ -12821,7 +12823,7 @@ __weak void HAL_IncTick(void)
 34005d0c:	4770      	bx	lr
 34005d0e:	bf00      	nop
 34005d10:	341114dc 	.word	0x341114dc
-34005d14:	341cd92c 	.word	0x341cd92c
+34005d14:	3411212c 	.word	0x3411212c
 
 34005d18 <HAL_GetTick>:
   * @note This function is declared as __weak to be overwritten in case of other
@@ -12841,7 +12843,7 @@ __weak uint32_t HAL_GetTick(void)
 34005d24:	f85d 7b04 	ldr.w	r7, [sp], #4
 34005d28:	4770      	bx	lr
 34005d2a:	bf00      	nop
-34005d2c:	341cd92c 	.word	0x341cd92c
+34005d2c:	3411212c 	.word	0x3411212c
 
 34005d30 <HAL_Delay>:
   *       implementations in user file.
@@ -58363,7 +58365,7 @@ osStatus_t osKernelInitialize (void) {
 34018126:	3708      	adds	r7, #8
 34018128:	46bd      	mov	sp, r7
 3401812a:	bd80      	pop	{r7, pc}
-3401812c:	341cd930 	.word	0x341cd930
+3401812c:	34112130 	.word	0x34112130
 
 34018130 <osKernelStart>:
 }
@@ -58432,7 +58434,7 @@ osStatus_t osKernelStart (void) {
 3401817a:	3708      	adds	r7, #8
 3401817c:	46bd      	mov	sp, r7
 3401817e:	bd80      	pop	{r7, pc}
-34018180:	341cd930 	.word	0x341cd930
+34018180:	34112130 	.word	0x34112130
 
 34018184 <osThreadNew>:
   Limitations:
@@ -59428,8 +59430,8 @@ __WEAK void vApplicationGetIdleTaskMemory (StaticTask_t **ppxIdleTaskTCBBuffer, 
 340186b8:	f85d 7b04 	ldr.w	r7, [sp], #4
 340186bc:	4770      	bx	lr
 340186be:	bf00      	nop
-340186c0:	341cd934 	.word	0x341cd934
-340186c4:	341cd994 	.word	0x341cd994
+340186c0:	34112134 	.word	0x34112134
+340186c4:	34112194 	.word	0x34112194
 
 340186c8 <vApplicationGetTimerTaskMemory>:
 
@@ -59467,8 +59469,8 @@ __WEAK void vApplicationGetTimerTaskMemory (StaticTask_t **ppxTimerTaskTCBBuffer
 340186ec:	f85d 7b04 	ldr.w	r7, [sp], #4
 340186f0:	4770      	bx	lr
 340186f2:	bf00      	nop
-340186f4:	341cdb94 	.word	0x341cdb94
-340186f8:	341cdbf4 	.word	0x341cdbf4
+340186f4:	34112394 	.word	0x34112394
+340186f8:	341123f4 	.word	0x341123f4
 
 340186fc <vListInitialise>:
 /*-----------------------------------------------------------
@@ -60428,8 +60430,8 @@ BaseType_t xPortStartScheduler( void ) /* PRIVILEGED_FUNCTION */
 34018ba0:	bd80      	pop	{r7, pc}
 34018ba2:	bf00      	nop
 34018ba4:	e000ed1c 	.word	0xe000ed1c
-34018ba8:	341cddf4 	.word	0x341cddf4
-34018bac:	341cddf8 	.word	0x341cddf8
+34018ba8:	341125f4 	.word	0x341125f4
+34018bac:	341125f8 	.word	0x341125f8
 34018bb0:	e000ed20 	.word	0xe000ed20
 34018bb4:	341114e0 	.word	0x341114e0
 
@@ -60501,9 +60503,9 @@ BaseType_t xPortStartScheduler( void ) /* PRIVILEGED_FUNCTION */
 34018c04:	bd80      	pop	{r7, pc}
 34018c06:	bf00      	nop
 34018c08:	e000e3f0 	.word	0xe000e3f0
-34018c0c:	341cddf4 	.word	0x341cddf4
+34018c0c:	341125f4 	.word	0x341125f4
 34018c10:	e000ed0c 	.word	0xe000ed0c
-34018c14:	341cddf8 	.word	0x341cddf8
+34018c14:	341125f8 	.word	0x341125f8
 	...
 
 34018c20 <vRestoreContextOfFirstTask>:
@@ -60531,7 +60533,7 @@ BaseType_t xPortStartScheduler( void ) /* PRIVILEGED_FUNCTION */
 34018c4c:	f3af 8000 	nop.w
 
 34018c50 <pxCurrentTCBConst2>:
-34018c50:	341cde3c 	.word	0x341cde3c
+34018c50:	3411263c 	.word	0x3411263c
             "   bx   r2                                         \n" /* Finally, branch to EXC_RETURN. */
             "                                                   \n"
             "   .align 4                                        \n"
@@ -60651,7 +60653,7 @@ void vClearInterruptMask( __attribute__( ( unused ) ) uint32_t ulMask ) /* __att
 34018d1c:	f3af 8000 	nop.w
 
 34018d20 <pxCurrentTCBConst>:
-34018d20:	341cde3c 	.word	0x341cde3c
+34018d20:	3411263c 	.word	0x3411263c
             "                                                   \n"
             "   .align 4                                        \n"
             "pxCurrentTCBConst: .word pxCurrentTCB              \n"
@@ -63302,7 +63304,7 @@ static BaseType_t prvIsQueueFull( const Queue_t * pxQueue )
 34019a02:	46bd      	mov	sp, r7
 34019a04:	bd80      	pop	{r7, pc}
 34019a06:	bf00      	nop
-34019a08:	341cddfc 	.word	0x341cddfc
+34019a08:	341125fc 	.word	0x341125fc
 
 34019a0c <vQueueUnregisterQueue>:
 /*-----------------------------------------------------------*/
@@ -63380,7 +63382,7 @@ static BaseType_t prvIsQueueFull( const Queue_t * pxQueue )
 34019a62:	46bd      	mov	sp, r7
 34019a64:	bd80      	pop	{r7, pc}
 34019a66:	bf00      	nop
-34019a68:	341cddfc 	.word	0x341cddfc
+34019a68:	341125fc 	.word	0x341125fc
 
 34019a6c <vQueueWaitForMessageRestricted>:
 #if ( configUSE_TIMERS == 1 )
@@ -64115,12 +64117,12 @@ static void prvAddNewTaskToReadyList( TCB_t * pxNewTCB )
 34019e0a:	46bd      	mov	sp, r7
 34019e0c:	bd80      	pop	{r7, pc}
 34019e0e:	bf00      	nop
-34019e10:	341ce310 	.word	0x341ce310
-34019e14:	341cde3c 	.word	0x341cde3c
-34019e18:	341ce31c 	.word	0x341ce31c
-34019e1c:	341ce32c 	.word	0x341ce32c
-34019e20:	341ce318 	.word	0x341ce318
-34019e24:	341cde40 	.word	0x341cde40
+34019e10:	34112b10 	.word	0x34112b10
+34019e14:	3411263c 	.word	0x3411263c
+34019e18:	34112b1c 	.word	0x34112b1c
+34019e1c:	34112b2c 	.word	0x34112b2c
+34019e20:	34112b18 	.word	0x34112b18
+34019e24:	34112640 	.word	0x34112640
 
 34019e28 <vTaskDelay>:
 /*-----------------------------------------------------------*/
@@ -64189,7 +64191,7 @@ static void prvAddNewTaskToReadyList( TCB_t * pxNewTCB )
 34019e6a:	46bd      	mov	sp, r7
 34019e6c:	bd80      	pop	{r7, pc}
 34019e6e:	bf00      	nop
-34019e70:	341ce338 	.word	0x341ce338
+34019e70:	34112b38 	.word	0x34112b38
 
 34019e74 <vTaskStartScheduler>:
 
@@ -64348,10 +64350,10 @@ void vTaskStartScheduler( void )
 34019f12:	bf00      	nop
 34019f14:	34039508 	.word	0x34039508
 34019f18:	3401a7f9 	.word	0x3401a7f9
-34019f1c:	341ce334 	.word	0x341ce334
-34019f20:	341ce330 	.word	0x341ce330
-34019f24:	341ce31c 	.word	0x341ce31c
-34019f28:	341ce314 	.word	0x341ce314
+34019f1c:	34112b34 	.word	0x34112b34
+34019f20:	34112b30 	.word	0x34112b30
+34019f24:	34112b1c 	.word	0x34112b1c
+34019f28:	34112b14 	.word	0x34112b14
 34019f2c:	3403a6e8 	.word	0x3403a6e8
 
 34019f30 <vTaskSuspendAll>:
@@ -64383,7 +64385,7 @@ void vTaskSuspendAll( void )
 34019f40:	46bd      	mov	sp, r7
 34019f42:	f85d 7b04 	ldr.w	r7, [sp], #4
 34019f46:	4770      	bx	lr
-34019f48:	341ce338 	.word	0x341ce338
+34019f48:	34112b38 	.word	0x34112b38
 
 34019f4c <xTaskResumeAll>:
 
@@ -64697,14 +64699,14 @@ BaseType_t xTaskResumeAll( void )
 3401a102:	46bd      	mov	sp, r7
 3401a104:	bd80      	pop	{r7, pc}
 3401a106:	bf00      	nop
-3401a108:	341ce338 	.word	0x341ce338
-3401a10c:	341ce310 	.word	0x341ce310
-3401a110:	341ce2d0 	.word	0x341ce2d0
-3401a114:	341ce318 	.word	0x341ce318
-3401a118:	341cde40 	.word	0x341cde40
-3401a11c:	341cde3c 	.word	0x341cde3c
-3401a120:	341ce324 	.word	0x341ce324
-3401a124:	341ce320 	.word	0x341ce320
+3401a108:	34112b38 	.word	0x34112b38
+3401a10c:	34112b10 	.word	0x34112b10
+3401a110:	34112ad0 	.word	0x34112ad0
+3401a114:	34112b18 	.word	0x34112b18
+3401a118:	34112640 	.word	0x34112640
+3401a11c:	3411263c 	.word	0x3411263c
+3401a120:	34112b24 	.word	0x34112b24
+3401a124:	34112b20 	.word	0x34112b20
 
 3401a128 <xTaskGetTickCount>:
 /*-----------------------------------------------------------*/
@@ -64735,7 +64737,7 @@ TickType_t xTaskGetTickCount( void )
 3401a13c:	f85d 7b04 	ldr.w	r7, [sp], #4
 3401a140:	4770      	bx	lr
 3401a142:	bf00      	nop
-3401a144:	341ce314 	.word	0x341ce314
+3401a144:	34112b14 	.word	0x34112b14
 
 3401a148 <uxTaskGetNumberOfTasks>:
     return xReturn;
@@ -64757,7 +64759,7 @@ UBaseType_t uxTaskGetNumberOfTasks( void )
 3401a154:	f85d 7b04 	ldr.w	r7, [sp], #4
 3401a158:	4770      	bx	lr
 3401a15a:	bf00      	nop
-3401a15c:	341ce310 	.word	0x341ce310
+3401a15c:	34112b10 	.word	0x34112b10
 
 3401a160 <xTaskIncrementTick>:
 
@@ -65120,17 +65122,17 @@ BaseType_t xTaskIncrementTick( void )
 3401a34e:	3720      	adds	r7, #32
 3401a350:	46bd      	mov	sp, r7
 3401a352:	bd80      	pop	{r7, pc}
-3401a354:	341ce338 	.word	0x341ce338
-3401a358:	341ce314 	.word	0x341ce314
-3401a35c:	341ce2c8 	.word	0x341ce2c8
-3401a360:	341ce2cc 	.word	0x341ce2cc
-3401a364:	341ce328 	.word	0x341ce328
-3401a368:	341ce330 	.word	0x341ce330
-3401a36c:	341ce318 	.word	0x341ce318
-3401a370:	341cde40 	.word	0x341cde40
-3401a374:	341cde3c 	.word	0x341cde3c
-3401a378:	341ce324 	.word	0x341ce324
-3401a37c:	341ce320 	.word	0x341ce320
+3401a354:	34112b38 	.word	0x34112b38
+3401a358:	34112b14 	.word	0x34112b14
+3401a35c:	34112ac8 	.word	0x34112ac8
+3401a360:	34112acc 	.word	0x34112acc
+3401a364:	34112b28 	.word	0x34112b28
+3401a368:	34112b30 	.word	0x34112b30
+3401a36c:	34112b18 	.word	0x34112b18
+3401a370:	34112640 	.word	0x34112640
+3401a374:	3411263c 	.word	0x3411263c
+3401a378:	34112b24 	.word	0x34112b24
+3401a37c:	34112b20 	.word	0x34112b20
 
 3401a380 <vTaskSwitchContext>:
 
@@ -65292,13 +65294,13 @@ void vTaskSwitchContext( void )
 3401a48e:	46bd      	mov	sp, r7
 3401a490:	bd80      	pop	{r7, pc}
 3401a492:	bf00      	nop
-3401a494:	341ce338 	.word	0x341ce338
-3401a498:	341ce324 	.word	0x341ce324
-3401a49c:	341ce340 	.word	0x341ce340
-3401a4a0:	341ce33c 	.word	0x341ce33c
-3401a4a4:	341cde3c 	.word	0x341cde3c
-3401a4a8:	341ce318 	.word	0x341ce318
-3401a4ac:	341cde40 	.word	0x341cde40
+3401a494:	34112b38 	.word	0x34112b38
+3401a498:	34112b24 	.word	0x34112b24
+3401a49c:	34112b40 	.word	0x34112b40
+3401a4a0:	34112b3c 	.word	0x34112b3c
+3401a4a4:	3411263c 	.word	0x3411263c
+3401a4a8:	34112b18 	.word	0x34112b18
+3401a4ac:	34112640 	.word	0x34112640
 
 3401a4b0 <vTaskPlaceOnEventList>:
 /*-----------------------------------------------------------*/
@@ -65341,7 +65343,7 @@ void vTaskPlaceOnEventList( List_t * const pxEventList,
 3401a4e2:	46bd      	mov	sp, r7
 3401a4e4:	bd80      	pop	{r7, pc}
 3401a4e6:	bf00      	nop
-3401a4e8:	341cde3c 	.word	0x341cde3c
+3401a4e8:	3411263c 	.word	0x3411263c
 
 3401a4ec <vTaskPlaceOnEventListRestricted>:
 #if ( configUSE_TIMERS == 1 )
@@ -65425,7 +65427,7 @@ void vTaskPlaceOnEventList( List_t * const pxEventList,
 3401a55e:	3718      	adds	r7, #24
 3401a560:	46bd      	mov	sp, r7
 3401a562:	bd80      	pop	{r7, pc}
-3401a564:	341cde3c 	.word	0x341cde3c
+3401a564:	3411263c 	.word	0x3411263c
 
 3401a568 <xTaskRemoveFromEventList>:
 
@@ -65665,12 +65667,12 @@ BaseType_t xTaskRemoveFromEventList( const List_t * const pxEventList )
 3401a6e6:	3720      	adds	r7, #32
 3401a6e8:	46bd      	mov	sp, r7
 3401a6ea:	bd80      	pop	{r7, pc}
-3401a6ec:	341ce338 	.word	0x341ce338
-3401a6f0:	341ce318 	.word	0x341ce318
-3401a6f4:	341cde40 	.word	0x341cde40
-3401a6f8:	341ce2d0 	.word	0x341ce2d0
-3401a6fc:	341cde3c 	.word	0x341cde3c
-3401a700:	341ce324 	.word	0x341ce324
+3401a6ec:	34112b38 	.word	0x34112b38
+3401a6f0:	34112b18 	.word	0x34112b18
+3401a6f4:	34112640 	.word	0x34112640
+3401a6f8:	34112ad0 	.word	0x34112ad0
+3401a6fc:	3411263c 	.word	0x3411263c
+3401a700:	34112b24 	.word	0x34112b24
 
 3401a704 <vTaskInternalSetTimeOutState>:
     taskEXIT_CRITICAL();
@@ -65700,8 +65702,8 @@ void vTaskInternalSetTimeOutState( TimeOut_t * const pxTimeOut )
 3401a720:	46bd      	mov	sp, r7
 3401a722:	f85d 7b04 	ldr.w	r7, [sp], #4
 3401a726:	4770      	bx	lr
-3401a728:	341ce328 	.word	0x341ce328
-3401a72c:	341ce314 	.word	0x341ce314
+3401a728:	34112b28 	.word	0x34112b28
+3401a72c:	34112b14 	.word	0x34112b14
 
 3401a730 <xTaskCheckForTimeOut>:
 /*-----------------------------------------------------------*/
@@ -65838,8 +65840,8 @@ BaseType_t xTaskCheckForTimeOut( TimeOut_t * const pxTimeOut,
 3401a7d2:	46bd      	mov	sp, r7
 3401a7d4:	bd80      	pop	{r7, pc}
 3401a7d6:	bf00      	nop
-3401a7d8:	341ce314 	.word	0x341ce314
-3401a7dc:	341ce328 	.word	0x341ce328
+3401a7d8:	34112b14 	.word	0x34112b14
+3401a7dc:	34112b28 	.word	0x34112b28
 
 3401a7e0 <vTaskMissedYield>:
 /*-----------------------------------------------------------*/
@@ -65857,7 +65859,7 @@ void vTaskMissedYield( void )
 3401a7ec:	46bd      	mov	sp, r7
 3401a7ee:	f85d 7b04 	ldr.w	r7, [sp], #4
 3401a7f2:	4770      	bx	lr
-3401a7f4:	341ce324 	.word	0x341ce324
+3401a7f4:	34112b24 	.word	0x34112b24
 
 3401a7f8 <prvIdleTask>:
  * void prvIdleTask( void *pvParameters );
@@ -65893,7 +65895,7 @@ static portTASK_FUNCTION( prvIdleTask, pvParameters )
         prvCheckTasksWaitingTermination();
 3401a810:	e7f6      	b.n	3401a800 <prvIdleTask+0x8>
 3401a812:	bf00      	nop
-3401a814:	341cde40 	.word	0x341cde40
+3401a814:	34112640 	.word	0x34112640
 
 3401a818 <prvInitialiseTaskLists>:
 
@@ -65973,14 +65975,14 @@ static void prvInitialiseTaskLists( void )
 3401a872:	46bd      	mov	sp, r7
 3401a874:	bd80      	pop	{r7, pc}
 3401a876:	bf00      	nop
-3401a878:	341cde40 	.word	0x341cde40
-3401a87c:	341ce2a0 	.word	0x341ce2a0
-3401a880:	341ce2b4 	.word	0x341ce2b4
-3401a884:	341ce2d0 	.word	0x341ce2d0
-3401a888:	341ce2e4 	.word	0x341ce2e4
-3401a88c:	341ce2fc 	.word	0x341ce2fc
-3401a890:	341ce2c8 	.word	0x341ce2c8
-3401a894:	341ce2cc 	.word	0x341ce2cc
+3401a878:	34112640 	.word	0x34112640
+3401a87c:	34112aa0 	.word	0x34112aa0
+3401a880:	34112ab4 	.word	0x34112ab4
+3401a884:	34112ad0 	.word	0x34112ad0
+3401a888:	34112ae4 	.word	0x34112ae4
+3401a88c:	34112afc 	.word	0x34112afc
+3401a890:	34112ac8 	.word	0x34112ac8
+3401a894:	34112acc 	.word	0x34112acc
 
 3401a898 <prvCheckTasksWaitingTermination>:
 /*-----------------------------------------------------------*/
@@ -66045,9 +66047,9 @@ static void prvCheckTasksWaitingTermination( void )
 3401a8e2:	46bd      	mov	sp, r7
 3401a8e4:	bd80      	pop	{r7, pc}
 3401a8e6:	bf00      	nop
-3401a8e8:	341ce2e4 	.word	0x341ce2e4
-3401a8ec:	341ce310 	.word	0x341ce310
-3401a8f0:	341ce2f8 	.word	0x341ce2f8
+3401a8e8:	34112ae4 	.word	0x34112ae4
+3401a8ec:	34112b10 	.word	0x34112b10
+3401a8f0:	34112af8 	.word	0x34112af8
 
 3401a8f4 <prvDeleteTCB>:
 /*-----------------------------------------------------------*/
@@ -66156,8 +66158,8 @@ static void prvResetNextTaskUnblockTime( void )
 3401a96c:	f85d 7b04 	ldr.w	r7, [sp], #4
 3401a970:	4770      	bx	lr
 3401a972:	bf00      	nop
-3401a974:	341ce2c8 	.word	0x341ce2c8
-3401a978:	341ce330 	.word	0x341ce330
+3401a974:	34112ac8 	.word	0x34112ac8
+3401a978:	34112b30 	.word	0x34112b30
 
 3401a97c <xTaskGetSchedulerState>:
 /*-----------------------------------------------------------*/
@@ -66211,8 +66213,8 @@ static void prvResetNextTaskUnblockTime( void )
 3401a9a8:	46bd      	mov	sp, r7
 3401a9aa:	f85d 7b04 	ldr.w	r7, [sp], #4
 3401a9ae:	4770      	bx	lr
-3401a9b0:	341ce31c 	.word	0x341ce31c
-3401a9b4:	341ce338 	.word	0x341ce338
+3401a9b0:	34112b1c 	.word	0x34112b1c
+3401a9b4:	34112b38 	.word	0x34112b38
 
 3401a9b8 <xTaskPriorityInherit>:
 /*-----------------------------------------------------------*/
@@ -66419,9 +66421,9 @@ static void prvResetNextTaskUnblockTime( void )
 3401aac6:	3718      	adds	r7, #24
 3401aac8:	46bd      	mov	sp, r7
 3401aaca:	bd80      	pop	{r7, pc}
-3401aacc:	341cde3c 	.word	0x341cde3c
-3401aad0:	341cde40 	.word	0x341cde40
-3401aad4:	341ce318 	.word	0x341ce318
+3401aacc:	3411263c 	.word	0x3411263c
+3401aad0:	34112640 	.word	0x34112640
+3401aad4:	34112b18 	.word	0x34112b18
 
 3401aad8 <xTaskPriorityDisinherit>:
 /*-----------------------------------------------------------*/
@@ -66606,9 +66608,9 @@ static void prvResetNextTaskUnblockTime( void )
 3401abd6:	46bd      	mov	sp, r7
 3401abd8:	bd80      	pop	{r7, pc}
 3401abda:	bf00      	nop
-3401abdc:	341cde3c 	.word	0x341cde3c
-3401abe0:	341ce318 	.word	0x341ce318
-3401abe4:	341cde40 	.word	0x341cde40
+3401abdc:	3411263c 	.word	0x3411263c
+3401abe0:	34112b18 	.word	0x34112b18
+3401abe4:	34112640 	.word	0x34112640
 
 3401abe8 <vTaskPriorityDisinheritAfterTimeout>:
 
@@ -66831,9 +66833,9 @@ static void prvResetNextTaskUnblockTime( void )
 3401ad0e:	3720      	adds	r7, #32
 3401ad10:	46bd      	mov	sp, r7
 3401ad12:	bd80      	pop	{r7, pc}
-3401ad14:	341cde3c 	.word	0x341cde3c
-3401ad18:	341cde40 	.word	0x341cde40
-3401ad1c:	341ce318 	.word	0x341ce318
+3401ad14:	3411263c 	.word	0x3411263c
+3401ad18:	34112640 	.word	0x34112640
+3401ad1c:	34112b18 	.word	0x34112b18
 
 3401ad20 <pvTaskIncrementMutexHeldCount>:
 /*-----------------------------------------------------------*/
@@ -66868,7 +66870,7 @@ static void prvResetNextTaskUnblockTime( void )
 3401ad3c:	46bd      	mov	sp, r7
 3401ad3e:	f85d 7b04 	ldr.w	r7, [sp], #4
 3401ad42:	4770      	bx	lr
-3401ad44:	341cde3c 	.word	0x341cde3c
+3401ad44:	3411263c 	.word	0x3411263c
 
 3401ad48 <prvAddCurrentTaskToDelayedList>:
 #endif
@@ -67005,12 +67007,12 @@ static void prvAddCurrentTaskToDelayedList( TickType_t xTicksToWait,
 3401ae06:	3718      	adds	r7, #24
 3401ae08:	46bd      	mov	sp, r7
 3401ae0a:	bd80      	pop	{r7, pc}
-3401ae0c:	341ce314 	.word	0x341ce314
-3401ae10:	341cde3c 	.word	0x341cde3c
-3401ae14:	341ce2fc 	.word	0x341ce2fc
-3401ae18:	341ce2cc 	.word	0x341ce2cc
-3401ae1c:	341ce2c8 	.word	0x341ce2c8
-3401ae20:	341ce330 	.word	0x341ce330
+3401ae0c:	34112b14 	.word	0x34112b14
+3401ae10:	3411263c 	.word	0x3411263c
+3401ae14:	34112afc 	.word	0x34112afc
+3401ae18:	34112acc 	.word	0x34112acc
+3401ae1c:	34112ac8 	.word	0x34112ac8
+3401ae20:	34112b30 	.word	0x34112b30
 
 3401ae24 <xTimerCreateTimerTask>:
                                        TimerCallbackFunction_t pxCallbackFunction,
@@ -67104,10 +67106,10 @@ static void prvAddCurrentTaskToDelayedList( TickType_t xTicksToWait,
 3401ae8e:	3710      	adds	r7, #16
 3401ae90:	46bd      	mov	sp, r7
 3401ae92:	bd80      	pop	{r7, pc}
-3401ae94:	341ce374 	.word	0x341ce374
+3401ae94:	34112b74 	.word	0x34112b74
 3401ae98:	34039538 	.word	0x34039538
 3401ae9c:	3401af49 	.word	0x3401af49
-3401aea0:	341ce378 	.word	0x341ce378
+3401aea0:	34112b78 	.word	0x34112b78
 
 3401aea4 <prvReloadTimer>:
 /*-----------------------------------------------------------*/
@@ -67231,7 +67233,7 @@ static void prvAddCurrentTaskToDelayedList( TickType_t xTicksToWait,
 3401af3e:	46bd      	mov	sp, r7
 3401af40:	bd80      	pop	{r7, pc}
 3401af42:	bf00      	nop
-3401af44:	341ce36c 	.word	0x341ce36c
+3401af44:	34112b6c 	.word	0x34112b6c
 
 3401af48 <prvTimerTask>:
 /*-----------------------------------------------------------*/
@@ -67365,8 +67367,8 @@ static void prvAddCurrentTaskToDelayedList( TickType_t xTicksToWait,
 3401afee:	46bd      	mov	sp, r7
 3401aff0:	bd80      	pop	{r7, pc}
 3401aff2:	bf00      	nop
-3401aff4:	341ce370 	.word	0x341ce370
-3401aff8:	341ce374 	.word	0x341ce374
+3401aff4:	34112b70 	.word	0x34112b70
+3401aff8:	34112b74 	.word	0x34112b74
 
 3401affc <prvGetNextExpireTime>:
 /*-----------------------------------------------------------*/
@@ -67425,7 +67427,7 @@ static void prvAddCurrentTaskToDelayedList( TickType_t xTicksToWait,
 3401b038:	f85d 7b04 	ldr.w	r7, [sp], #4
 3401b03c:	4770      	bx	lr
 3401b03e:	bf00      	nop
-3401b040:	341ce36c 	.word	0x341ce36c
+3401b040:	34112b6c 	.word	0x34112b6c
 
 3401b044 <prvSampleTimeNow>:
 /*-----------------------------------------------------------*/
@@ -67479,7 +67481,7 @@ static void prvAddCurrentTaskToDelayedList( TickType_t xTicksToWait,
 3401b07a:	46bd      	mov	sp, r7
 3401b07c:	bd80      	pop	{r7, pc}
 3401b07e:	bf00      	nop
-3401b080:	341ce37c 	.word	0x341ce37c
+3401b080:	34112b7c 	.word	0x34112b7c
 
 3401b084 <prvInsertTimerInActiveList>:
 
@@ -67585,8 +67587,8 @@ static void prvAddCurrentTaskToDelayedList( TickType_t xTicksToWait,
 3401b0fa:	3718      	adds	r7, #24
 3401b0fc:	46bd      	mov	sp, r7
 3401b0fe:	bd80      	pop	{r7, pc}
-3401b100:	341ce370 	.word	0x341ce370
-3401b104:	341ce36c 	.word	0x341ce36c
+3401b100:	34112b70 	.word	0x34112b70
+3401b104:	34112b6c 	.word	0x34112b6c
 
 3401b108 <prvProcessReceivedCommands>:
 /*-----------------------------------------------------------*/
@@ -67874,7 +67876,7 @@ static void prvAddCurrentTaskToDelayedList( TickType_t xTicksToWait,
 3401b29a:	3720      	adds	r7, #32
 3401b29c:	46bd      	mov	sp, r7
 3401b29e:	bd80      	pop	{r7, pc}
-3401b2a0:	341ce374 	.word	0x341ce374
+3401b2a0:	34112b74 	.word	0x34112b74
 
 3401b2a4 <prvSwitchTimerLists>:
 /*-----------------------------------------------------------*/
@@ -67933,8 +67935,8 @@ static void prvAddCurrentTaskToDelayedList( TickType_t xTicksToWait,
 3401b2e2:	46bd      	mov	sp, r7
 3401b2e4:	bd80      	pop	{r7, pc}
 3401b2e6:	bf00      	nop
-3401b2e8:	341ce36c 	.word	0x341ce36c
-3401b2ec:	341ce370 	.word	0x341ce370
+3401b2e8:	34112b6c 	.word	0x34112b6c
+3401b2ec:	34112b70 	.word	0x34112b70
 
 3401b2f0 <prvCheckForValidListAndQueue>:
 /*-----------------------------------------------------------*/
@@ -68015,13 +68017,13 @@ static void prvAddCurrentTaskToDelayedList( TickType_t xTicksToWait,
 3401b34a:	46bd      	mov	sp, r7
 3401b34c:	bd80      	pop	{r7, pc}
 3401b34e:	bf00      	nop
-3401b350:	341ce374 	.word	0x341ce374
-3401b354:	341ce344 	.word	0x341ce344
-3401b358:	341ce358 	.word	0x341ce358
-3401b35c:	341ce36c 	.word	0x341ce36c
-3401b360:	341ce370 	.word	0x341ce370
-3401b364:	341ce420 	.word	0x341ce420
-3401b368:	341ce380 	.word	0x341ce380
+3401b350:	34112b74 	.word	0x34112b74
+3401b354:	34112b44 	.word	0x34112b44
+3401b358:	34112b58 	.word	0x34112b58
+3401b35c:	34112b6c 	.word	0x34112b6c
+3401b360:	34112b70 	.word	0x34112b70
+3401b364:	34112c20 	.word	0x34112c20
+3401b368:	34112b80 	.word	0x34112b80
 3401b36c:	34039540 	.word	0x34039540
 
 3401b370 <pvPortMalloc>:
@@ -68335,11 +68337,11 @@ void * pvPortMalloc( size_t xWantedSize )
 3401b4d6:	3720      	adds	r7, #32
 3401b4d8:	46bd      	mov	sp, r7
 3401b4da:	bd80      	pop	{r7, pc}
-3401b4dc:	341d3478 	.word	0x341d3478
-3401b4e0:	341d347c 	.word	0x341d347c
-3401b4e4:	341d3470 	.word	0x341d3470
-3401b4e8:	341d3480 	.word	0x341d3480
-3401b4ec:	341d3484 	.word	0x341d3484
+3401b4dc:	34117c78 	.word	0x34117c78
+3401b4e0:	34117c7c 	.word	0x34117c7c
+3401b4e4:	34117c70 	.word	0x34117c70
+3401b4e8:	34117c80 	.word	0x34117c80
+3401b4ec:	34117c84 	.word	0x34117c84
 
 3401b4f0 <vPortFree>:
 /*-----------------------------------------------------------*/
@@ -68452,8 +68454,8 @@ void vPortFree( void * pv )
 3401b576:	46bd      	mov	sp, r7
 3401b578:	bd80      	pop	{r7, pc}
 3401b57a:	bf00      	nop
-3401b57c:	341d347c 	.word	0x341d347c
-3401b580:	341d3488 	.word	0x341d3488
+3401b57c:	34117c7c 	.word	0x34117c7c
+3401b580:	34117c88 	.word	0x34117c88
 
 3401b584 <prvHeapInit>:
     return pv;
@@ -68580,11 +68582,11 @@ static void prvHeapInit( void ) /* PRIVILEGED_FUNCTION */
 3401b620:	46bd      	mov	sp, r7
 3401b622:	f85d 7b04 	ldr.w	r7, [sp], #4
 3401b626:	4770      	bx	lr
-3401b628:	341ce470 	.word	0x341ce470
-3401b62c:	341d3470 	.word	0x341d3470
-3401b630:	341d3478 	.word	0x341d3478
-3401b634:	341d3480 	.word	0x341d3480
-3401b638:	341d347c 	.word	0x341d347c
+3401b628:	34112c70 	.word	0x34112c70
+3401b62c:	34117c70 	.word	0x34117c70
+3401b630:	34117c78 	.word	0x34117c78
+3401b634:	34117c80 	.word	0x34117c80
+3401b638:	34117c7c 	.word	0x34117c7c
 
 3401b63c <prvInsertBlockIntoFreeList>:
 /*-----------------------------------------------------------*/
@@ -68730,8 +68732,8 @@ static void prvInsertBlockIntoFreeList( BlockLink_t * pxBlockToInsert ) /* PRIVI
 3401b6e0:	f85d 7b04 	ldr.w	r7, [sp], #4
 3401b6e4:	4770      	bx	lr
 3401b6e6:	bf00      	nop
-3401b6e8:	341d3470 	.word	0x341d3470
-3401b6ec:	341d3478 	.word	0x341d3478
+3401b6e8:	34117c70 	.word	0x34117c70
+3401b6ec:	34117c78 	.word	0x34117c78
 
 3401b6f0 <ISP_Algo_BadPixel_Init>:
   * @param  hIsp:  ISP device handle. To cast in (ISP_HandleTypeDef *).
@@ -68971,9 +68973,9 @@ ISP_StatusTypeDef ISP_Algo_BadPixel_Process(void *hIsp, void *pAlgo)
 3401b81e:	3720      	adds	r7, #32
 3401b820:	46bd      	mov	sp, r7
 3401b822:	bd80      	pop	{r7, pc}
-3401b824:	341d3498 	.word	0x341d3498
-3401b828:	341d349c 	.word	0x341d349c
-3401b82c:	341d34a0 	.word	0x341d34a0
+3401b824:	34117c98 	.word	0x34117c98
+3401b828:	34117c9c 	.word	0x34117c9c
+3401b82c:	34117ca0 	.word	0x34117ca0
 3401b830:	cccccccd 	.word	0xcccccccd
 
 3401b834 <log_cb>:
@@ -69113,7 +69115,7 @@ ISP_StatusTypeDef ISP_Algo_AEC_Init(void *hIsp, void *pAlgo)
 3401b8ec:	46bd      	mov	sp, r7
 3401b8ee:	bd80      	pop	{r7, pc}
 3401b8f0:	3401b835 	.word	0x3401b835
-3401b8f4:	341d348c 	.word	0x341d348c
+3401b8f4:	34117c8c 	.word	0x34117c8c
 
 3401b8f8 <ISP_Algo_AEC_DeInit>:
   * @param  hIsp:  ISP device handle. To cast in (ISP_HandleTypeDef *).
@@ -69150,7 +69152,7 @@ ISP_StatusTypeDef ISP_Algo_AEC_DeInit(void *hIsp, void *pAlgo)
 3401b91a:	46bd      	mov	sp, r7
 3401b91c:	bd80      	pop	{r7, pc}
 3401b91e:	bf00      	nop
-3401b920:	341d348c 	.word	0x341d348c
+3401b920:	34117c8c 	.word	0x34117c8c
 
 3401b924 <ISP_Algo_AEC_StatCb>:
   *         Callback informing that statistics are available
@@ -69436,9 +69438,9 @@ ISP_StatusTypeDef ISP_Algo_AEC_Process(void *hIsp, void *pAlgo)
 3401babe:	46bd      	mov	sp, r7
 3401bac0:	bd80      	pop	{r7, pc}
 3401bac2:	bf00      	nop
-3401bac4:	341d34a4 	.word	0x341d34a4
+3401bac4:	34117ca4 	.word	0x34117ca4
 3401bac8:	3401b925 	.word	0x3401b925
-3401bacc:	341d348c 	.word	0x341d348c
+3401bacc:	34117c8c 	.word	0x34117c8c
 
 3401bad0 <ISP_Algo_ApplyGammaInverse>:
   * @param  hIsp:  ISP device handle.
@@ -69980,7 +69982,7 @@ ISP_StatusTypeDef ISP_Algo_AWB_Init(void *hIsp, void *pAlgo)
 3401c01c:	bd80      	pop	{r7, pc}
 3401c01e:	bf00      	nop
 3401c020:	3401b835 	.word	0x3401b835
-3401c024:	341d3490 	.word	0x341d3490
+3401c024:	34117c90 	.word	0x34117c90
 
 3401c028 <ISP_Algo_AWB_DeInit>:
   * @param  hIsp:  ISP device handle. To cast in (ISP_HandleTypeDef *).
@@ -70018,7 +70020,7 @@ ISP_StatusTypeDef ISP_Algo_AWB_DeInit(void *hIsp, void *pAlgo)
 3401c04a:	46bd      	mov	sp, r7
 3401c04c:	bd80      	pop	{r7, pc}
 3401c04e:	bf00      	nop
-3401c050:	341d3490 	.word	0x341d3490
+3401c050:	34117c90 	.word	0x34117c90
 
 3401c054 <ISP_Algo_AWB_StatCb>:
   *         Callback informing that statistics are available
@@ -70482,14 +70484,14 @@ ISP_StatusTypeDef ISP_Algo_AWB_Process(void *hIsp, void *pAlgo)
 3401c3dc:	3ff59999 	.word	0x3ff59999
 3401c3e0:	cccccccd 	.word	0xcccccccd
 3401c3e4:	3ffccccc 	.word	0x3ffccccc
-3401c3e8:	341d351c 	.word	0x341d351c
-3401c3ec:	341d351d 	.word	0x341d351d
-3401c3f0:	341d3520 	.word	0x341d3520
+3401c3e8:	34117d1c 	.word	0x34117d1c
+3401c3ec:	34117d1d 	.word	0x34117d1d
+3401c3f0:	34117d20 	.word	0x34117d20
 3401c3f4:	4cbebc20 	.word	0x4cbebc20
-3401c3f8:	341d3530 	.word	0x341d3530
-3401c3fc:	341d3490 	.word	0x341d3490
+3401c3f8:	34117d30 	.word	0x34117d30
+3401c3fc:	34117c90 	.word	0x34117c90
 3401c400:	40400000 	.word	0x40400000
-3401c404:	341d3684 	.word	0x341d3684
+3401c404:	34117e84 	.word	0x34117e84
 3401c408:	3401c055 	.word	0x3401c055
     /* Do nothing */
     break;
@@ -70761,11 +70763,11 @@ ISP_StatusTypeDef ISP_Algo_AWB_Process(void *hIsp, void *pAlgo)
 3401c61a:	37c8      	adds	r7, #200	@ 0xc8
 3401c61c:	46bd      	mov	sp, r7
 3401c61e:	bd80      	pop	{r7, pc}
-3401c620:	341d3684 	.word	0x341d3684
-3401c624:	341d3490 	.word	0x341d3490
-3401c628:	341d36fc 	.word	0x341d36fc
-3401c62c:	341d351d 	.word	0x341d351d
-3401c630:	341d3494 	.word	0x341d3494
+3401c620:	34117e84 	.word	0x34117e84
+3401c624:	34117c90 	.word	0x34117c90
+3401c628:	34117efc 	.word	0x34117efc
+3401c62c:	34117d1d 	.word	0x34117d1d
+3401c630:	34117c94 	.word	0x34117c94
 3401c634:	3401c055 	.word	0x3401c055
 
 3401c638 <ISP_Algo_Init>:
@@ -72370,7 +72372,7 @@ static ISP_SVC_StatEngineStage GetNextStatStage(ISP_SVC_StatEngineStage current)
 3401cf48:	46bd      	mov	sp, r7
 3401cf4a:	f85d 7b04 	ldr.w	r7, [sp], #4
 3401cf4e:	4770      	bx	lr
-3401cf50:	341d3954 	.word	0x341d3954
+3401cf50:	34118154 	.word	0x34118154
 
 3401cf54 <GetStatCycleStart>:
 
@@ -72455,7 +72457,7 @@ static ISP_SVC_StatEngineStage GetStatCycleStart(ISP_SVC_StatLocation location)
 3401cfb8:	46bd      	mov	sp, r7
 3401cfba:	f85d 7b04 	ldr.w	r7, [sp], #4
 3401cfbe:	4770      	bx	lr
-3401cfc0:	341d3954 	.word	0x341d3954
+3401cfc0:	34118154 	.word	0x34118154
 
 3401cfc4 <GetStatCycleEnd>:
 
@@ -72540,7 +72542,7 @@ static ISP_SVC_StatEngineStage GetStatCycleEnd(ISP_SVC_StatLocation location)
 3401d028:	46bd      	mov	sp, r7
 3401d02a:	f85d 7b04 	ldr.w	r7, [sp], #4
 3401d02e:	4770      	bx	lr
-3401d030:	341d3954 	.word	0x341d3954
+3401d030:	34118154 	.word	0x34118154
 3401d034:	00000000 	.word	0x00000000
 
 3401d038 <LuminanceFromRGB>:
@@ -74841,7 +74843,7 @@ ISP_StatusTypeDef ISP_SVC_IQParam_Init(ISP_HandleTypeDef *hIsp, const ISP_IQPara
 3401dd1a:	46bd      	mov	sp, r7
 3401dd1c:	bd80      	pop	{r7, pc}
 3401dd1e:	bf00      	nop
-3401dd20:	341d3700 	.word	0x341d3700
+3401dd20:	34117f00 	.word	0x34117f00
 
 3401dd24 <ISP_SVC_IQParam_Get>:
   *         Get the pointer to the IQ parameters cache
@@ -74865,7 +74867,7 @@ ISP_IQParamTypeDef *ISP_SVC_IQParam_Get(ISP_HandleTypeDef *hIsp)
 3401dd34:	f85d 7b04 	ldr.w	r7, [sp], #4
 3401dd38:	4770      	bx	lr
 3401dd3a:	bf00      	nop
-3401dd3c:	341d3700 	.word	0x341d3700
+3401dd3c:	34117f00 	.word	0x34117f00
 
 3401dd40 <ISP_SVC_Stats_Init>:
   *         Initialize the statistic engine
@@ -74888,7 +74890,7 @@ void ISP_SVC_Stats_Init(ISP_HandleTypeDef *hIsp)
 3401dd56:	3708      	adds	r7, #8
 3401dd58:	46bd      	mov	sp, r7
 3401dd5a:	bd80      	pop	{r7, pc}
-3401dd5c:	341d3954 	.word	0x341d3954
+3401dd5c:	34118154 	.word	0x34118154
 
 3401dd60 <ISP_SVC_Stats_Gather>:
   *         Gather statistics
@@ -75321,9 +75323,9 @@ void ISP_SVC_Stats_Gather(ISP_HandleTypeDef *hIsp)
 3401e054:	647b      	str	r3, [r7, #68]	@ 0x44
 3401e056:	e035      	b.n	3401e0c4 <ISP_SVC_Stats_Gather+0x364>
 3401e058:	340396b8 	.word	0x340396b8
-3401e05c:	341d39d0 	.word	0x341d39d0
+3401e05c:	341181d0 	.word	0x341181d0
 3401e060:	341115a5 	.word	0x341115a5
-3401e064:	341d3954 	.word	0x341d3954
+3401e064:	34118154 	.word	0x34118154
 3401e068:	3403a6ec 	.word	0x3403a6ec
 3401e06c:	3403a704 	.word	0x3403a704
 3401e070:	3403a710 	.word	0x3403a710
@@ -75698,7 +75700,7 @@ void ISP_SVC_Stats_Gather(ISP_HandleTypeDef *hIsp)
 3401e2e0:	340396d4 	.word	0x340396d4
 3401e2e4:	34039704 	.word	0x34039704
 3401e2e8:	341115a5 	.word	0x341115a5
-3401e2ec:	341d3954 	.word	0x341d3954
+3401e2ec:	34118154 	.word	0x34118154
 3401e2f0:	341115a6 	.word	0x341115a6
 
 3401e2f4 <ISP_SVC_Stats_ProcessCallbacks>:
@@ -75849,8 +75851,8 @@ ISP_StatusTypeDef ISP_SVC_Stats_ProcessCallbacks(ISP_HandleTypeDef *hIsp)
 3401e3b6:	46bd      	mov	sp, r7
 3401e3b8:	bd80      	pop	{r7, pc}
 3401e3ba:	bf00      	nop
-3401e3bc:	341d3958 	.word	0x341d3958
-3401e3c0:	341d3954 	.word	0x341d3954
+3401e3bc:	34118158 	.word	0x34118158
+3401e3c0:	34118154 	.word	0x34118154
 
 3401e3c4 <ISP_SVC_Stats_GetNext>:
   * @param  frameDelay: number of frames to wait before considering the stats as valid
@@ -76054,7 +76056,7 @@ ISP_StatusTypeDef ISP_SVC_Stats_GetNext(ISP_HandleTypeDef *hIsp, ISP_stat_ready_
 3401e506:	46bd      	mov	sp, r7
 3401e508:	bd80      	pop	{r7, pc}
 3401e50a:	bf00      	nop
-3401e50c:	341d3954 	.word	0x341d3954
+3401e50c:	34118154 	.word	0x34118154
 
 3401e510 <MX_TouchGFX_PreOSInit>:
 
@@ -76616,7 +76618,7 @@ class GeneratedFont : public ConstFont
 3401e7f4:	f85d 7b04 	ldr.w	r7, [sp], #4
 3401e7f8:	4770      	bx	lr
 3401e7fa:	bf00      	nop
-3401e7fc:	341d4cbc 	.word	0x341d4cbc
+3401e7fc:	341194bc 	.word	0x341194bc
 
 3401e800 <_ZN8touchgfx9TypedTextD1Ev>:
         : typedTextId(id)
@@ -76937,7 +76939,7 @@ touchgfx::GeneratedFont& getFont_verdana_10_4bpp()
 3401e9d8:	4801      	ldr	r0, [pc, #4]	@ (3401e9e0 <__tcf_0+0xc>)
 3401e9da:	f7ff fee3 	bl	3401e7a4 <_ZN8touchgfx13GeneratedFontD1Ev>
 3401e9de:	bd80      	pop	{r7, pc}
-3401e9e0:	341d3ab4 	.word	0x341d3ab4
+3401e9e0:	341182b4 	.word	0x341182b4
 
 3401e9e4 <_Z23getFont_verdana_10_4bppv>:
 {
@@ -77006,11 +77008,11 @@ touchgfx::GeneratedFont& getFont_verdana_10_4bpp()
 3401ea66:	4618      	mov	r0, r3
 3401ea68:	46bd      	mov	sp, r7
 3401ea6a:	bd80      	pop	{r7, pc}
-3401ea6c:	341d3ae0 	.word	0x341d3ae0
+3401ea6c:	341182e0 	.word	0x341182e0
 3401ea70:	3403e564 	.word	0x3403e564
 3401ea74:	3403e570 	.word	0x3403e570
 3401ea78:	3403e50c 	.word	0x3403e50c
-3401ea7c:	341d3ab4 	.word	0x341d3ab4
+3401ea7c:	341182b4 	.word	0x341182b4
 3401ea80:	3401e9d5 	.word	0x3401e9d5
 
 3401ea84 <__tcf_0>:
@@ -77025,7 +77027,7 @@ touchgfx::GeneratedFont& getFont_verdana_20_4bpp()
 3401ea88:	4801      	ldr	r0, [pc, #4]	@ (3401ea90 <__tcf_0+0xc>)
 3401ea8a:	f7ff fe8b 	bl	3401e7a4 <_ZN8touchgfx13GeneratedFontD1Ev>
 3401ea8e:	bd80      	pop	{r7, pc}
-3401ea90:	341d3ae4 	.word	0x341d3ae4
+3401ea90:	341182e4 	.word	0x341182e4
 
 3401ea94 <_Z23getFont_verdana_20_4bppv>:
 {
@@ -77094,11 +77096,11 @@ touchgfx::GeneratedFont& getFont_verdana_20_4bpp()
 3401eb16:	4618      	mov	r0, r3
 3401eb18:	46bd      	mov	sp, r7
 3401eb1a:	bd80      	pop	{r7, pc}
-3401eb1c:	341d3b10 	.word	0x341d3b10
+3401eb1c:	34118310 	.word	0x34118310
 3401eb20:	3403e568 	.word	0x3403e568
 3401eb24:	3403e574 	.word	0x3403e574
 3401eb28:	3403e51c 	.word	0x3403e51c
-3401eb2c:	341d3ae4 	.word	0x341d3ae4
+3401eb2c:	341182e4 	.word	0x341182e4
 3401eb30:	3401ea85 	.word	0x3401ea85
 
 3401eb34 <__tcf_0>:
@@ -77113,7 +77115,7 @@ touchgfx::GeneratedFont& getFont_verdana_40_4bpp()
 3401eb38:	4801      	ldr	r0, [pc, #4]	@ (3401eb40 <__tcf_0+0xc>)
 3401eb3a:	f7ff fe33 	bl	3401e7a4 <_ZN8touchgfx13GeneratedFontD1Ev>
 3401eb3e:	bd80      	pop	{r7, pc}
-3401eb40:	341d3b14 	.word	0x341d3b14
+3401eb40:	34118314 	.word	0x34118314
 
 3401eb44 <_Z23getFont_verdana_40_4bppv>:
 {
@@ -77182,11 +77184,11 @@ touchgfx::GeneratedFont& getFont_verdana_40_4bpp()
 3401ebc6:	4618      	mov	r0, r3
 3401ebc8:	46bd      	mov	sp, r7
 3401ebca:	bd80      	pop	{r7, pc}
-3401ebcc:	341d3b40 	.word	0x341d3b40
+3401ebcc:	34118340 	.word	0x34118340
 3401ebd0:	3403e56c 	.word	0x3403e56c
 3401ebd4:	3403e578 	.word	0x3403e578
 3401ebd8:	3403e554 	.word	0x3403e554
-3401ebdc:	341d3b14 	.word	0x341d3b14
+3401ebdc:	34118314 	.word	0x34118314
 3401ebe0:	3401eb35 	.word	0x3401eb35
 
 3401ebe4 <_ZnwjPv>:
@@ -77540,7 +77542,7 @@ public:
 3401ed98:	f85d 7b04 	ldr.w	r7, [sp], #4
 3401ed9c:	4770      	bx	lr
 3401ed9e:	bf00      	nop
-3401eda0:	341d4cbc 	.word	0x341d4cbc
+3401eda0:	341194bc 	.word	0x341194bc
 
 3401eda4 <_ZN8touchgfx10TransitionC1Ev>:
  */
@@ -77792,7 +77794,7 @@ public:
 3401ef04:	bd80      	pop	{r7, pc}
 3401ef06:	bf00      	nop
 3401ef08:	3403a89c 	.word	0x3403a89c
-3401ef0c:	341d4d08 	.word	0x341d4d08
+3401ef0c:	34119508 	.word	0x34119508
 
 3401ef10 <_ZN8touchgfx14MVPApplication29handlePendingScreenTransitionEv>:
     /**
@@ -78262,8 +78264,8 @@ void FrontendApplicationBase::gotoscreenScreenNoTransitionImpl()
 3401f21a:	46bd      	mov	sp, r7
 3401f21c:	bd80      	pop	{r7, pc}
 3401f21e:	bf00      	nop
-3401f220:	341d4cfc 	.word	0x341d4cfc
-3401f224:	341d4cf8 	.word	0x341d4cf8
+3401f220:	341194fc 	.word	0x341194fc
+3401f224:	341194f8 	.word	0x341194f8
 
 3401f228 <_ZN8touchgfx15GenericCallbackIvvvEC1Ev>:
 class GenericCallback<void>
@@ -80408,15 +80410,15 @@ class TypedText
 3401fec6:	46bd      	mov	sp, r7
 3401fec8:	bd90      	pop	{r4, r7, pc}
 3401feca:	bf00      	nop
-3401fecc:	341d4d10 	.word	0x341d4d10
-3401fed0:	341d4d0c 	.word	0x341d4d0c
+3401fecc:	34119510 	.word	0x34119510
+3401fed0:	3411950c 	.word	0x3411950c
 3401fed4:	34039a24 	.word	0x34039a24
 3401fed8:	34039a68 	.word	0x34039a68
 3401fedc:	34039aa4 	.word	0x34039aa4
 3401fee0:	34039ae8 	.word	0x34039ae8
-3401fee4:	341d4d14 	.word	0x341d4d14
+3401fee4:	34119514 	.word	0x34119514
 3401fee8:	34039b28 	.word	0x34039b28
-3401feec:	341d4d18 	.word	0x341d4d18
+3401feec:	34119518 	.word	0x34119518
 
 3401fef0 <_ZN8touchgfx4ViewI15screenPresenterED1Ev>:
 class View : public Screen
@@ -81025,9 +81027,9 @@ uint16_t getInstanceSize()
 34020390:	46bd      	mov	sp, r7
 34020392:	f85d 7b04 	ldr.w	r7, [sp], #4
 34020396:	4770      	bx	lr
-34020398:	341d4d0c 	.word	0x341d4d0c
-3402039c:	341d4d14 	.word	0x341d4d14
-340203a0:	341d4d10 	.word	0x341d4d10
+34020398:	3411950c 	.word	0x3411950c
+3402039c:	34119514 	.word	0x34119514
+340203a0:	34119510 	.word	0x34119510
 
 340203a4 <_ZNK8touchgfx4Font14getStringWidthEPKtz>:
 #include <touchgfx/hal/HAL.hpp>
@@ -81436,13 +81438,13 @@ void touchgfx::Texts::setLanguage(touchgfx::LanguageId id)
 34020626:	46bd      	mov	sp, r7
 34020628:	bd90      	pop	{r4, r7, pc}
 3402062a:	bf00      	nop
-3402062c:	341d3b44 	.word	0x341d3b44
-34020630:	341d3b4c 	.word	0x341d3b4c
-34020634:	341d3b50 	.word	0x341d3b50
+3402062c:	34118344 	.word	0x34118344
+34020630:	3411834c 	.word	0x3411834c
+34020634:	34118350 	.word	0x34118350
 34020638:	34111480 	.word	0x34111480
 3402063c:	3411147c 	.word	0x3411147c
 34020640:	34111498 	.word	0x34111498
-34020644:	341d3b48 	.word	0x341d3b48
+34020644:	34118348 	.word	0x34118348
 
 34020648 <_ZNK8touchgfx5Texts7getTextEt>:
 {
@@ -81474,8 +81476,8 @@ const touchgfx::Unicode::UnicodeChar* touchgfx::Texts::getText(TypedTextId id) c
 3402066c:	46bd      	mov	sp, r7
 3402066e:	f85d 7b04 	ldr.w	r7, [sp], #4
 34020672:	4770      	bx	lr
-34020674:	341d3b4c 	.word	0x341d3b4c
-34020678:	341d3b50 	.word	0x341d3b50
+34020674:	3411834c 	.word	0x3411834c
+34020678:	34118350 	.word	0x34118350
 
 3402067c <_ZN17TypedTextDatabase15getInstanceSizeEv>:
 {
@@ -81507,7 +81509,7 @@ const touchgfx::Font** getFonts()
 34020694:	46bd      	mov	sp, r7
 34020696:	f85d 7b04 	ldr.w	r7, [sp], #4
 3402069a:	4770      	bx	lr
-3402069c:	341d3b54 	.word	0x341d3b54
+3402069c:	34118354 	.word	0x34118354
 
 340206a0 <_Z41__static_initialization_and_destruction_0v>:
     case 2:
@@ -81540,7 +81542,7 @@ const touchgfx::Font** getFonts()
 340206c2:	bf00      	nop
 340206c4:	bd80      	pop	{r7, pc}
 340206c6:	bf00      	nop
-340206c8:	341d3b54 	.word	0x341d3b54
+340206c8:	34118354 	.word	0x34118354
 
 340206cc <_GLOBAL__sub_I_touchgfx_fonts>:
 340206cc:	b580      	push	{r7, lr}
@@ -82435,13 +82437,13 @@ void GPIO::toggle(GPIO_ID id)
 34020c0a:	3708      	adds	r7, #8
 34020c0c:	46bd      	mov	sp, r7
 34020c0e:	bd80      	pop	{r7, pc}
-34020c10:	341d4cb0 	.word	0x341d4cb0
-34020c14:	341d4cb2 	.word	0x341d4cb2
+34020c10:	341194b0 	.word	0x341194b0
+34020c14:	341194b2 	.word	0x341194b2
 34020c18:	34039e18 	.word	0x34039e18
 34020c1c:	34039e7c 	.word	0x34039e7c
 34020c20:	34039ec0 	.word	0x34039ec0
-34020c24:	341d4cb6 	.word	0x341d4cb6
-34020c28:	341d4cb8 	.word	0x341d4cb8
+34020c24:	341194b6 	.word	0x341194b6
+34020c28:	341194b8 	.word	0x341194b8
 
 34020c2c <_ZN8touchgfx3HAL11submitGPU2DEv>:
     virtual void submitGPU2D()
@@ -82603,7 +82605,7 @@ void GPIO::toggle(GPIO_ID id)
 34020d00:	34039f04 	.word	0x34039f04
 34020d04:	34039f3c 	.word	0x34039f3c
 34020d08:	34039ec0 	.word	0x34039ec0
-34020d0c:	341d4cba 	.word	0x341d4cba
+34020d0c:	341194ba 	.word	0x341194ba
 
 34020d10 <_ZN8touchgfx3HAL19setAnimationStorageEPv>:
      * @param [in] animationStorage If non-null, the animation storage. If null animation storage
@@ -82637,7 +82639,7 @@ void GPIO::toggle(GPIO_ID id)
 34020d34:	46bd      	mov	sp, r7
 34020d36:	f85d 7b04 	ldr.w	r7, [sp], #4
 34020d3a:	4770      	bx	lr
-34020d3c:	341d4cbb 	.word	0x341d4cbb
+34020d3c:	341194bb 	.word	0x341194bb
 
 34020d40 <_ZN8touchgfx3HAL16waitForLTDCLinesEt>:
      * Only applicable on LTDC systems and when the partial framebuffer strategy is
@@ -82841,9 +82843,9 @@ void GPIO::toggle(GPIO_ID id)
 34020e30:	f85d 7b04 	ldr.w	r7, [sp], #4
 34020e34:	4770      	bx	lr
 34020e36:	bf00      	nop
-34020e38:	341d4cb4 	.word	0x341d4cb4
-34020e3c:	341d4cb2 	.word	0x341d4cb2
-34020e40:	341d4cb0 	.word	0x341d4cb0
+34020e38:	341194b4 	.word	0x341194b4
+34020e3c:	341194b2 	.word	0x341194b2
+34020e40:	341194b0 	.word	0x341194b0
 
 34020e44 <_ZN8touchgfx3HAL22InvalidateTextureCacheEv>:
      * Invalidate texture cache(s).
@@ -83303,11 +83305,11 @@ void OSWrappers::initialize()
 }
 3402107c:	bf00      	nop
 3402107e:	bd80      	pop	{r7, pc}
-34021080:	341d3b60 	.word	0x341d3b60
+34021080:	34118360 	.word	0x34118360
 34021084:	34039f8c 	.word	0x34039f8c
 34021088:	34039fd8 	.word	0x34039fd8
 3402108c:	3403a008 	.word	0x3403a008
-34021090:	341d3b64 	.word	0x341d3b64
+34021090:	34118364 	.word	0x34118364
 34021094:	3403a034 	.word	0x3403a034
 
 34021098 <_ZN8touchgfx10OSWrappers24takeFrameBufferSemaphoreEv>:
@@ -83329,7 +83331,7 @@ void OSWrappers::takeFrameBufferSemaphore()
 340210aa:	bf00      	nop
 340210ac:	bd80      	pop	{r7, pc}
 340210ae:	bf00      	nop
-340210b0:	341d3b60 	.word	0x341d3b60
+340210b0:	34118360 	.word	0x34118360
 
 340210b4 <_ZN8touchgfx10OSWrappers24giveFrameBufferSemaphoreEv>:
 
@@ -83349,7 +83351,7 @@ void OSWrappers::giveFrameBufferSemaphore()
 340210c2:	bf00      	nop
 340210c4:	bd80      	pop	{r7, pc}
 340210c6:	bf00      	nop
-340210c8:	341d3b60 	.word	0x341d3b60
+340210c8:	34118360 	.word	0x34118360
 
 340210cc <_ZN8touchgfx10OSWrappers27tryTakeFrameBufferSemaphoreEv>:
  *
@@ -83369,7 +83371,7 @@ void OSWrappers::tryTakeFrameBufferSemaphore()
 }
 340210dc:	bf00      	nop
 340210de:	bd80      	pop	{r7, pc}
-340210e0:	341d3b60 	.word	0x341d3b60
+340210e0:	34118360 	.word	0x34118360
 
 340210e4 <_ZN8touchgfx10OSWrappers31giveFrameBufferSemaphoreFromISREv>:
  *
@@ -83389,7 +83391,7 @@ void OSWrappers::giveFrameBufferSemaphoreFromISR()
 340210f2:	bf00      	nop
 340210f4:	bd80      	pop	{r7, pc}
 340210f6:	bf00      	nop
-340210f8:	341d3b60 	.word	0x341d3b60
+340210f8:	34118360 	.word	0x34118360
 
 340210fc <_ZN8touchgfx10OSWrappers12waitForVSyncEv>:
  *
@@ -83424,7 +83426,7 @@ void OSWrappers::waitForVSync()
 34021122:	3708      	adds	r7, #8
 34021124:	46bd      	mov	sp, r7
 34021126:	bd80      	pop	{r7, pc}
-34021128:	341d3b64 	.word	0x341d3b64
+34021128:	34118364 	.word	0x34118364
 
 3402112c <_ZN8touchgfx10OSWrappers9taskDelayEt>:
  *
@@ -84056,7 +84058,7 @@ void STM32DMA::initialize()
 340214fe:	3708      	adds	r7, #8
 34021500:	46bd      	mov	sp, r7
 34021502:	bd80      	pop	{r7, pc}
-34021504:	341cd44c 	.word	0x341cd44c
+34021504:	34111c4c 	.word	0x34111c4c
 34021508:	3402139b 	.word	0x3402139b
 3402150c:	340213b7 	.word	0x340213b7
 
@@ -85277,7 +85279,7 @@ void lineFromARGB8888(uint16_t* const ptr, const uint32_t* const data, const uns
 34021bcc:	f85d 7b04 	ldr.w	r7, [sp], #4
 34021bd0:	4770      	bx	lr
 34021bd2:	bf00      	nop
-34021bd4:	341d4d18 	.word	0x341d4d18
+34021bd4:	34119518 	.word	0x34119518
 
 34021bd8 <_ZN8touchgfx7MVPHeapC1ERNS_17AbstractPartitionES2_S2_RNS_14MVPApplicationE>:
      * @param [in] scr  A memory partition containing enough memory to hold the largest view.
@@ -85722,12 +85724,12 @@ public:
 34021ea6:	bd80      	pop	{r7, pc}
 34021ea8:	3403b6d0 	.word	0x3403b6d0
 34021eac:	aaaaaaab 	.word	0xaaaaaaab
-34021eb0:	341d4cbc 	.word	0x341d4cbc
-34021eb4:	341d4cb0 	.word	0x341d4cb0
-34021eb8:	341d4cb6 	.word	0x341d4cb6
-34021ebc:	341d4cb2 	.word	0x341d4cb2
-34021ec0:	341d4cb8 	.word	0x341d4cb8
-34021ec4:	341d4cb4 	.word	0x341d4cb4
+34021eb0:	341194bc 	.word	0x341194bc
+34021eb4:	341194b0 	.word	0x341194b0
+34021eb8:	341194b6 	.word	0x341194b6
+34021ebc:	341194b2 	.word	0x341194b2
+34021ec0:	341194b8 	.word	0x341194b8
+34021ec4:	341194b4 	.word	0x341194b4
 
 34021ec8 <_ZN16FrontendHeapBase15gotoStartScreenER19FrontendApplication>:
     /**
@@ -85997,7 +85999,7 @@ class FrontendHeap : public FrontendHeapBase
 340220a0:	4801      	ldr	r0, [pc, #4]	@ (340220a8 <__tcf_0+0xc>)
 340220a2:	f7ff ffc1 	bl	34022028 <_ZN12FrontendHeapD1Ev>
 340220a6:	bd80      	pop	{r7, pc}
-340220a8:	341d3b68 	.word	0x341d3b68
+340220a8:	34118368 	.word	0x34118368
 
 340220ac <_ZN12FrontendHeap11getInstanceEv>:
     static FrontendHeap& getInstance()
@@ -86036,8 +86038,8 @@ class FrontendHeap : public FrontendHeapBase
 340220f2:	4618      	mov	r0, r3
 340220f4:	bd80      	pop	{r7, pc}
 340220f6:	bf00      	nop
-340220f8:	341d3df0 	.word	0x341d3df0
-340220fc:	341d3b68 	.word	0x341d3b68
+340220f8:	341185f0 	.word	0x341185f0
+340220fc:	34118368 	.word	0x34118368
 34022100:	3402209d 	.word	0x3402209d
 
 34022104 <_ZN8touchgfx9PartitionINS_4meta8TypeListI15screenPresenterNS2_INS1_3NilES4_EEEELt1EEC1Ev>:
@@ -86312,9 +86314,9 @@ void touchgfx_init()
 340222f6:	370c      	adds	r7, #12
 340222f8:	46bd      	mov	sp, r7
 340222fa:	bd90      	pop	{r4, r7, pc}
-340222fc:	341d4c24 	.word	0x341d4c24
+340222fc:	34119424 	.word	0x34119424
 34022300:	341115a8 	.word	0x341115a8
-34022304:	341d4c28 	.word	0x341d4c28
+34022304:	34119428 	.word	0x34119428
 
 34022308 <touchgfx_components_init>:
 
@@ -86347,7 +86349,7 @@ void touchgfx_taskEntry()
 34022322:	bf00      	nop
 34022324:	bd80      	pop	{r7, pc}
 34022326:	bf00      	nop
-34022328:	341d4c28 	.word	0x341d4c28
+34022328:	34119428 	.word	0x34119428
 
 3402232c <_Z41__static_initialization_and_destruction_0v>:
 3402232c:	b580      	push	{r7, lr}
@@ -86377,10 +86379,10 @@ static TouchGFXHAL hal(dma, display, tc, 800, 480);
 3402235e:	46bd      	mov	sp, r7
 34022360:	bd80      	pop	{r7, pc}
 34022362:	bf00      	nop
-34022364:	341d3df4 	.word	0x341d3df4
-34022368:	341d3df8 	.word	0x341d3df8
-3402236c:	341d4b98 	.word	0x341d4b98
-34022370:	341d4c28 	.word	0x341d4c28
+34022364:	341185f4 	.word	0x341185f4
+34022368:	341185f8 	.word	0x341185f8
+3402236c:	34119398 	.word	0x34119398
+34022370:	34119428 	.word	0x34119428
 
 34022374 <_ZN8touchgfx8LCD16bppD1Ev>:
  *
@@ -86444,11 +86446,11 @@ static STM32TouchController tc;
 340223da:	bf00      	nop
 340223dc:	bd80      	pop	{r7, pc}
 340223de:	bf00      	nop
-340223e0:	341d4c28 	.word	0x341d4c28
+340223e0:	34119428 	.word	0x34119428
 340223e4:	341115a8 	.word	0x341115a8
-340223e8:	341d4b98 	.word	0x341d4b98
-340223ec:	341d3df8 	.word	0x341d3df8
-340223f0:	341d3df4 	.word	0x341d3df4
+340223e8:	34119398 	.word	0x34119398
+340223ec:	341185f8 	.word	0x341185f8
+340223f0:	341185f4 	.word	0x341185f4
 
 340223f4 <_ZNK8touchgfx9PartitionINS_4meta8TypeListINS_12NoTransitionENS2_INS1_3NilES4_EEEELt1EE8capacityEv>:
     {
@@ -86811,7 +86813,7 @@ protected:
 3402262e:	46bd      	mov	sp, r7
 34022630:	bd80      	pop	{r7, pc}
 34022632:	bf00      	nop
-34022634:	341d4cba 	.word	0x341d4cba
+34022634:	341194ba 	.word	0x341194ba
 
 34022638 <_ZN8touchgfx3HAL25registerTaskDelayFunctionEPFvtE>:
     void registerTaskDelayFunction(void (*delayF)(uint16_t))
@@ -86968,7 +86970,7 @@ void TouchGFXGeneratedHAL::initialize()
 34022750:	47a0      	blx	r4
     registerTaskDelayFunction(&OSWrappers::taskDelay);
 34022752:	687b      	ldr	r3, [r7, #4]
-34022754:	490f      	ldr	r1, [pc, #60]	@ (34022794 <_ZN20TouchGFXGeneratedHAL10initializeEv+0x68>)
+34022754:	490e      	ldr	r1, [pc, #56]	@ (34022790 <_ZN20TouchGFXGeneratedHAL10initializeEv+0x64>)
 34022756:	4618      	mov	r0, r3
 34022758:	f7ff ff6e 	bl	34022638 <_ZN8touchgfx3HAL25registerTaskDelayFunctionEPFvtE>
     if (!setFrameRefreshStrategy(HAL::REFRESH_STRATEGY_OPTIM_SINGLE_BUFFER_TFT_CTRL))
@@ -86986,7 +86988,7 @@ void TouchGFXGeneratedHAL::initialize()
 34022772:	bf00      	nop
 34022774:	e7fd      	b.n	34022772 <_ZN20TouchGFXGeneratedHAL10initializeEv+0x46>
     }
-    setFrameBufferStartAddresses((void*)0x91000000, (void*)0, (void*)0);
+    setFrameBufferStartAddresses((void*)0x34080000, (void*)0, (void*)0);
 34022776:	6878      	ldr	r0, [r7, #4]
 34022778:	687b      	ldr	r3, [r7, #4]
 3402277a:	681b      	ldr	r3, [r3, #0]
@@ -86994,15 +86996,15 @@ void TouchGFXGeneratedHAL::initialize()
 3402277e:	681c      	ldr	r4, [r3, #0]
 34022780:	2300      	movs	r3, #0
 34022782:	2200      	movs	r2, #0
-34022784:	f04f 4111 	mov.w	r1, #2432696320	@ 0x91000000
-34022788:	47a0      	blx	r4
+34022784:	4903      	ldr	r1, [pc, #12]	@ (34022794 <_ZN20TouchGFXGeneratedHAL10initializeEv+0x68>)
+34022786:	47a0      	blx	r4
 }
-3402278a:	bf00      	nop
-3402278c:	3708      	adds	r7, #8
-3402278e:	46bd      	mov	sp, r7
-34022790:	bdb0      	pop	{r4, r5, r7, pc}
-34022792:	bf00      	nop
-34022794:	3402112d 	.word	0x3402112d
+34022788:	bf00      	nop
+3402278a:	3708      	adds	r7, #8
+3402278c:	46bd      	mov	sp, r7
+3402278e:	bdb0      	pop	{r4, r5, r7, pc}
+34022790:	3402112d 	.word	0x3402112d
+34022794:	34080000 	.word	0x34080000
 
 34022798 <_ZN20TouchGFXGeneratedHAL19configureInterruptsEv>:
 
@@ -87115,8 +87117,8 @@ void TouchGFXGeneratedHAL::enableLCDControllerInterrupt()
 3402283a:	f85d 7b04 	ldr.w	r7, [sp], #4
 3402283e:	4770      	bx	lr
 34022840:	58001000 	.word	0x58001000
-34022844:	341d4cac 	.word	0x341d4cac
-34022848:	341d4cae 	.word	0x341d4cae
+34022844:	341194ac 	.word	0x341194ac
+34022848:	341194ae 	.word	0x341194ae
 
 3402284c <_ZN20TouchGFXGeneratedHAL10beginFrameEv>:
 
@@ -87904,7 +87906,7 @@ void TouchGFXGeneratedHAL::FlushCache()
 34022dea:	e8bd 8ff0 	ldmia.w	sp!, {r4, r5, r6, r7, r8, r9, sl, fp, pc}
 34022dee:	f04f 35ff 	mov.w	r5, #4294967295
 34022df2:	e769      	b.n	34022cc8 <_ZN8touchgfx9Container16getLastChildNearEssPPNS_8DrawableEPsS4_+0x8c>
-34022df4:	341d4cbc 	.word	0x341d4cbc
+34022df4:	341194bc 	.word	0x341194bc
 34022df8:	3403a1b4 	.word	0x3403a1b4
 
 34022dfc <_ZN8touchgfx4RectaNERKS0_>:
@@ -88209,7 +88211,7 @@ void TouchGFXGeneratedHAL::FlushCache()
 340230ae:	4770      	bx	lr
 340230b0:	2001      	movs	r0, #1
 340230b2:	4770      	bx	lr
-340230b4:	341d4cba 	.word	0x341d4cba
+340230b4:	341194ba 	.word	0x341194ba
 
 340230b8 <_ZN8touchgfx3HAL8endFrameEv>:
 340230b8:	b510      	push	{r4, lr}
@@ -88421,8 +88423,8 @@ void TouchGFXGeneratedHAL::FlushCache()
 340232a8:	f884 0069 	strble.w	r0, [r4, #105]	@ 0x69
 340232ac:	e7d0      	b.n	34023250 <_ZN8touchgfx3HAL4tickEv+0x130>
 340232ae:	bf00      	nop
-340232b0:	341d4cc0 	.word	0x341d4cc0
-340232b4:	341d4cc1 	.word	0x341d4cc1
+340232b0:	341194c0 	.word	0x341194c0
+340232b4:	341194c1 	.word	0x341194c1
 340232b8:	05f5e100 	.word	0x05f5e100
 
 340232bc <_ZN8touchgfx3HAL17unlockFrameBufferEv>:
@@ -88594,7 +88596,7 @@ void TouchGFXGeneratedHAL::FlushCache()
 34023456:	1a9a      	subs	r2, r3, r2
 34023458:	63e2      	str	r2, [r4, #60]	@ 0x3c
 3402345a:	e7ea      	b.n	34023432 <_ZN8touchgfx3HAL27configurePartialFrameBufferEtttt+0x3e>
-3402345c:	341d4cb6 	.word	0x341d4cb6
+3402345c:	341194b6 	.word	0x341194b6
 
 34023460 <_ZN8touchgfx3HAL31configurePartialFrameBufferLTDCEs>:
 34023460:	b5f8      	push	{r3, r4, r5, r6, r7, lr}
@@ -88635,8 +88637,8 @@ void TouchGFXGeneratedHAL::FlushCache()
 340234b0:	434c      	muls	r4, r1
 340234b2:	eba5 0584 	sub.w	r5, r5, r4, lsl #2
 340234b6:	e7e7      	b.n	34023488 <_ZN8touchgfx3HAL31configurePartialFrameBufferLTDCEs+0x28>
-340234b8:	341d4cb8 	.word	0x341d4cb8
-340234bc:	341d4cb6 	.word	0x341d4cb6
+340234b8:	341194b8 	.word	0x341194b8
+340234bc:	341194b6 	.word	0x341194b6
 
 340234c0 <_ZN8touchgfx3HAL8blitCopyEPKtttttthbb>:
 340234c0:	b5f0      	push	{r4, r5, r6, r7, lr}
@@ -88676,7 +88678,7 @@ void TouchGFXGeneratedHAL::FlushCache()
 34023512:	47a8      	blx	r5
 34023514:	b00b      	add	sp, #44	@ 0x2c
 34023516:	bdf0      	pop	{r4, r5, r6, r7, pc}
-34023518:	341d4cb6 	.word	0x341d4cb6
+34023518:	341194b6 	.word	0x341194b6
 
 3402351c <_ZN8touchgfx3HAL16blitCopyARGB8888EPKtttttthb>:
 3402351c:	e92d 43f0 	stmdb	sp!, {r4, r5, r6, r7, r8, r9, lr}
@@ -88718,7 +88720,7 @@ void TouchGFXGeneratedHAL::FlushCache()
 34023578:	b00b      	add	sp, #44	@ 0x2c
 3402357a:	e8bd 83f0 	ldmia.w	sp!, {r4, r5, r6, r7, r8, r9, pc}
 3402357e:	bf00      	nop
-34023580:	341d4cb6 	.word	0x341d4cb6
+34023580:	341194b6 	.word	0x341194b6
 
 34023584 <_ZN8touchgfx3HAL8blitFillENS_9colortypeEtttthb>:
 34023584:	e92d 43f0 	stmdb	sp!, {r4, r5, r6, r7, r8, r9, lr}
@@ -88752,7 +88754,7 @@ void TouchGFXGeneratedHAL::FlushCache()
 340235cc:	47a8      	blx	r5
 340235ce:	b007      	add	sp, #28
 340235d0:	e8bd 83f0 	ldmia.w	sp!, {r4, r5, r6, r7, r8, r9, pc}
-340235d4:	341d4cb6 	.word	0x341d4cb6
+340235d4:	341194b6 	.word	0x341194b6
 
 340235d8 <_ZN8touchgfx3HAL27drawDrawableInDynamicBitmapERNS_8DrawableEtRKNS_4RectE>:
 340235d8:	e92d 4ff0 	stmdb	sp!, {r4, r5, r6, r7, r8, r9, sl, fp, lr}
@@ -88922,11 +88924,11 @@ void TouchGFXGeneratedHAL::FlushCache()
 3402377a:	b2c0      	uxtb	r0, r0
 3402377c:	e7ab      	b.n	340236d6 <_ZN8touchgfx3HAL27drawDrawableInDynamicBitmapERNS_8DrawableEtRKNS_4RectE+0xfe>
 3402377e:	bf00      	nop
-34023780:	341d4cb0 	.word	0x341d4cb0
-34023784:	341d4cb2 	.word	0x341d4cb2
-34023788:	341d4cb4 	.word	0x341d4cb4
-3402378c:	341d4cb6 	.word	0x341d4cb6
-34023790:	341d4cb8 	.word	0x341d4cb8
+34023780:	341194b0 	.word	0x341194b0
+34023784:	341194b2 	.word	0x341194b2
+34023788:	341194b4 	.word	0x341194b4
+3402378c:	341194b6 	.word	0x341194b6
+34023790:	341194b8 	.word	0x341194b8
 
 34023794 <_ZN8touchgfx3HAL20getClientFrameBufferEv>:
 34023794:	b510      	push	{r4, lr}
@@ -88945,7 +88947,7 @@ void TouchGFXGeneratedHAL::FlushCache()
 340237ae:	6be0      	ldr	r0, [r4, #60]	@ 0x3c
 340237b0:	e7fc      	b.n	340237ac <_ZN8touchgfx3HAL20getClientFrameBufferEv+0x18>
 340237b2:	bf00      	nop
-340237b4:	341d4cba 	.word	0x341d4cba
+340237b4:	341194ba 	.word	0x341194ba
 
 340237b8 <_ZN8touchgfx3HAL12blitCopyWordEPKttttttt>:
 340237b8:	e92d 41f0 	stmdb	sp!, {r4, r5, r6, r7, r8, lr}
@@ -89166,7 +89168,7 @@ void TouchGFXGeneratedHAL::FlushCache()
 34023a0a:	10e4      	asrs	r4, r4, #3
 34023a0c:	fb04 6000 	mla	r0, r4, r0, r6
 34023a10:	e8bd 81f0 	ldmia.w	sp!, {r4, r5, r6, r7, r8, pc}
-34023a14:	341d4cb6 	.word	0x341d4cb6
+34023a14:	341194b6 	.word	0x341194b6
 34023a18:	3403b6bc 	.word	0x3403b6bc
 
 34023a1c <_ZN8touchgfx3HAL13blitCopyGlyphEPKhtttttNS_9colortypeEhNS_14BlitOperationsEb>:
@@ -89216,7 +89218,7 @@ void TouchGFXGeneratedHAL::FlushCache()
 34023a96:	4798      	blx	r3
 34023a98:	b00b      	add	sp, #44	@ 0x2c
 34023a9a:	bdf0      	pop	{r4, r5, r6, r7, pc}
-34023a9c:	341d4cb6 	.word	0x341d4cb6
+34023a9c:	341194b6 	.word	0x341194b6
 
 34023aa0 <_ZN8touchgfx3HAL20copyFBRegionToMemoryENS_4RectE>:
 34023aa0:	b5f0      	push	{r4, r5, r6, r7, lr}
@@ -89267,7 +89269,7 @@ void TouchGFXGeneratedHAL::FlushCache()
 34023b1a:	6c60      	ldr	r0, [r4, #68]	@ 0x44
 34023b1c:	b00d      	add	sp, #52	@ 0x34
 34023b1e:	bdf0      	pop	{r4, r5, r6, r7, pc}
-34023b20:	341d4cb6 	.word	0x341d4cb6
+34023b20:	341194b6 	.word	0x341194b6
 
 34023b24 <_ZN8touchgfx3HAL20copyFBRegionToMemoryENS_4RectEPtm>:
 34023b24:	e92d 41f0 	stmdb	sp!, {r4, r5, r6, r7, r8, lr}
@@ -89320,7 +89322,7 @@ void TouchGFXGeneratedHAL::FlushCache()
 34023ba4:	b00c      	add	sp, #48	@ 0x30
 34023ba6:	e8bd 81f0 	ldmia.w	sp!, {r4, r5, r6, r7, r8, pc}
 34023baa:	bf00      	nop
-34023bac:	341d4cb6 	.word	0x341d4cb6
+34023bac:	341194b6 	.word	0x341194b6
 
 34023bb0 <_ZN8touchgfx3HAL25copyFromTFTToClientBufferENS_4RectE>:
 34023bb0:	b5f0      	push	{r4, r5, r6, r7, lr}
@@ -89347,7 +89349,7 @@ void TouchGFXGeneratedHAL::FlushCache()
 34023be6:	47b0      	blx	r6
 34023be8:	b005      	add	sp, #20
 34023bea:	bdf0      	pop	{r4, r5, r6, r7, pc}
-34023bec:	341d4cb6 	.word	0x341d4cb6
+34023bec:	341194b6 	.word	0x341194b6
 
 34023bf0 <_ZN8touchgfx3HAL16swapFrameBuffersEv>:
 34023bf0:	b570      	push	{r4, r5, r6, lr}
@@ -89408,7 +89410,7 @@ void TouchGFXGeneratedHAL::FlushCache()
 34023c74:	4620      	mov	r0, r4
 34023c76:	f7ff fd8d 	bl	34023794 <_ZN8touchgfx3HAL20getClientFrameBufferEv>
 34023c7a:	bd10      	pop	{r4, pc}
-34023c7c:	341d4cba 	.word	0x341d4cba
+34023c7c:	341194ba 	.word	0x341194ba
 
 34023c80 <_ZN8touchgfx13DMA_Interface10initializeEv>:
 34023c80:	4770      	bx	lr
@@ -89595,7 +89597,7 @@ void TouchGFXGeneratedHAL::FlushCache()
 34023dda:	6803      	ldr	r3, [r0, #0]
 34023ddc:	6fdb      	ldr	r3, [r3, #124]	@ 0x7c
 34023dde:	4718      	bx	r3
-34023de0:	341d4cbc 	.word	0x341d4cbc
+34023de0:	341194bc 	.word	0x341194bc
 
 34023de4 <_ZN8touchgfx13DMA_Interface27waitForFrameBufferSemaphoreEv>:
 34023de4:	b508      	push	{r3, lr}
@@ -89763,7 +89765,7 @@ void TouchGFXGeneratedHAL::FlushCache()
 34023f26:	47a8      	blx	r5
 34023f28:	b003      	add	sp, #12
 34023f2a:	bd30      	pop	{r4, r5, pc}
-34023f2c:	341d4cbc 	.word	0x341d4cbc
+34023f2c:	341194bc 	.word	0x341194bc
 
 34023f30 <_ZNK8touchgfx3Box17invalidateContentEv>:
 34023f30:	f890 2026 	ldrb.w	r2, [r0, #38]	@ 0x26
@@ -89915,7 +89917,7 @@ void TouchGFXGeneratedHAL::FlushCache()
 3402408e:	9307      	str	r3, [sp, #28]
 34024090:	e7ca      	b.n	34024028 <_ZNK8touchgfx6Button4drawERKNS_4RectE+0x80>
 34024092:	bf00      	nop
-34024094:	341d4cbc 	.word	0x341d4cbc
+34024094:	341194bc 	.word	0x341194bc
 
 34024098 <_ZNK8touchgfx6Button17invalidateContentEv>:
 34024098:	f890 2032 	ldrb.w	r2, [r0, #50]	@ 0x32
@@ -90027,7 +90029,7 @@ void TouchGFXGeneratedHAL::FlushCache()
 3402418c:	47a8      	blx	r5
 3402418e:	b008      	add	sp, #32
 34024190:	e8bd 81f0 	ldmia.w	sp!, {r4, r5, r6, r7, r8, pc}
-34024194:	341d4cbc 	.word	0x341d4cbc
+34024194:	341194bc 	.word	0x341194bc
 
 34024198 <_ZNK8touchgfx15ButtonWithLabel4drawERKNS_4RectE>:
 34024198:	e92d 43f0 	stmdb	sp!, {r4, r5, r6, r7, r8, r9, lr}
@@ -90152,11 +90154,11 @@ void TouchGFXGeneratedHAL::FlushCache()
 340242f6:	6be2      	ldr	r2, [r4, #60]	@ 0x3c
 340242f8:	e7aa      	b.n	34024250 <_ZNK8touchgfx15ButtonWithLabel4drawERKNS_4RectE+0xb8>
 340242fa:	bf00      	nop
-340242fc:	341d4d10 	.word	0x341d4d10
-34024300:	341d4d0c 	.word	0x341d4d0c
-34024304:	341d4d14 	.word	0x341d4d14
-34024308:	341d4cbc 	.word	0x341d4cbc
-3402430c:	341d4d18 	.word	0x341d4d18
+340242fc:	34119510 	.word	0x34119510
+34024300:	3411950c 	.word	0x3411950c
+34024304:	34119514 	.word	0x34119514
+34024308:	341194bc 	.word	0x341194bc
+3402430c:	34119518 	.word	0x34119518
 
 34024310 <_ZN8touchgfx15ButtonWithLabelC1Ev>:
 34024310:	2101      	movs	r1, #1
@@ -90214,7 +90216,7 @@ void TouchGFXGeneratedHAL::FlushCache()
 34024382:	6019      	str	r1, [r3, #0]
 34024384:	4770      	bx	lr
 34024386:	bf00      	nop
-34024388:	341d4cc4 	.word	0x341d4cc4
+34024388:	341194c4 	.word	0x341194c4
 
 3402438c <_ZN8touchgfx3LCD18drawTextureMapQuadERKNS_14DrawingSurfaceEPKNS_7Point3DERKNS_14TextureSurfaceERKNS_4RectESC_tht>:
 3402438c:	e92d 4ff0 	stmdb	sp!, {r4, r5, r6, r7, r8, r9, sl, fp, lr}
@@ -90747,12 +90749,12 @@ void TouchGFXGeneratedHAL::FlushCache()
 3402496a:	e7e9      	b.n	34024940 <_ZN8touchgfx3LCD22drawTextureMapTriangleERKNS_14DrawingSurfaceEPKNS_7Point3DERKNS_14TextureSurfaceERKNS_4RectESC_tht+0x324>
 3402496c:	4613      	mov	r3, r2
 3402496e:	e727      	b.n	340247c0 <_ZN8touchgfx3LCD22drawTextureMapTriangleERKNS_14DrawingSurfaceEPKNS_7Point3DERKNS_14TextureSurfaceERKNS_4RectESC_tht+0x1a4>
-34024970:	341d4cb4 	.word	0x341d4cb4
+34024970:	341194b4 	.word	0x341194b4
 34024974:	fffd8f01 	.word	0xfffd8f01
 34024978:	00027100 	.word	0x00027100
 3402497c:	0004e1ff 	.word	0x0004e1ff
 34024980:	0004e1fe 	.word	0x0004e1fe
-34024984:	341d4cbc 	.word	0x341d4cbc
+34024984:	341194bc 	.word	0x341194bc
 34024988:	4613      	mov	r3, r2
 3402498a:	eddd 4a34 	vldr	s9, [sp, #208]	@ 0xd0
 3402498e:	ed9d 7a33 	vldr	s14, [sp, #204]	@ 0xcc
@@ -91121,7 +91123,7 @@ void TouchGFXGeneratedHAL::FlushCache()
 34024db4:	b05b      	add	sp, #364	@ 0x16c
 34024db6:	e8bd 8ff0 	ldmia.w	sp!, {r4, r5, r6, r7, r8, r9, sl, fp, pc}
 34024dba:	bf00      	nop
-34024dbc:	341d4cbc 	.word	0x341d4cbc
+34024dbc:	341194bc 	.word	0x341194bc
 
 34024dc0 <_ZN8touchgfx3LCD22WideTextInternalStructC1ERNS_12TextProviderEtthPKNS_4FontEsNS_14WideTextActionE>:
 34024dc0:	b570      	push	{r4, r5, r6, lr}
@@ -92144,7 +92146,7 @@ void TouchGFXGeneratedHAL::FlushCache()
 3402573a:	4b01      	ldr	r3, [pc, #4]	@ (34025740 <_GLOBAL__sub_I__ZN8touchgfx3LCD12defaultColorE+0x8>)
 3402573c:	601a      	str	r2, [r3, #0]
 3402573e:	4770      	bx	lr
-34025740:	341d4cc4 	.word	0x341d4cc4
+34025740:	341194c4 	.word	0x341194c4
 
 34025744 <_ZN8touchgfx16TouchCalibration4clzuEm>:
 34025744:	4603      	mov	r3, r0
@@ -92371,7 +92373,7 @@ void TouchGFXGeneratedHAL::FlushCache()
 3402594e:	4440      	add	r0, r8
 34025950:	e7cc      	b.n	340258ec <_ZN8touchgfx16TouchCalibration14translatePointERNS_5PointE+0x10>
 34025952:	bf00      	nop
-34025954:	341d4cc8 	.word	0x341d4cc8
+34025954:	341194c8 	.word	0x341194c8
 
 34025958 <_ZN8touchgfx21DisplayTransformation29transformDisplayToFrameBufferERsS1_>:
 34025958:	4b07      	ldr	r3, [pc, #28]	@ (34025978 <_ZN8touchgfx21DisplayTransformation29transformDisplayToFrameBufferERsS1_+0x20>)
@@ -92388,8 +92390,8 @@ void TouchGFXGeneratedHAL::FlushCache()
 34025972:	800b      	strh	r3, [r1, #0]
 34025974:	4770      	bx	lr
 34025976:	bf00      	nop
-34025978:	341d4cb4 	.word	0x341d4cb4
-3402597c:	341d4cb0 	.word	0x341d4cb0
+34025978:	341194b4 	.word	0x341194b4
+3402597c:	341194b0 	.word	0x341194b0
 
 34025980 <_ZN8touchgfx21DisplayTransformation29transformFrameBufferToDisplayERsS1_>:
 34025980:	b510      	push	{r4, lr}
@@ -92407,8 +92409,8 @@ void TouchGFXGeneratedHAL::FlushCache()
 3402599a:	800a      	strh	r2, [r1, #0]
 3402599c:	bd10      	pop	{r4, pc}
 3402599e:	bf00      	nop
-340259a0:	341d4cb4 	.word	0x341d4cb4
-340259a4:	341d4cb0 	.word	0x341d4cb0
+340259a0:	341194b4 	.word	0x341194b4
+340259a4:	341194b0 	.word	0x341194b0
 
 340259a8 <_ZN8touchgfx21DisplayTransformation29transformFrameBufferToDisplayERNS_4RectE>:
 340259a8:	b510      	push	{r4, lr}
@@ -92430,8 +92432,8 @@ void TouchGFXGeneratedHAL::FlushCache()
 340259ce:	80c3      	strh	r3, [r0, #6]
 340259d0:	bd10      	pop	{r4, pc}
 340259d2:	bf00      	nop
-340259d4:	341d4cb4 	.word	0x341d4cb4
-340259d8:	341d4cb0 	.word	0x341d4cb0
+340259d4:	341194b4 	.word	0x341194b4
+340259d8:	341194b0 	.word	0x341194b0
 
 340259dc <_ZN8touchgfx21DisplayTransformation29transformDisplayToFrameBufferERNS_4RectE>:
 340259dc:	4b08      	ldr	r3, [pc, #32]	@ (34025a00 <_ZN8touchgfx21DisplayTransformation29transformDisplayToFrameBufferERNS_4RectE+0x24>)
@@ -92451,8 +92453,8 @@ void TouchGFXGeneratedHAL::FlushCache()
 340259fa:	80c1      	strh	r1, [r0, #6]
 340259fc:	8083      	strh	r3, [r0, #4]
 340259fe:	4770      	bx	lr
-34025a00:	341d4cb4 	.word	0x341d4cb4
-34025a04:	341d4cb0 	.word	0x341d4cb0
+34025a00:	341194b4 	.word	0x341194b4
+34025a04:	341194b0 	.word	0x341194b0
 
 34025a08 <_ZN8touchgfx21DisplayTransformation29transformDisplayToFrameBufferERsS1_RKNS_4RectE>:
 34025a08:	b510      	push	{r4, lr}
@@ -92469,7 +92471,7 @@ void TouchGFXGeneratedHAL::FlushCache()
 34025a22:	800b      	strh	r3, [r1, #0]
 34025a24:	bd10      	pop	{r4, pc}
 34025a26:	bf00      	nop
-34025a28:	341d4cb4 	.word	0x341d4cb4
+34025a28:	341194b4 	.word	0x341194b4
 
 34025a2c <_ZN8touchgfx21DisplayTransformation29transformDisplayToFrameBufferERNS_4RectERKS1_>:
 34025a2c:	b510      	push	{r4, lr}
@@ -92491,7 +92493,7 @@ void TouchGFXGeneratedHAL::FlushCache()
 34025a52:	8082      	strh	r2, [r0, #4]
 34025a54:	bd10      	pop	{r4, pc}
 34025a56:	bf00      	nop
-34025a58:	341d4cb4 	.word	0x341d4cb4
+34025a58:	341194b4 	.word	0x341194b4
 
 34025a5c <_ZN8touchgfx11Application13requestRedrawEv>:
 34025a5c:	2100      	movs	r1, #0
@@ -92503,8 +92505,8 @@ void TouchGFXGeneratedHAL::FlushCache()
 34025a6e:	f9b3 3000 	ldrsh.w	r3, [r3]
 34025a72:	f8a0 3136 	strh.w	r3, [r0, #310]	@ 0x136
 34025a76:	4770      	bx	lr
-34025a78:	341d4cb0 	.word	0x341d4cb0
-34025a7c:	341d4cb2 	.word	0x341d4cb2
+34025a78:	341194b0 	.word	0x341194b0
+34025a7c:	341194b2 	.word	0x341194b2
 
 34025a80 <_ZN8touchgfx11Application16handleClickEventERKNS_10ClickEventE>:
 34025a80:	4b03      	ldr	r3, [pc, #12]	@ (34025a90 <_ZN8touchgfx11Application16handleClickEventERKNS_10ClickEventE+0x10>)
@@ -92515,7 +92517,7 @@ void TouchGFXGeneratedHAL::FlushCache()
 34025a8a:	4718      	bx	r3
 34025a8c:	4770      	bx	lr
 34025a8e:	bf00      	nop
-34025a90:	341d4cf8 	.word	0x341d4cf8
+34025a90:	341194f8 	.word	0x341194f8
 
 34025a94 <_ZN8touchgfx11Application29handlePendingScreenTransitionEv>:
 34025a94:	4770      	bx	lr
@@ -92537,8 +92539,8 @@ void TouchGFXGeneratedHAL::FlushCache()
 34025ab8:	4798      	blx	r3
 34025aba:	b003      	add	sp, #12
 34025abc:	f85d fb04 	ldr.w	pc, [sp], #4
-34025ac0:	341d4cb0 	.word	0x341d4cb0
-34025ac4:	341d4cb2 	.word	0x341d4cb2
+34025ac0:	341194b0 	.word	0x341194b0
+34025ac4:	341194b2 	.word	0x341194b2
 
 34025ac8 <_ZN8touchgfx11Application10invalidateEv>:
 34025ac8:	2100      	movs	r1, #0
@@ -92556,8 +92558,8 @@ void TouchGFXGeneratedHAL::FlushCache()
 34025ae8:	e912 0006 	ldmdb	r2, {r1, r2}
 34025aec:	b002      	add	sp, #8
 34025aee:	4718      	bx	r3
-34025af0:	341d4cb0 	.word	0x341d4cb0
-34025af4:	341d4cb2 	.word	0x341d4cb2
+34025af0:	341194b0 	.word	0x341194b0
+34025af4:	341194b2 	.word	0x341194b2
 
 34025af8 <_ZN8touchgfx11Application15handleDragEventERKNS_9DragEventE>:
 34025af8:	4b03      	ldr	r3, [pc, #12]	@ (34025b08 <_ZN8touchgfx11Application15handleDragEventERKNS_9DragEventE+0x10>)
@@ -92568,7 +92570,7 @@ void TouchGFXGeneratedHAL::FlushCache()
 34025b02:	4718      	bx	r3
 34025b04:	4770      	bx	lr
 34025b06:	bf00      	nop
-34025b08:	341d4cf8 	.word	0x341d4cf8
+34025b08:	341194f8 	.word	0x341194f8
 
 34025b0c <_ZN8touchgfx11Application18handleGestureEventERKNS_12GestureEventE>:
 34025b0c:	4b03      	ldr	r3, [pc, #12]	@ (34025b1c <_ZN8touchgfx11Application18handleGestureEventERKNS_12GestureEventE+0x10>)
@@ -92579,7 +92581,7 @@ void TouchGFXGeneratedHAL::FlushCache()
 34025b16:	4718      	bx	r3
 34025b18:	4770      	bx	lr
 34025b1a:	bf00      	nop
-34025b1c:	341d4cf8 	.word	0x341d4cf8
+34025b1c:	341194f8 	.word	0x341194f8
 
 34025b20 <_ZN8touchgfx11Application16clearCachedAreasEv>:
 34025b20:	2300      	movs	r3, #0
@@ -92595,7 +92597,7 @@ void TouchGFXGeneratedHAL::FlushCache()
 34025b32:	4718      	bx	r3
 34025b34:	4770      	bx	lr
 34025b36:	bf00      	nop
-34025b38:	341d4cf8 	.word	0x341d4cf8
+34025b38:	341194f8 	.word	0x341194f8
 
 34025b3c <_ZNK8touchgfx4Rect9intersectERKS0_>:
 34025b3c:	b510      	push	{r4, lr}
@@ -92692,11 +92694,11 @@ void TouchGFXGeneratedHAL::FlushCache()
 34025c06:	69db      	ldr	r3, [r3, #28]
 34025c08:	4718      	bx	r3
 34025c0a:	bd10      	pop	{r4, pc}
-34025c0c:	341d4cb2 	.word	0x341d4cb2
-34025c10:	341d4cb0 	.word	0x341d4cb0
-34025c14:	341d4cf8 	.word	0x341d4cf8
-34025c18:	341d4cf4 	.word	0x341d4cf4
-34025c1c:	341d4cbc 	.word	0x341d4cbc
+34025c0c:	341194b2 	.word	0x341194b2
+34025c10:	341194b0 	.word	0x341194b0
+34025c14:	341194f8 	.word	0x341194f8
+34025c18:	341194f4 	.word	0x341194f4
+34025c1c:	341194bc 	.word	0x341194bc
 
 34025c20 <_ZNK8touchgfx4Rect8includesERKS0_>:
 34025c20:	b5f8      	push	{r3, r4, r5, r6, r7, lr}
@@ -92795,7 +92797,7 @@ void TouchGFXGeneratedHAL::FlushCache()
 34025cfa:	6818      	ldr	r0, [r3, #0]
 34025cfc:	4770      	bx	lr
 34025cfe:	bf00      	nop
-34025d00:	341d4d08 	.word	0x341d4d08
+34025d00:	34119508 	.word	0x34119508
 
 34025d04 <_ZN8touchgfx11Application12TimerWidgets10tickActiveEv>:
 34025d04:	2300      	movs	r3, #0
@@ -92854,7 +92856,7 @@ void TouchGFXGeneratedHAL::FlushCache()
 34025d82:	6c5b      	ldr	r3, [r3, #68]	@ 0x44
 34025d84:	4718      	bx	r3
 34025d86:	bf00      	nop
-34025d88:	341d4cf8 	.word	0x341d4cf8
+34025d88:	341194f8 	.word	0x341194f8
 
 34025d8c <_ZN8touchgfx11Application12TimerWidgets7compactEv>:
 34025d8c:	2300      	movs	r3, #0
@@ -92942,8 +92944,8 @@ void TouchGFXGeneratedHAL::FlushCache()
 34025e52:	6a5b      	ldr	r3, [r3, #36]	@ 0x24
 34025e54:	e7dd      	b.n	34025e12 <_ZN8touchgfx11Application15handleTickEventEv+0x16>
 34025e56:	bd70      	pop	{r4, r5, r6, pc}
-34025e58:	341d4cfc 	.word	0x341d4cfc
-34025e5c:	341d4cf8 	.word	0x341d4cf8
+34025e58:	341194fc 	.word	0x341194fc
+34025e5c:	341194f8 	.word	0x341194f8
 
 34025e60 <_ZN8touchgfx6VectorINS_4RectELt8EEC1Ev>:
 34025e60:	4603      	mov	r3, r0
@@ -93007,10 +93009,10 @@ void TouchGFXGeneratedHAL::FlushCache()
 34025ef4:	3403bab4 	.word	0x3403bab4
 34025ef8:	b5e8b5cd 	.word	0xb5e8b5cd
 34025efc:	f407a5c2 	.word	0xf407a5c2
-34025f00:	341d4cf8 	.word	0x341d4cf8
+34025f00:	341194f8 	.word	0x341194f8
 34025f04:	341115ac 	.word	0x341115ac
-34025f08:	341d4d08 	.word	0x341d4d08
-34025f0c:	341d4cfc 	.word	0x341d4cfc
+34025f08:	34119508 	.word	0x34119508
+34025f0c:	341194fc 	.word	0x341194fc
 
 34025f10 <_ZN8touchgfx6VectorINS_4RectELt8EE13quickRemoveAtEt>:
 34025f10:	b508      	push	{r3, lr}
@@ -93252,9 +93254,9 @@ void TouchGFXGeneratedHAL::FlushCache()
 3402617a:	eba1 0c0c 	sub.w	ip, r1, ip
 3402617e:	f8a4 c004 	strh.w	ip, [r4, #4]
 34026182:	e7d0      	b.n	34026126 <_ZN8touchgfx11Application14invalidateAreaENS_4RectE+0x1f2>
-34026184:	341d4cb2 	.word	0x341d4cb2
-34026188:	341d4cb0 	.word	0x341d4cb0
-3402618c:	341d4cbc 	.word	0x341d4cbc
+34026184:	341194b2 	.word	0x341194b2
+34026188:	341194b0 	.word	0x341194b0
+3402618c:	341194bc 	.word	0x341194bc
 34026190:	2d00      	cmp	r5, #0
 34026192:	f000 816e 	beq.w	34026472 <_ZN8touchgfx11Application14invalidateAreaENS_4RectE+0x53e>
 34026196:	9b06      	ldr	r3, [sp, #24]
@@ -93976,13 +93978,13 @@ void TouchGFXGeneratedHAL::FlushCache()
 3402693e:	4648      	mov	r0, r9
 34026940:	e7d4      	b.n	340268ec <_ZN8touchgfx11Application15drawCachedAreasEv+0x2c0>
 34026942:	bf00      	nop
-34026944:	341d4cbc 	.word	0x341d4cbc
-34026948:	341d4cf4 	.word	0x341d4cf4
-3402694c:	341d4d00 	.word	0x341d4d00
+34026944:	341194bc 	.word	0x341194bc
+34026948:	341194f4 	.word	0x341194f4
+3402694c:	34119500 	.word	0x34119500
 34026950:	341115ac 	.word	0x341115ac
-34026954:	341d4cb4 	.word	0x341d4cb4
-34026958:	341d4cb0 	.word	0x341d4cb0
-3402695c:	341d4cb2 	.word	0x341d4cb2
+34026954:	341194b4 	.word	0x341194b4
+34026958:	341194b0 	.word	0x341194b0
+3402695c:	341194b2 	.word	0x341194b2
 34026960:	6828      	ldr	r0, [r5, #0]
 34026962:	6803      	ldr	r3, [r0, #0]
 34026964:	6a5b      	ldr	r3, [r3, #36]	@ 0x24
@@ -94234,12 +94236,12 @@ void TouchGFXGeneratedHAL::FlushCache()
 34026bf6:	bfb8      	it	lt
 34026bf8:	4690      	movlt	r8, r2
 34026bfa:	e080      	b.n	34026cfe <_ZN8touchgfx11Application15drawCachedAreasEv+0x6d2>
-34026bfc:	341d4cba 	.word	0x341d4cba
+34026bfc:	341194ba 	.word	0x341194ba
 34026c00:	341115ac 	.word	0x341115ac
-34026c04:	341d4cb2 	.word	0x341d4cb2
-34026c08:	341d4cb0 	.word	0x341d4cb0
-34026c0c:	341d4cb4 	.word	0x341d4cb4
-34026c10:	341d4cbc 	.word	0x341d4cbc
+34026c04:	341194b2 	.word	0x341194b2
+34026c08:	341194b0 	.word	0x341194b0
+34026c0c:	341194b4 	.word	0x341194b4
+34026c10:	341194bc 	.word	0x341194bc
 34026c14:	19e1      	adds	r1, r4, r7
 34026c16:	2208      	movs	r2, #8
 34026c18:	31ac      	adds	r1, #172	@ 0xac
@@ -94419,7 +94421,7 @@ void TouchGFXGeneratedHAL::FlushCache()
 34026e02:	3501      	adds	r5, #1
 34026e04:	b2ad      	uxth	r5, r5
 34026e06:	e7e7      	b.n	34026dd8 <_ZN8touchgfx11Application15drawCachedAreasEv+0x7ac>
-34026e08:	341d4cbc 	.word	0x341d4cbc
+34026e08:	341194bc 	.word	0x341194bc
 
 34026e0c <_GLOBAL__sub_I__ZN8touchgfx11Application8instanceE>:
 34026e0c:	2200      	movs	r2, #0
@@ -94430,7 +94432,7 @@ void TouchGFXGeneratedHAL::FlushCache()
 34026e16:	80da      	strh	r2, [r3, #6]
 34026e18:	4770      	bx	lr
 34026e1a:	bf00      	nop
-34026e1c:	341d4d00 	.word	0x341d4d00
+34026e1c:	34119500 	.word	0x34119500
 
 34026e20 <_ZNK8touchgfx4Font17getStringWidthLTREhPKtSt9__va_list>:
 34026e20:	e92d 4ff0 	stmdb	sp!, {r4, r5, r6, r7, r8, r9, sl, fp, lr}
@@ -94833,7 +94835,7 @@ void TouchGFXGeneratedHAL::FlushCache()
 34027178:	e8bd 4070 	ldmia.w	sp!, {r4, r5, r6, lr}
 3402717c:	4718      	bx	r3
 3402717e:	bd70      	pop	{r4, r5, r6, pc}
-34027180:	341d4cf8 	.word	0x341d4cf8
+34027180:	341194f8 	.word	0x341194f8
 
 34027184 <_ZN8touchgfx8Drawable12moveRelativeEss>:
 34027184:	b570      	push	{r4, r5, r6, lr}
@@ -95365,8 +95367,8 @@ void TouchGFXGeneratedHAL::FlushCache()
 3402761e:	bd70      	pop	{r4, r5, r6, pc}
 34027620:	3403bc14 	.word	0x3403bc14
 34027624:	3403b634 	.word	0x3403b634
-34027628:	341d4cb2 	.word	0x341d4cb2
-3402762c:	341d4cb0 	.word	0x341d4cb0
+34027628:	341194b2 	.word	0x341194b2
+3402762c:	341194b0 	.word	0x341194b0
 
 34027630 <_ZN8touchgfx6Screen4drawEv>:
 34027630:	b507      	push	{r0, r1, r2, lr}
@@ -95384,8 +95386,8 @@ void TouchGFXGeneratedHAL::FlushCache()
 34027650:	4798      	blx	r3
 34027652:	b003      	add	sp, #12
 34027654:	f85d fb04 	ldr.w	pc, [sp], #4
-34027658:	341d4cb0 	.word	0x341d4cb0
-3402765c:	341d4cb2 	.word	0x341d4cb2
+34027658:	341194b0 	.word	0x341194b0
+3402765c:	341194b2 	.word	0x341194b2
 
 34027660 <_ZN8touchgfx6Screen5JSMOCERKNS_4RectEPNS_8DrawableE>:
 34027660:	e92d 4ff0 	stmdb	sp!, {r4, r5, r6, r7, r8, r9, sl, fp, lr}
@@ -97000,7 +97002,7 @@ void TouchGFXGeneratedHAL::FlushCache()
 3402877a:	6018      	str	r0, [r3, #0]
 3402877c:	4770      	bx	lr
 3402877e:	bf00      	nop
-34028780:	341d4d1c 	.word	0x341d4d1c
+34028780:	3411951c 	.word	0x3411951c
 
 34028784 <_ZN8touchgfx6Bitmap15isDynamicBitmapEt>:
 34028784:	4b06      	ldr	r3, [pc, #24]	@ (340287a0 <_ZN8touchgfx6Bitmap15isDynamicBitmapEt+0x1c>)
@@ -97017,8 +97019,8 @@ void TouchGFXGeneratedHAL::FlushCache()
 3402879a:	4770      	bx	lr
 3402879c:	2000      	movs	r0, #0
 3402879e:	4770      	bx	lr
-340287a0:	341d4d3c 	.word	0x341d4d3c
-340287a4:	341d4d40 	.word	0x341d4d40
+340287a0:	3411953c 	.word	0x3411953c
+340287a4:	34119540 	.word	0x34119540
 
 340287a8 <_ZN8touchgfx6Bitmap23dynamicBitmapGetAddressEt>:
 340287a8:	b508      	push	{r3, lr}
@@ -97029,7 +97031,7 @@ void TouchGFXGeneratedHAL::FlushCache()
 340287b4:	681b      	ldr	r3, [r3, #0]
 340287b6:	f853 0021 	ldr.w	r0, [r3, r1, lsl #2]
 340287ba:	bd08      	pop	{r3, pc}
-340287bc:	341d4d20 	.word	0x341d4d20
+340287bc:	34119520 	.word	0x34119520
 
 340287c0 <_ZN8touchgfx6Bitmap10clearCacheEv>:
 340287c0:	b5f0      	push	{r4, r5, r6, r7, lr}
@@ -97096,16 +97098,16 @@ void TouchGFXGeneratedHAL::FlushCache()
 3402884e:	e7e7      	b.n	34028820 <_ZN8touchgfx6Bitmap10clearCacheEv+0x60>
 34028850:	bdf0      	pop	{r4, r5, r6, r7, pc}
 34028852:	bf00      	nop
-34028854:	341d4d20 	.word	0x341d4d20
-34028858:	341d4d3c 	.word	0x341d4d3c
-3402885c:	341d4d40 	.word	0x341d4d40
-34028860:	341d4d34 	.word	0x341d4d34
-34028864:	341d4d24 	.word	0x341d4d24
-34028868:	341d4d2c 	.word	0x341d4d2c
-3402886c:	341d4d3e 	.word	0x341d4d3e
-34028870:	341d4d28 	.word	0x341d4d28
-34028874:	341d4d38 	.word	0x341d4d38
-34028878:	341d4d30 	.word	0x341d4d30
+34028854:	34119520 	.word	0x34119520
+34028858:	3411953c 	.word	0x3411953c
+3402885c:	34119540 	.word	0x34119540
+34028860:	34119534 	.word	0x34119534
+34028864:	34119524 	.word	0x34119524
+34028868:	3411952c 	.word	0x3411952c
+3402886c:	3411953e 	.word	0x3411953e
+34028870:	34119528 	.word	0x34119528
+34028874:	34119538 	.word	0x34119538
+34028878:	34119530 	.word	0x34119530
 
 3402887c <_ZN8touchgfx6Bitmap8setCacheEPtmm>:
 3402887c:	4b06      	ldr	r3, [pc, #24]	@ (34028898 <_ZN8touchgfx6Bitmap8setCacheEPtmm+0x1c>)
@@ -97121,10 +97123,10 @@ void TouchGFXGeneratedHAL::FlushCache()
 34028890:	f7ff bf96 	b.w	340287c0 <_ZN8touchgfx6Bitmap10clearCacheEv>
 34028894:	4770      	bx	lr
 34028896:	bf00      	nop
-34028898:	341d4d2c 	.word	0x341d4d2c
-3402889c:	341d4d40 	.word	0x341d4d40
-340288a0:	341d4d28 	.word	0x341d4d28
-340288a4:	341d4d20 	.word	0x341d4d20
+34028898:	3411952c 	.word	0x3411952c
+3402889c:	34119540 	.word	0x34119540
+340288a0:	34119528 	.word	0x34119528
+340288a4:	34119520 	.word	0x34119520
 
 340288a8 <_ZN8touchgfx6Bitmap22registerBitmapDatabaseEPKNS0_10BitmapDataEtPtmm>:
 340288a8:	b470      	push	{r4, r5, r6}
@@ -97142,8 +97144,8 @@ void TouchGFXGeneratedHAL::FlushCache()
 340288c0:	f7ff bfdc 	b.w	3402887c <_ZN8touchgfx6Bitmap8setCacheEPtmm>
 340288c4:	bc70      	pop	{r4, r5, r6}
 340288c6:	4770      	bx	lr
-340288c8:	341d4d44 	.word	0x341d4d44
-340288cc:	341d4d3c 	.word	0x341d4d3c
+340288c8:	34119544 	.word	0x34119544
+340288cc:	3411953c 	.word	0x3411953c
 
 340288d0 <_ZNK8touchgfx6Bitmap8getWidthEv>:
 340288d0:	4a12      	ldr	r2, [pc, #72]	@ (3402891c <_ZNK8touchgfx6Bitmap8getWidthEv+0x4c>)
@@ -97180,13 +97182,13 @@ void TouchGFXGeneratedHAL::FlushCache()
 34028916:	e7fa      	b.n	3402890e <_ZNK8touchgfx6Bitmap8getWidthEv+0x3e>
 34028918:	2000      	movs	r0, #0
 3402891a:	4770      	bx	lr
-3402891c:	341d4d3c 	.word	0x341d4d3c
-34028920:	341d4d44 	.word	0x341d4d44
-34028924:	341d4d40 	.word	0x341d4d40
-34028928:	341d4d24 	.word	0x341d4d24
-3402892c:	341d4cb4 	.word	0x341d4cb4
-34028930:	341d4cb6 	.word	0x341d4cb6
-34028934:	341d4cb8 	.word	0x341d4cb8
+3402891c:	3411953c 	.word	0x3411953c
+34028920:	34119544 	.word	0x34119544
+34028924:	34119540 	.word	0x34119540
+34028928:	34119524 	.word	0x34119524
+3402892c:	341194b4 	.word	0x341194b4
+34028930:	341194b6 	.word	0x341194b6
+34028934:	341194b8 	.word	0x341194b8
 
 34028938 <_ZNK8touchgfx6Bitmap9getHeightEv>:
 34028938:	4a12      	ldr	r2, [pc, #72]	@ (34028984 <_ZNK8touchgfx6Bitmap9getHeightEv+0x4c>)
@@ -97223,13 +97225,13 @@ void TouchGFXGeneratedHAL::FlushCache()
 3402897e:	e7fa      	b.n	34028976 <_ZNK8touchgfx6Bitmap9getHeightEv+0x3e>
 34028980:	2000      	movs	r0, #0
 34028982:	4770      	bx	lr
-34028984:	341d4d3c 	.word	0x341d4d3c
-34028988:	341d4d44 	.word	0x341d4d44
-3402898c:	341d4d40 	.word	0x341d4d40
-34028990:	341d4d24 	.word	0x341d4d24
-34028994:	341d4cb4 	.word	0x341d4cb4
-34028998:	341d4cb8 	.word	0x341d4cb8
-3402899c:	341d4cb6 	.word	0x341d4cb6
+34028984:	3411953c 	.word	0x3411953c
+34028988:	34119544 	.word	0x34119544
+3402898c:	34119540 	.word	0x34119540
+34028990:	34119524 	.word	0x34119524
+34028994:	341194b4 	.word	0x341194b4
+34028998:	341194b8 	.word	0x341194b8
+3402899c:	341194b6 	.word	0x341194b6
 
 340289a0 <_ZNK8touchgfx6Bitmap12getSolidRectEv>:
 340289a0:	b530      	push	{r4, r5, lr}
@@ -97291,12 +97293,12 @@ void TouchGFXGeneratedHAL::FlushCache()
 34028a26:	8083      	strh	r3, [r0, #4]
 34028a28:	e7d2      	b.n	340289d0 <_ZNK8touchgfx6Bitmap12getSolidRectEv+0x30>
 34028a2a:	bf00      	nop
-34028a2c:	341d4d3c 	.word	0x341d4d3c
-34028a30:	341d4d44 	.word	0x341d4d44
-34028a34:	341d4d40 	.word	0x341d4d40
-34028a38:	341d4d24 	.word	0x341d4d24
-34028a3c:	341d4cb0 	.word	0x341d4cb0
-34028a40:	341d4cb2 	.word	0x341d4cb2
+34028a2c:	3411953c 	.word	0x3411953c
+34028a30:	34119544 	.word	0x34119544
+34028a34:	34119540 	.word	0x34119540
+34028a38:	34119524 	.word	0x34119524
+34028a3c:	341194b0 	.word	0x341194b0
+34028a40:	341194b2 	.word	0x341194b2
 
 34028a44 <_ZNK8touchgfx6Bitmap20hasTransparentPixelsEv>:
 34028a44:	4a17      	ldr	r2, [pc, #92]	@ (34028aa4 <_ZNK8touchgfx6Bitmap20hasTransparentPixelsEv+0x60>)
@@ -97341,10 +97343,10 @@ void TouchGFXGeneratedHAL::FlushCache()
 34028a9e:	4770      	bx	lr
 34028aa0:	2001      	movs	r0, #1
 34028aa2:	4770      	bx	lr
-34028aa4:	341d4d3c 	.word	0x341d4d3c
-34028aa8:	341d4d44 	.word	0x341d4d44
-34028aac:	341d4d40 	.word	0x341d4d40
-34028ab0:	341d4d24 	.word	0x341d4d24
+34028aa4:	3411953c 	.word	0x3411953c
+34028aa8:	34119544 	.word	0x34119544
+34028aac:	34119540 	.word	0x34119540
+34028ab0:	34119524 	.word	0x34119524
 
 34028ab4 <_ZNK8touchgfx6Bitmap7getDataEv>:
 34028ab4:	4a12      	ldr	r2, [pc, #72]	@ (34028b00 <_ZNK8touchgfx6Bitmap7getDataEv+0x4c>)
@@ -97382,11 +97384,11 @@ void TouchGFXGeneratedHAL::FlushCache()
 34028afa:	2000      	movs	r0, #0
 34028afc:	4770      	bx	lr
 34028afe:	bf00      	nop
-34028b00:	341d4d3c 	.word	0x341d4d3c
-34028b04:	341d4d20 	.word	0x341d4d20
-34028b08:	341d4d44 	.word	0x341d4d44
-34028b0c:	341d4d40 	.word	0x341d4d40
-34028b10:	341d4cbc 	.word	0x341d4cbc
+34028b00:	3411953c 	.word	0x3411953c
+34028b04:	34119520 	.word	0x34119520
+34028b08:	34119544 	.word	0x34119544
+34028b0c:	34119540 	.word	0x34119540
+34028b10:	341194bc 	.word	0x341194bc
 
 34028b14 <_ZNK8touchgfx6Bitmap12getExtraDataEv>:
 34028b14:	4b24      	ldr	r3, [pc, #144]	@ (34028ba8 <_ZNK8touchgfx6Bitmap12getExtraDataEv+0x94>)
@@ -97454,11 +97456,11 @@ void TouchGFXGeneratedHAL::FlushCache()
 34028ba2:	2000      	movs	r0, #0
 34028ba4:	4770      	bx	lr
 34028ba6:	bf00      	nop
-34028ba8:	341d4d3c 	.word	0x341d4d3c
-34028bac:	341d4d44 	.word	0x341d4d44
-34028bb0:	341d4d20 	.word	0x341d4d20
-34028bb4:	341d4d40 	.word	0x341d4d40
-34028bb8:	341d4d24 	.word	0x341d4d24
+34028ba8:	3411953c 	.word	0x3411953c
+34028bac:	34119544 	.word	0x34119544
+34028bb0:	34119520 	.word	0x34119520
+34028bb4:	34119540 	.word	0x34119540
+34028bb8:	34119524 	.word	0x34119524
 
 34028bbc <_ZNK8touchgfx6Bitmap9getFormatEv>:
 34028bbc:	b510      	push	{r4, lr}
@@ -97516,11 +97518,11 @@ void TouchGFXGeneratedHAL::FlushCache()
 34028c36:	2000      	movs	r0, #0
 34028c38:	e7e0      	b.n	34028bfc <_ZNK8touchgfx6Bitmap9getFormatEv+0x40>
 34028c3a:	bf00      	nop
-34028c3c:	341d4d3c 	.word	0x341d4d3c
-34028c40:	341d4d44 	.word	0x341d4d44
-34028c44:	341d4d20 	.word	0x341d4d20
-34028c48:	341d4d40 	.word	0x341d4d40
-34028c4c:	341d4d24 	.word	0x341d4d24
+34028c3c:	3411953c 	.word	0x3411953c
+34028c40:	34119544 	.word	0x34119544
+34028c44:	34119520 	.word	0x34119520
+34028c48:	34119540 	.word	0x34119540
+34028c4c:	34119524 	.word	0x34119524
 
 34028c50 <_ZNK8touchgfx8LCD16bpp8bitDepthEv>:
 34028c50:	2010      	movs	r0, #16
@@ -97537,7 +97539,7 @@ void TouchGFXGeneratedHAL::FlushCache()
 34028c5e:	b280      	uxth	r0, r0
 34028c60:	4770      	bx	lr
 34028c62:	bf00      	nop
-34028c64:	341d4cb6 	.word	0x341d4cb6
+34028c64:	341194b6 	.word	0x341194b6
 
 34028c68 <_ZN8touchgfx8LCD16bpp28getTextureMapperDrawScanLineERKNS_14TextureSurfaceEth>:
 34028c68:	2bff      	cmp	r3, #255	@ 0xff
@@ -100590,7 +100592,7 @@ void TouchGFXGeneratedHAL::FlushCache()
 3402aedc:	e7ba      	b.n	3402ae54 <_ZN8touchgfx8LCD16bpp35TextureMapper_A4_NearestNeighbor_GA34drawTextureMapScanLineSubdivisionsEiiiifffllllfffffRKNS_14DrawingSurfaceEiiRKNS_14TextureSurfaceEhfff+0x294>
 3402aede:	b007      	add	sp, #28
 3402aee0:	e8bd 8ff0 	ldmia.w	sp!, {r4, r5, r6, r7, r8, r9, sl, fp, pc}
-3402aee4:	341d4cc4 	.word	0x341d4cc4
+3402aee4:	341194c4 	.word	0x341194c4
 
 3402aee8 <_ZN8touchgfx8LCD16bpp37TextureMapper_A4_NearestNeighbor_NoGA34drawTextureMapScanLineSubdivisionsEiiiifffllllfffffRKNS_14DrawingSurfaceEiiRKNS_14TextureSurfaceEhfff>:
 3402aee8:	eef7 6a00 	vmov.f32	s13, #112	@ 0x3f800000  1.0
@@ -100858,7 +100860,7 @@ void TouchGFXGeneratedHAL::FlushCache()
 3402b1f4:	b007      	add	sp, #28
 3402b1f6:	e8bd 8ff0 	ldmia.w	sp!, {r4, r5, r6, r7, r8, r9, sl, fp, pc}
 3402b1fa:	bf00      	nop
-3402b1fc:	341d4cc4 	.word	0x341d4cc4
+3402b1fc:	341194c4 	.word	0x341194c4
 
 3402b200 <_ZN8touchgfx8LCD16bpp19DecompressorRGB_QOID1Ev>:
 3402b200:	4770      	bx	lr
@@ -101079,10 +101081,10 @@ void TouchGFXGeneratedHAL::FlushCache()
 3402b37e:	4798      	blx	r3
 3402b380:	e7bc      	b.n	3402b2fc <_ZN8touchgfx8LCD16bpp29copyAreaFromTFTToClientBufferERKNS_4RectE+0x78>
 3402b382:	bf00      	nop
-3402b384:	341d4cb4 	.word	0x341d4cb4
-3402b388:	341d4cb6 	.word	0x341d4cb6
-3402b38c:	341d4cb8 	.word	0x341d4cb8
-3402b390:	341d4cbc 	.word	0x341d4cbc
+3402b384:	341194b4 	.word	0x341194b4
+3402b388:	341194b6 	.word	0x341194b6
+3402b38c:	341194b8 	.word	0x341194b8
+3402b390:	341194bc 	.word	0x341194bc
 
 3402b394 <_ZN8touchgfx8LCD16bpp8blitCopyEPKtRKNS_4RectES5_hb>:
 3402b394:	e92d 4ff0 	stmdb	sp!, {r4, r5, r6, r7, r8, r9, sl, fp, lr}
@@ -101243,8 +101245,8 @@ void TouchGFXGeneratedHAL::FlushCache()
 3402b56a:	4798      	blx	r3
 3402b56c:	e76c      	b.n	3402b448 <_ZN8touchgfx8LCD16bpp8blitCopyEPKtRKNS_4RectES5_hb+0xb4>
 3402b56e:	bf00      	nop
-3402b570:	341d4cbc 	.word	0x341d4cbc
-3402b574:	341d4cb6 	.word	0x341d4cb6
+3402b570:	341194bc 	.word	0x341194bc
+3402b574:	341194b6 	.word	0x341194b6
 
 3402b578 <_ZN8touchgfx8LCD16bpp17DecompressorL8_L4D0Ev>:
 3402b578:	b510      	push	{r4, lr}
@@ -101863,8 +101865,8 @@ void TouchGFXGeneratedHAL::FlushCache()
 3402bb56:	685d      	ldr	r5, [r3, #4]
 3402bb58:	e794      	b.n	3402ba84 <_ZN8touchgfx8LCD16bpp19DecompressorRGB_QOI16blitCopyARGB8888EPKhRKNS_4RectES6_h+0x348>
 3402bb5a:	bf00      	nop
-3402bb5c:	341d4cbc 	.word	0x341d4cbc
-3402bb60:	341d4cb6 	.word	0x341d4cb6
+3402bb5c:	341194bc 	.word	0x341194bc
+3402bb60:	341194b6 	.word	0x341194b6
 3402bb64:	341116a0 	.word	0x341116a0
 3402bb68:	341117a0 	.word	0x341117a0
 3402bb6c:	2e01      	cmp	r6, #1
@@ -102032,8 +102034,8 @@ void TouchGFXGeneratedHAL::FlushCache()
 3402bd26:	e8bd 8ff0 	ldmia.w	sp!, {r4, r5, r6, r7, r8, r9, sl, fp, pc}
 3402bd2a:	bf00      	nop
 3402bd2c:	341116a0 	.word	0x341116a0
-3402bd30:	341d4cb6 	.word	0x341d4cb6
-3402bd34:	341d4cbc 	.word	0x341d4cbc
+3402bd30:	341194b6 	.word	0x341194b6
+3402bd34:	341194bc 	.word	0x341194bc
 3402bd38:	341117a0 	.word	0x341117a0
 
 3402bd3c <_ZN8touchgfx8LCD16bpp18DecompressorL8_RLE14blitCopyRGB565EPKhS3_RKNS_4RectES6_h>:
@@ -102268,8 +102270,8 @@ void TouchGFXGeneratedHAL::FlushCache()
 3402bf98:	b00f      	add	sp, #60	@ 0x3c
 3402bf9a:	e8bd 8ff0 	ldmia.w	sp!, {r4, r5, r6, r7, r8, r9, sl, fp, pc}
 3402bf9e:	bf00      	nop
-3402bfa0:	341d4cbc 	.word	0x341d4cbc
-3402bfa4:	341d4cb6 	.word	0x341d4cb6
+3402bfa0:	341194bc 	.word	0x341194bc
+3402bfa4:	341194b6 	.word	0x341194b6
 
 3402bfa8 <_ZN8touchgfx8LCD16bpp19DecompressorL8_LZW914blitCopyRGB565EPKhS3_RKNS_4RectES6_h>:
 3402bfa8:	e92d 4ff0 	stmdb	sp!, {r4, r5, r6, r7, r8, r9, sl, fp, lr}
@@ -102569,8 +102571,8 @@ void TouchGFXGeneratedHAL::FlushCache()
 3402c296:	462b      	mov	r3, r5
 3402c298:	e7cb      	b.n	3402c232 <_ZN8touchgfx8LCD16bpp19DecompressorL8_LZW914blitCopyRGB565EPKhS3_RKNS_4RectES6_h+0x28a>
 3402c29a:	bf00      	nop
-3402c29c:	341d4cbc 	.word	0x341d4cbc
-3402c2a0:	341d4cb6 	.word	0x341d4cb6
+3402c29c:	341194bc 	.word	0x341194bc
+3402c2a0:	341194b6 	.word	0x341194b6
 3402c2a4:	fffff7fb 	.word	0xfffff7fb
 3402c2a8:	b2b6      	uxth	r6, r6
 3402c2aa:	900b      	str	r0, [sp, #44]	@ 0x2c
@@ -102652,7 +102654,7 @@ void TouchGFXGeneratedHAL::FlushCache()
 3402c398:	4798      	blx	r3
 3402c39a:	b01f      	add	sp, #124	@ 0x7c
 3402c39c:	e8bd 8ff0 	ldmia.w	sp!, {r4, r5, r6, r7, r8, r9, sl, fp, pc}
-3402c3a0:	341d4cbc 	.word	0x341d4cbc
+3402c3a0:	341194bc 	.word	0x341194bc
 
 3402c3a4 <_ZN8touchgfx8LCD16bpp19DecompressorRGB_QOI14blitCopyRGB565EPKhRKNS_4RectES6_h>:
 3402c3a4:	e92d 4ff0 	stmdb	sp!, {r4, r5, r6, r7, r8, r9, sl, fp, lr}
@@ -103011,8 +103013,8 @@ void TouchGFXGeneratedHAL::FlushCache()
 3402c7ae:	4656      	mov	r6, sl
 3402c7b0:	e724      	b.n	3402c5fc <_ZN8touchgfx8LCD16bpp19DecompressorRGB_QOI14blitCopyRGB565EPKhRKNS_4RectES6_h+0x258>
 3402c7b2:	bf00      	nop
-3402c7b4:	341d4cbc 	.word	0x341d4cbc
-3402c7b8:	341d4cb6 	.word	0x341d4cb6
+3402c7b4:	341194bc 	.word	0x341194bc
+3402c7b8:	341194b6 	.word	0x341194b6
 3402c7bc:	341116a0 	.word	0x341116a0
 3402c7c0:	2a01      	cmp	r2, #1
 3402c7c2:	d12a      	bne.n	3402c81a <_ZN8touchgfx8LCD16bpp19DecompressorRGB_QOI14blitCopyRGB565EPKhRKNS_4RectES6_h+0x476>
@@ -103238,8 +103240,8 @@ void TouchGFXGeneratedHAL::FlushCache()
 3402ca1a:	e764      	b.n	3402c8e6 <_ZN8touchgfx8LCD16bpp19DecompressorRGB_QOI14blitCopyRGB565EPKhRKNS_4RectES6_h+0x542>
 3402ca1c:	341116a0 	.word	0x341116a0
 3402ca20:	341117a0 	.word	0x341117a0
-3402ca24:	341d4cb6 	.word	0x341d4cb6
-3402ca28:	341d4cbc 	.word	0x341d4cbc
+3402ca24:	341194b6 	.word	0x341194b6
+3402ca28:	341194bc 	.word	0x341194bc
 
 3402ca2c <_ZN8touchgfx8LCD16bpp18DecompressorL8_RLE16blitCopyARGB8888EPKhS3_RKNS_4RectES6_h>:
 3402ca2c:	e92d 4ff0 	stmdb	sp!, {r4, r5, r6, r7, r8, r9, sl, fp, lr}
@@ -103483,8 +103485,8 @@ void TouchGFXGeneratedHAL::FlushCache()
 3402ccb0:	b00f      	add	sp, #60	@ 0x3c
 3402ccb2:	e8bd 8ff0 	ldmia.w	sp!, {r4, r5, r6, r7, r8, r9, sl, fp, pc}
 3402ccb6:	bf00      	nop
-3402ccb8:	341d4cbc 	.word	0x341d4cbc
-3402ccbc:	341d4cb6 	.word	0x341d4cb6
+3402ccb8:	341194bc 	.word	0x341194bc
+3402ccbc:	341194b6 	.word	0x341194b6
 
 3402ccc0 <_ZN8touchgfx8LCD16bpp18DecompressorL8_RLE14blitCopyRGB888EPKhS3_RKNS_4RectES6_h>:
 3402ccc0:	e92d 4ff0 	stmdb	sp!, {r4, r5, r6, r7, r8, r9, sl, fp, lr}
@@ -103735,8 +103737,8 @@ void TouchGFXGeneratedHAL::FlushCache()
 3402cf48:	4798      	blx	r3
 3402cf4a:	b013      	add	sp, #76	@ 0x4c
 3402cf4c:	e8bd 8ff0 	ldmia.w	sp!, {r4, r5, r6, r7, r8, r9, sl, fp, pc}
-3402cf50:	341d4cbc 	.word	0x341d4cbc
-3402cf54:	341d4cb6 	.word	0x341d4cb6
+3402cf50:	341194bc 	.word	0x341194bc
+3402cf54:	341194b6 	.word	0x341194b6
 3402cf58:	fffff800 	.word	0xfffff800
 
 3402cf5c <_ZN8touchgfx8LCD16bpp19DecompressorL8_LZW916blitCopyARGB8888EPKhS3_RKNS_4RectES6_h>:
@@ -104080,8 +104082,8 @@ void TouchGFXGeneratedHAL::FlushCache()
 3402d2c0:	432f      	orrs	r7, r5
 3402d2c2:	f828 7019 	strh.w	r7, [r8, r9, lsl #1]
 3402d2c6:	e7b2      	b.n	3402d22e <_ZN8touchgfx8LCD16bpp19DecompressorL8_LZW916blitCopyARGB8888EPKhS3_RKNS_4RectES6_h+0x2d2>
-3402d2c8:	341d4cbc 	.word	0x341d4cbc
-3402d2cc:	341d4cb6 	.word	0x341d4cb6
+3402d2c8:	341194bc 	.word	0x341194bc
+3402d2cc:	341194b6 	.word	0x341194b6
 3402d2d0:	fffff7fb 	.word	0xfffff7fb
 3402d2d4:	9203      	str	r2, [sp, #12]
 3402d2d6:	9a0c      	ldr	r2, [sp, #48]	@ 0x30
@@ -104128,7 +104130,7 @@ void TouchGFXGeneratedHAL::FlushCache()
 3402d338:	4798      	blx	r3
 3402d33a:	b01d      	add	sp, #116	@ 0x74
 3402d33c:	e8bd 8ff0 	ldmia.w	sp!, {r4, r5, r6, r7, r8, r9, sl, fp, pc}
-3402d340:	341d4cbc 	.word	0x341d4cbc
+3402d340:	341194bc 	.word	0x341194bc
 
 3402d344 <_ZN8touchgfx8LCD16bpp19DecompressorL8_LZW914blitCopyRGB888EPKhS3_RKNS_4RectES6_h>:
 3402d344:	e92d 4ff0 	stmdb	sp!, {r4, r5, r6, r7, r8, r9, sl, fp, lr}
@@ -104437,8 +104439,8 @@ void TouchGFXGeneratedHAL::FlushCache()
 3402d636:	3301      	adds	r3, #1
 3402d638:	930d      	str	r3, [sp, #52]	@ 0x34
 3402d63a:	e701      	b.n	3402d440 <_ZN8touchgfx8LCD16bpp19DecompressorL8_LZW914blitCopyRGB888EPKhS3_RKNS_4RectES6_h+0xfc>
-3402d63c:	341d4cbc 	.word	0x341d4cbc
-3402d640:	341d4cb6 	.word	0x341d4cb6
+3402d63c:	341194bc 	.word	0x341194bc
+3402d640:	341194b6 	.word	0x341194b6
 3402d644:	fffff7fb 	.word	0xfffff7fb
 3402d648:	46d9      	mov	r9, fp
 3402d64a:	9d00      	ldr	r5, [sp, #0]
@@ -104534,7 +104536,7 @@ void TouchGFXGeneratedHAL::FlushCache()
 3402d75a:	e8bd 8ff0 	ldmia.w	sp!, {r4, r5, r6, r7, r8, r9, sl, fp, pc}
 3402d75e:	bf00      	nop
 3402d760:	fffff800 	.word	0xfffff800
-3402d764:	341d4cbc 	.word	0x341d4cbc
+3402d764:	341194bc 	.word	0x341194bc
 
 3402d768 <_ZN8touchgfx8LCD16bpp29copyFrameBufferRegionToMemoryERKNS_4RectES3_Phss>:
 3402d768:	e92d 4ff0 	stmdb	sp!, {r4, r5, r6, r7, r8, r9, sl, fp, lr}
@@ -104730,11 +104732,11 @@ void TouchGFXGeneratedHAL::FlushCache()
 3402d976:	4435      	add	r5, r6
 3402d978:	e7ef      	b.n	3402d95a <_ZN8touchgfx8LCD16bpp29copyFrameBufferRegionToMemoryERKNS_4RectES3_Phss+0x1f2>
 3402d97a:	bf00      	nop
-3402d97c:	341d4cb0 	.word	0x341d4cb0
-3402d980:	341d4cb2 	.word	0x341d4cb2
-3402d984:	341d4cb4 	.word	0x341d4cb4
-3402d988:	341d4cb6 	.word	0x341d4cb6
-3402d98c:	341d4cbc 	.word	0x341d4cbc
+3402d97c:	341194b0 	.word	0x341194b0
+3402d980:	341194b2 	.word	0x341194b2
+3402d984:	341194b4 	.word	0x341194b4
+3402d988:	341194b6 	.word	0x341194b6
+3402d98c:	341194bc 	.word	0x341194bc
 
 3402d990 <_ZN8touchgfx8LCD16bpp8fillRectERKNS_4RectENS_9colortypeEh>:
 3402d990:	b5f0      	push	{r4, r5, r6, r7, lr}
@@ -104798,8 +104800,8 @@ void TouchGFXGeneratedHAL::FlushCache()
 3402da16:	6b1b      	ldr	r3, [r3, #48]	@ 0x30
 3402da18:	4798      	blx	r3
 3402da1a:	e7e8      	b.n	3402d9ee <_ZN8touchgfx8LCD16bpp8fillRectERKNS_4RectENS_9colortypeEh+0x5e>
-3402da1c:	341d4cbc 	.word	0x341d4cbc
-3402da20:	341d4cb6 	.word	0x341d4cb6
+3402da1c:	341194bc 	.word	0x341194bc
+3402da20:	341194b6 	.word	0x341194b6
 
 3402da24 <_ZN8touchgfx8LCD16bpp10fillBufferEPhtRKNS_4RectENS_9colortypeEh>:
 3402da24:	e92d 47f0 	stmdb	sp!, {r4, r5, r6, r7, r8, r9, sl, lr}
@@ -105139,8 +105141,8 @@ void TouchGFXGeneratedHAL::FlushCache()
 3402ddae:	6b1b      	ldr	r3, [r3, #48]	@ 0x30
 3402ddb0:	4798      	blx	r3
 3402ddb2:	e76a      	b.n	3402dc8a <_ZN8touchgfx8LCD16bpp16blitCopyARGB8888EPKmRKNS_4RectES5_h+0x9e>
-3402ddb4:	341d4cbc 	.word	0x341d4cbc
-3402ddb8:	341d4cb6 	.word	0x341d4cb6
+3402ddb4:	341194bc 	.word	0x341194bc
+3402ddb8:	341194b6 	.word	0x341194b6
 
 3402ddbc <_ZNK8touchgfx8LCD16bpp21blitCopyARGB8888SolidEPKmRKNS_4RectES5_>:
 3402ddbc:	e92d 43f0 	stmdb	sp!, {r4, r5, r6, r7, r8, r9, lr}
@@ -105216,8 +105218,8 @@ void TouchGFXGeneratedHAL::FlushCache()
 3402de90:	4798      	blx	r3
 3402de92:	b005      	add	sp, #20
 3402de94:	e8bd 83f0 	ldmia.w	sp!, {r4, r5, r6, r7, r8, r9, pc}
-3402de98:	341d4cbc 	.word	0x341d4cbc
-3402de9c:	341d4cb6 	.word	0x341d4cb6
+3402de98:	341194bc 	.word	0x341194bc
+3402de9c:	341194b6 	.word	0x341194b6
 3402dea0:	fffff800 	.word	0xfffff800
 
 3402dea4 <_ZN8touchgfx8LCD16bpp14blitCopyRGB888EPKhRKNS_4RectES5_h>:
@@ -105385,8 +105387,8 @@ void TouchGFXGeneratedHAL::FlushCache()
 3402e08c:	e768      	b.n	3402df60 <_ZN8touchgfx8LCD16bpp14blitCopyRGB888EPKhRKNS_4RectES5_h+0xbc>
 3402e08e:	bf00      	nop
 3402e090:	fffff800 	.word	0xfffff800
-3402e094:	341d4cbc 	.word	0x341d4cbc
-3402e098:	341d4cb6 	.word	0x341d4cb6
+3402e094:	341194bc 	.word	0x341194bc
+3402e098:	341194b6 	.word	0x341194b6
 
 3402e09c <_ZN8touchgfx8LCD16bpp8blitCopyEPKhNS_6Bitmap12BitmapFormatERKNS_4RectES7_hb>:
 3402e09c:	b4f0      	push	{r4, r5, r6, r7}
@@ -105592,8 +105594,8 @@ void TouchGFXGeneratedHAL::FlushCache()
 3402e2b6:	6b1b      	ldr	r3, [r3, #48]	@ 0x30
 3402e2b8:	4798      	blx	r3
 3402e2ba:	e76c      	b.n	3402e196 <_ZN8touchgfx8LCD16bpp19blitCopyL8_ARGB8888EPKhS2_RKNS_4RectES5_h+0xb2>
-3402e2bc:	341d4cbc 	.word	0x341d4cbc
-3402e2c0:	341d4cb6 	.word	0x341d4cb6
+3402e2bc:	341194bc 	.word	0x341194bc
+3402e2c0:	341194b6 	.word	0x341194b6
 
 3402e2c4 <_ZN8touchgfx8LCD16bpp17blitCopyL8_RGB565EPKhS2_RKNS_4RectES5_h>:
 3402e2c4:	e92d 4ff0 	stmdb	sp!, {r4, r5, r6, r7, r8, r9, sl, fp, lr}
@@ -105728,8 +105730,8 @@ void TouchGFXGeneratedHAL::FlushCache()
 3402e450:	4798      	blx	r3
 3402e452:	b007      	add	sp, #28
 3402e454:	e8bd 8ff0 	ldmia.w	sp!, {r4, r5, r6, r7, r8, r9, sl, fp, pc}
-3402e458:	341d4cbc 	.word	0x341d4cbc
-3402e45c:	341d4cb6 	.word	0x341d4cb6
+3402e458:	341194bc 	.word	0x341194bc
+3402e45c:	341194b6 	.word	0x341194b6
 
 3402e460 <_ZN8touchgfx8LCD16bpp17blitCopyL8_RGB888EPKhS2_RKNS_4RectES5_h>:
 3402e460:	e92d 4ff0 	stmdb	sp!, {r4, r5, r6, r7, r8, r9, sl, fp, lr}
@@ -105914,8 +105916,8 @@ void TouchGFXGeneratedHAL::FlushCache()
 3402e678:	e750      	b.n	3402e51c <_ZN8touchgfx8LCD16bpp17blitCopyL8_RGB888EPKhS2_RKNS_4RectES5_h+0xbc>
 3402e67a:	bf00      	nop
 3402e67c:	fffff800 	.word	0xfffff800
-3402e680:	341d4cbc 	.word	0x341d4cbc
-3402e684:	341d4cb6 	.word	0x341d4cb6
+3402e680:	341194bc 	.word	0x341194bc
+3402e684:	341194b6 	.word	0x341194b6
 
 3402e688 <_ZN8touchgfx8LCD16bpp10blitCopyL8EPKhS2_RKNS_4RectES5_h>:
 3402e688:	b4f0      	push	{r4, r5, r6, r7}
@@ -106187,8 +106189,8 @@ void TouchGFXGeneratedHAL::FlushCache()
 3402e98c:	4798      	blx	r3
 3402e98e:	b007      	add	sp, #28
 3402e990:	e8bd 8ff0 	ldmia.w	sp!, {r4, r5, r6, r7, r8, r9, sl, fp, pc}
-3402e994:	341d4cbc 	.word	0x341d4cbc
-3402e998:	341d4cb6 	.word	0x341d4cb6
+3402e994:	341194bc 	.word	0x341194bc
+3402e998:	341194b6 	.word	0x341194b6
 
 3402e99c <_ZN8touchgfx8LCD16bpp17drawPartialBitmapERKNS_6BitmapEssRKNS_4RectEhb>:
 3402e99c:	e92d 4ff0 	stmdb	sp!, {r4, r5, r6, r7, r8, r9, sl, fp, lr}
@@ -106507,7 +106509,7 @@ void TouchGFXGeneratedHAL::FlushCache()
 3402ecfe:	689e      	ldr	r6, [r3, #8]
 3402ed00:	e7f1      	b.n	3402ece6 <_ZN8touchgfx8LCD16bpp17drawPartialBitmapERKNS_6BitmapEssRKNS_4RectEhb+0x34a>
 3402ed02:	bf00      	nop
-3402ed04:	341d4cbc 	.word	0x341d4cbc
+3402ed04:	341194bc 	.word	0x341194bc
 
 3402ed08 <_ZN8touchgfx8LCD16bpp9nextPixelEbNS_12TextRotationE>:
 3402ed08:	b180      	cbz	r0, 3402ed2c <_ZN8touchgfx8LCD16bpp9nextPixelEbNS_12TextRotationE+0x24>
@@ -106541,7 +106543,7 @@ void TouchGFXGeneratedHAL::FlushCache()
 3402ed50:	f04f 30ff 	mov.w	r0, #4294967295
 3402ed54:	4770      	bx	lr
 3402ed56:	bf00      	nop
-3402ed58:	341d4cb6 	.word	0x341d4cb6
+3402ed58:	341194b6 	.word	0x341194b6
 
 3402ed5c <_ZN8touchgfx8LCD16bpp8nextLineEbNS_12TextRotationE>:
 3402ed5c:	b180      	cbz	r0, 3402ed80 <_ZN8touchgfx8LCD16bpp8nextLineEbNS_12TextRotationE+0x24>
@@ -106575,7 +106577,7 @@ void TouchGFXGeneratedHAL::FlushCache()
 3402eda4:	f04f 30ff 	mov.w	r0, #4294967295
 3402eda8:	4770      	bx	lr
 3402edaa:	bf00      	nop
-3402edac:	341d4cb6 	.word	0x341d4cb6
+3402edac:	341194b6 	.word	0x341194b6
 
 3402edb0 <_ZN8touchgfx8LCD16bpp9drawGlyphEPtNS_4RectEssttRKS2_PKNS_9GlyphNodeEPKhhNS_9colortypeEhhNS_12TextRotationE>:
 3402edb0:	e92d 4ff0 	stmdb	sp!, {r4, r5, r6, r7, r8, r9, sl, fp, lr}
@@ -106909,9 +106911,9 @@ void TouchGFXGeneratedHAL::FlushCache()
 3402f126:	e03d      	b.n	3402f1a4 <_ZN8touchgfx8LCD16bpp9drawGlyphEPtNS_4RectEssttRKS2_PKNS_9GlyphNodeEPKhhNS_9colortypeEhhNS_12TextRotationE+0x3f4>
 3402f128:	2300      	movs	r3, #0
 3402f12a:	e7cc      	b.n	3402f0c6 <_ZN8touchgfx8LCD16bpp9drawGlyphEPtNS_4RectEssttRKS2_PKNS_9GlyphNodeEPKhhNS_9colortypeEhhNS_12TextRotationE+0x316>
-3402f12c:	341d4cb4 	.word	0x341d4cb4
-3402f130:	341d4cbc 	.word	0x341d4cbc
-3402f134:	341d4cb6 	.word	0x341d4cb6
+3402f12c:	341194b4 	.word	0x341194b4
+3402f130:	341194bc 	.word	0x341194bc
+3402f134:	341194b6 	.word	0x341194b6
 3402f138:	00fff800 	.word	0x00fff800
 3402f13c:	9a0a      	ldr	r2, [sp, #40]	@ 0x28
 3402f13e:	eba4 0e05 	sub.w	lr, r4, r5
@@ -107019,7 +107021,7 @@ void TouchGFXGeneratedHAL::FlushCache()
 3402f248:	2b00      	cmp	r3, #0
 3402f24a:	f47f af47 	bne.w	3402f0dc <_ZN8touchgfx8LCD16bpp9drawGlyphEPtNS_4RectEssttRKS2_PKNS_9GlyphNodeEPKhhNS_9colortypeEhhNS_12TextRotationE+0x32c>
 3402f24e:	e622      	b.n	3402ee96 <_ZN8touchgfx8LCD16bpp9drawGlyphEPtNS_4RectEssttRKS2_PKNS_9GlyphNodeEPKhhNS_9colortypeEhhNS_12TextRotationE+0xe6>
-3402f250:	341d4cbc 	.word	0x341d4cbc
+3402f250:	341194bc 	.word	0x341194bc
 
 3402f254 <_ZN8touchgfx8LCD16bpp50enableTextureMapperL8_RGB565_BilinearInterpolationEv>:
 3402f254:	b538      	push	{r3, r4, r5, lr}
@@ -107056,11 +107058,11 @@ void TouchGFXGeneratedHAL::FlushCache()
 3402f2a2:	61ab      	str	r3, [r5, #24]
 3402f2a4:	bd38      	pop	{r3, r4, r5, pc}
 3402f2a6:	bf00      	nop
-3402f2a8:	341d4d98 	.word	0x341d4d98
+3402f2a8:	34119598 	.word	0x34119598
 3402f2ac:	341114cc 	.word	0x341114cc
 3402f2b0:	3402b23b 	.word	0x3402b23b
 3402f2b4:	341115f8 	.word	0x341115f8
-3402f2b8:	341d4d9c 	.word	0x341d4d9c
+3402f2b8:	3411959c 	.word	0x3411959c
 3402f2bc:	3402b239 	.word	0x3402b239
 3402f2c0:	341115fc 	.word	0x341115fc
 
@@ -107099,11 +107101,11 @@ void TouchGFXGeneratedHAL::FlushCache()
 3402f312:	612b      	str	r3, [r5, #16]
 3402f314:	bd38      	pop	{r3, r4, r5, pc}
 3402f316:	bf00      	nop
-3402f318:	341d4d70 	.word	0x341d4d70
+3402f318:	34119570 	.word	0x34119570
 3402f31c:	341114cc 	.word	0x341114cc
 3402f320:	3402b23f 	.word	0x3402b23f
 3402f324:	341115d0 	.word	0x341115d0
-3402f328:	341d4d74 	.word	0x341d4d74
+3402f328:	34119574 	.word	0x34119574
 3402f32c:	3402b23d 	.word	0x3402b23d
 3402f330:	341115d4 	.word	0x341115d4
 
@@ -107151,11 +107153,11 @@ void TouchGFXGeneratedHAL::FlushCache()
 3402f396:	62ab      	str	r3, [r5, #40]	@ 0x28
 3402f398:	bd38      	pop	{r3, r4, r5, pc}
 3402f39a:	bf00      	nop
-3402f39c:	341d4da0 	.word	0x341d4da0
+3402f39c:	341195a0 	.word	0x341195a0
 3402f3a0:	341114cc 	.word	0x341114cc
 3402f3a4:	3402b233 	.word	0x3402b233
 3402f3a8:	34111600 	.word	0x34111600
-3402f3ac:	341d4da4 	.word	0x341d4da4
+3402f3ac:	341195a4 	.word	0x341195a4
 3402f3b0:	3402b231 	.word	0x3402b231
 3402f3b4:	34111604 	.word	0x34111604
 
@@ -107194,11 +107196,11 @@ void TouchGFXGeneratedHAL::FlushCache()
 3402f406:	622b      	str	r3, [r5, #32]
 3402f408:	bd38      	pop	{r3, r4, r5, pc}
 3402f40a:	bf00      	nop
-3402f40c:	341d4d78 	.word	0x341d4d78
+3402f40c:	34119578 	.word	0x34119578
 3402f410:	341114cc 	.word	0x341114cc
 3402f414:	3402b237 	.word	0x3402b237
 3402f418:	341115d8 	.word	0x341115d8
-3402f41c:	341d4d7c 	.word	0x341d4d7c
+3402f41c:	3411957c 	.word	0x3411957c
 3402f420:	3402b235 	.word	0x3402b235
 3402f424:	341115dc 	.word	0x341115dc
 
@@ -107246,11 +107248,11 @@ void TouchGFXGeneratedHAL::FlushCache()
 3402f48a:	63ab      	str	r3, [r5, #56]	@ 0x38
 3402f48c:	bd38      	pop	{r3, r4, r5, pc}
 3402f48e:	bf00      	nop
-3402f490:	341d4db0 	.word	0x341d4db0
+3402f490:	341195b0 	.word	0x341195b0
 3402f494:	341114cc 	.word	0x341114cc
 3402f498:	3402b22b 	.word	0x3402b22b
 3402f49c:	34111610 	.word	0x34111610
-3402f4a0:	341d4db4 	.word	0x341d4db4
+3402f4a0:	341195b4 	.word	0x341195b4
 3402f4a4:	3402b229 	.word	0x3402b229
 3402f4a8:	34111614 	.word	0x34111614
 
@@ -107289,11 +107291,11 @@ void TouchGFXGeneratedHAL::FlushCache()
 3402f4fa:	632b      	str	r3, [r5, #48]	@ 0x30
 3402f4fc:	bd38      	pop	{r3, r4, r5, pc}
 3402f4fe:	bf00      	nop
-3402f500:	341d4d80 	.word	0x341d4d80
+3402f500:	34119580 	.word	0x34119580
 3402f504:	341114cc 	.word	0x341114cc
 3402f508:	3402b22f 	.word	0x3402b22f
 3402f50c:	341115e0 	.word	0x341115e0
-3402f510:	341d4d84 	.word	0x341d4d84
+3402f510:	34119584 	.word	0x34119584
 3402f514:	3402b22d 	.word	0x3402b22d
 3402f518:	341115e4 	.word	0x341115e4
 
@@ -107341,11 +107343,11 @@ void TouchGFXGeneratedHAL::FlushCache()
 3402f57e:	65ab      	str	r3, [r5, #88]	@ 0x58
 3402f580:	bd38      	pop	{r3, r4, r5, pc}
 3402f582:	bf00      	nop
-3402f584:	341d4db8 	.word	0x341d4db8
+3402f584:	341195b8 	.word	0x341195b8
 3402f588:	341114cc 	.word	0x341114cc
 3402f58c:	3402b21b 	.word	0x3402b21b
 3402f590:	34111618 	.word	0x34111618
-3402f594:	341d4dbc 	.word	0x341d4dbc
+3402f594:	341195bc 	.word	0x341195bc
 3402f598:	3402b219 	.word	0x3402b219
 3402f59c:	3411161c 	.word	0x3411161c
 
@@ -107384,11 +107386,11 @@ void TouchGFXGeneratedHAL::FlushCache()
 3402f5ee:	652b      	str	r3, [r5, #80]	@ 0x50
 3402f5f0:	bd38      	pop	{r3, r4, r5, pc}
 3402f5f2:	bf00      	nop
-3402f5f4:	341d4dc0 	.word	0x341d4dc0
+3402f5f4:	341195c0 	.word	0x341195c0
 3402f5f8:	341114cc 	.word	0x341114cc
 3402f5fc:	3402b21f 	.word	0x3402b21f
 3402f600:	34111620 	.word	0x34111620
-3402f604:	341d4dc4 	.word	0x341d4dc4
+3402f604:	341195c4 	.word	0x341195c4
 3402f608:	3402b21d 	.word	0x3402b21d
 3402f60c:	34111624 	.word	0x34111624
 
@@ -107427,11 +107429,11 @@ void TouchGFXGeneratedHAL::FlushCache()
 3402f65e:	64ab      	str	r3, [r5, #72]	@ 0x48
 3402f660:	bd38      	pop	{r3, r4, r5, pc}
 3402f662:	bf00      	nop
-3402f664:	341d4d88 	.word	0x341d4d88
+3402f664:	34119588 	.word	0x34119588
 3402f668:	341114cc 	.word	0x341114cc
 3402f66c:	3402b223 	.word	0x3402b223
 3402f670:	341115e8 	.word	0x341115e8
-3402f674:	341d4d8c 	.word	0x341d4d8c
+3402f674:	3411958c 	.word	0x3411958c
 3402f678:	3402b221 	.word	0x3402b221
 3402f67c:	341115ec 	.word	0x341115ec
 
@@ -107470,11 +107472,11 @@ void TouchGFXGeneratedHAL::FlushCache()
 3402f6ce:	642b      	str	r3, [r5, #64]	@ 0x40
 3402f6d0:	bd38      	pop	{r3, r4, r5, pc}
 3402f6d2:	bf00      	nop
-3402f6d4:	341d4da8 	.word	0x341d4da8
+3402f6d4:	341195a8 	.word	0x341195a8
 3402f6d8:	341114cc 	.word	0x341114cc
 3402f6dc:	3402b227 	.word	0x3402b227
 3402f6e0:	34111608 	.word	0x34111608
-3402f6e4:	341d4dac 	.word	0x341d4dac
+3402f6e4:	341195ac 	.word	0x341195ac
 3402f6e8:	3402b225 	.word	0x3402b225
 3402f6ec:	3411160c 	.word	0x3411160c
 
@@ -107526,11 +107528,11 @@ void TouchGFXGeneratedHAL::FlushCache()
 3402f75e:	66ab      	str	r3, [r5, #104]	@ 0x68
 3402f760:	bd38      	pop	{r3, r4, r5, pc}
 3402f762:	bf00      	nop
-3402f764:	341d4d90 	.word	0x341d4d90
+3402f764:	34119590 	.word	0x34119590
 3402f768:	341114cc 	.word	0x341114cc
 3402f76c:	3402b213 	.word	0x3402b213
 3402f770:	341115f0 	.word	0x341115f0
-3402f774:	341d4d94 	.word	0x341d4d94
+3402f774:	34119594 	.word	0x34119594
 3402f778:	3402b211 	.word	0x3402b211
 3402f77c:	341115f4 	.word	0x341115f4
 
@@ -107569,11 +107571,11 @@ void TouchGFXGeneratedHAL::FlushCache()
 3402f7ce:	662b      	str	r3, [r5, #96]	@ 0x60
 3402f7d0:	bd38      	pop	{r3, r4, r5, pc}
 3402f7d2:	bf00      	nop
-3402f7d4:	341d4d68 	.word	0x341d4d68
+3402f7d4:	34119568 	.word	0x34119568
 3402f7d8:	341114cc 	.word	0x341114cc
 3402f7dc:	3402b217 	.word	0x3402b217
 3402f7e0:	341115c8 	.word	0x341115c8
-3402f7e4:	341d4d6c 	.word	0x341d4d6c
+3402f7e4:	3411956c 	.word	0x3411956c
 3402f7e8:	3402b215 	.word	0x3402b215
 3402f7ec:	341115cc 	.word	0x341115cc
 
@@ -107621,11 +107623,11 @@ void TouchGFXGeneratedHAL::FlushCache()
 3402f852:	67ab      	str	r3, [r5, #120]	@ 0x78
 3402f854:	bd38      	pop	{r3, r4, r5, pc}
 3402f856:	bf00      	nop
-3402f858:	341d4d60 	.word	0x341d4d60
+3402f858:	34119560 	.word	0x34119560
 3402f85c:	341114cc 	.word	0x341114cc
 3402f860:	3402b20b 	.word	0x3402b20b
 3402f864:	341115c0 	.word	0x341115c0
-3402f868:	341d4d64 	.word	0x341d4d64
+3402f868:	34119564 	.word	0x34119564
 3402f86c:	3402b209 	.word	0x3402b209
 3402f870:	341115c4 	.word	0x341115c4
 
@@ -107664,11 +107666,11 @@ void TouchGFXGeneratedHAL::FlushCache()
 3402f8c2:	672b      	str	r3, [r5, #112]	@ 0x70
 3402f8c4:	bd38      	pop	{r3, r4, r5, pc}
 3402f8c6:	bf00      	nop
-3402f8c8:	341d4d58 	.word	0x341d4d58
+3402f8c8:	34119558 	.word	0x34119558
 3402f8cc:	341114cc 	.word	0x341114cc
 3402f8d0:	3402b20f 	.word	0x3402b20f
 3402f8d4:	341115b8 	.word	0x341115b8
-3402f8d8:	341d4d5c 	.word	0x341d4d5c
+3402f8d8:	3411955c 	.word	0x3411955c
 3402f8dc:	3402b20d 	.word	0x3402b20d
 3402f8e0:	341115bc 	.word	0x341115bc
 
@@ -107715,7 +107717,7 @@ void TouchGFXGeneratedHAL::FlushCache()
 3402f946:	4b04      	ldr	r3, [pc, #16]	@ (3402f958 <_ZN8touchgfx8LCD16bpp23enableDecompressorL8_L4Ev+0x38>)
 3402f948:	67eb      	str	r3, [r5, #124]	@ 0x7c
 3402f94a:	bd38      	pop	{r3, r4, r5, pc}
-3402f94c:	341d4d4c 	.word	0x341d4d4c
+3402f94c:	3411954c 	.word	0x3411954c
 3402f950:	341114cc 	.word	0x341114cc
 3402f954:	3402b207 	.word	0x3402b207
 3402f958:	341115b0 	.word	0x341115b0
@@ -107740,7 +107742,7 @@ void TouchGFXGeneratedHAL::FlushCache()
 3402f984:	f8c5 3080 	str.w	r3, [r5, #128]	@ 0x80
 3402f988:	bd38      	pop	{r3, r4, r5, pc}
 3402f98a:	bf00      	nop
-3402f98c:	341d4d50 	.word	0x341d4d50
+3402f98c:	34119550 	.word	0x34119550
 3402f990:	341114cc 	.word	0x341114cc
 3402f994:	3402b205 	.word	0x3402b205
 3402f998:	341115b4 	.word	0x341115b4
@@ -107766,8 +107768,8 @@ void TouchGFXGeneratedHAL::FlushCache()
 3402f9c6:	f007 fb39 	bl	3403703c <__aeabi_atexit>
 3402f9ca:	f8c6 4084 	str.w	r4, [r6, #132]	@ 0x84
 3402f9ce:	bd70      	pop	{r4, r5, r6, pc}
-3402f9d0:	341d4d54 	.word	0x341d4d54
-3402f9d4:	341d4ecc 	.word	0x341d4ecc
+3402f9d0:	34119554 	.word	0x34119554
+3402f9d4:	341196cc 	.word	0x341196cc
 3402f9d8:	3403bc80 	.word	0x3403bc80
 3402f9dc:	341114cc 	.word	0x341114cc
 3402f9e0:	3402b203 	.word	0x3402b203
@@ -107803,8 +107805,8 @@ void TouchGFXGeneratedHAL::FlushCache()
 3402fa26:	f007 fb09 	bl	3403703c <__aeabi_atexit>
 3402fa2a:	f8c6 4088 	str.w	r4, [r6, #136]	@ 0x88
 3402fa2e:	bd70      	pop	{r4, r5, r6, pc}
-3402fa30:	341d4d48 	.word	0x341d4d48
-3402fa34:	341d4dc8 	.word	0x341d4dc8
+3402fa30:	34119548 	.word	0x34119548
+3402fa34:	341195c8 	.word	0x341195c8
 3402fa38:	3403bc9c 	.word	0x3403bc9c
 3402fa3c:	341114cc 	.word	0x341114cc
 3402fa40:	3402b201 	.word	0x3402b201
@@ -115971,7 +115973,7 @@ void TouchGFXGeneratedHAL::FlushCache()
 340359f2:	800b      	strh	r3, [r1, #0]
 340359f4:	e7b5      	b.n	34035962 <_ZNK8touchgfx8LCD16bpp41TextureMapper_A4_BilinearInterpolation_GA16writePixelOnEdgeEPtPKtsssiihhh+0x132>
 340359f6:	bf00      	nop
-340359f8:	341d4cc4 	.word	0x341d4cc4
+340359f8:	341194c4 	.word	0x341194c4
 340359fc:	00fff800 	.word	0x00fff800
 
 34035a00 <_ZN8touchgfx8LCD16bpp41TextureMapper_A4_BilinearInterpolation_GA34drawTextureMapScanLineSubdivisionsEiiiifffllllfffffRKNS_14DrawingSurfaceEiiRKNS_14TextureSurfaceEhfff>:
@@ -116384,7 +116386,7 @@ void TouchGFXGeneratedHAL::FlushCache()
 34035eaa:	441e      	add	r6, r3
 34035eac:	e6ba      	b.n	34035c24 <_ZN8touchgfx8LCD16bpp41TextureMapper_A4_BilinearInterpolation_GA34drawTextureMapScanLineSubdivisionsEiiiifffllllfffffRKNS_14DrawingSurfaceEiiRKNS_14TextureSurfaceEhfff+0x224>
 34035eae:	bf00      	nop
-34035eb0:	341d4cc4 	.word	0x341d4cc4
+34035eb0:	341194c4 	.word	0x341194c4
 34035eb4:	2800      	cmp	r0, #0
 34035eb6:	d0b9      	beq.n	34035e2c <_ZN8touchgfx8LCD16bpp41TextureMapper_A4_BilinearInterpolation_GA34drawTextureMapScanLineSubdivisionsEiiiifffllllfffffRKNS_14DrawingSurfaceEiiRKNS_14TextureSurfaceEhfff+0x42c>
 34035eb8:	9d0e      	ldr	r5, [sp, #56]	@ 0x38
@@ -116589,7 +116591,7 @@ void TouchGFXGeneratedHAL::FlushCache()
 34036102:	e79a      	b.n	3403603a <_ZNK8touchgfx8LCD16bpp43TextureMapper_A4_BilinearInterpolation_NoGA16writePixelOnEdgeEPtPKtsssiihh+0xda>
 34036104:	463b      	mov	r3, r7
 34036106:	e798      	b.n	3403603a <_ZNK8touchgfx8LCD16bpp43TextureMapper_A4_BilinearInterpolation_NoGA16writePixelOnEdgeEPtPKtsssiihh+0xda>
-34036108:	341d4cc4 	.word	0x341d4cc4
+34036108:	341194c4 	.word	0x341194c4
 
 3403610c <_ZN8touchgfx8LCD16bpp43TextureMapper_A4_BilinearInterpolation_NoGA34drawTextureMapScanLineSubdivisionsEiiiifffllllfffffRKNS_14DrawingSurfaceEiiRKNS_14TextureSurfaceEhfff>:
 3403610c:	e92d 4ff0 	stmdb	sp!, {r4, r5, r6, r7, r8, r9, sl, fp, lr}
@@ -116998,7 +117000,7 @@ void TouchGFXGeneratedHAL::FlushCache()
 3403658a:	b2c9      	uxtb	r1, r1
 3403658c:	910b      	str	r1, [sp, #44]	@ 0x2c
 3403658e:	e7b7      	b.n	34036500 <_ZN8touchgfx8LCD16bpp43TextureMapper_A4_BilinearInterpolation_NoGA34drawTextureMapScanLineSubdivisionsEiiiifffllllfffffRKNS_14DrawingSurfaceEiiRKNS_14TextureSurfaceEhfff+0x3f4>
-34036590:	341d4cc4 	.word	0x341d4cc4
+34036590:	341194c4 	.word	0x341194c4
 34036594:	fffff800 	.word	0xfffff800
 34036598:	2b00      	cmp	r3, #0
 3403659a:	d0df      	beq.n	3403655c <_ZN8touchgfx8LCD16bpp43TextureMapper_A4_BilinearInterpolation_NoGA34drawTextureMapScanLineSubdivisionsEiiiifffllllfffffRKNS_14DrawingSurfaceEiiRKNS_14TextureSurfaceEhfff+0x450>
@@ -117043,7 +117045,7 @@ void TouchGFXGeneratedHAL::FlushCache()
 3403661c:	b013      	add	sp, #76	@ 0x4c
 3403661e:	e8bd 8ff0 	ldmia.w	sp!, {r4, r5, r6, r7, r8, r9, sl, fp, pc}
 34036622:	bf00      	nop
-34036624:	341d4cc4 	.word	0x341d4cc4
+34036624:	341194c4 	.word	0x341194c4
 
 34036628 <_ZNK8touchgfx8LCD16bpp17DecompressorL8_L416blendPixelRGB565Ettii>:
 34036628:	b570      	push	{r4, r5, r6, lr}
@@ -117274,8 +117276,8 @@ void TouchGFXGeneratedHAL::FlushCache()
 340368a0:	4798      	blx	r3
 340368a2:	b00f      	add	sp, #60	@ 0x3c
 340368a4:	e8bd 8ff0 	ldmia.w	sp!, {r4, r5, r6, r7, r8, r9, sl, fp, pc}
-340368a8:	341d4cbc 	.word	0x341d4cbc
-340368ac:	341d4cb6 	.word	0x341d4cb6
+340368a8:	341194bc 	.word	0x341194bc
+340368ac:	341194b6 	.word	0x341194b6
 
 340368b0 <_ZNK8touchgfx8LCD16bpp17DecompressorL8_L418blendPixelARGB8888Emtih>:
 340368b0:	b5f0      	push	{r4, r5, r6, r7, lr}
@@ -117481,8 +117483,8 @@ void TouchGFXGeneratedHAL::FlushCache()
 34036ac8:	b00d      	add	sp, #52	@ 0x34
 34036aca:	e8bd 8ff0 	ldmia.w	sp!, {r4, r5, r6, r7, r8, r9, sl, fp, pc}
 34036ace:	bf00      	nop
-34036ad0:	341d4cbc 	.word	0x341d4cbc
-34036ad4:	341d4cb6 	.word	0x341d4cb6
+34036ad0:	341194bc 	.word	0x341194bc
+34036ad4:	341194b6 	.word	0x341194b6
 
 34036ad8 <_ZNK8touchgfx8LCD16bpp17DecompressorL8_L416blendPixelRGB888EPKhthh>:
 34036ad8:	b570      	push	{r4, r5, r6, lr}
@@ -117754,8 +117756,8 @@ void TouchGFXGeneratedHAL::FlushCache()
 34036de0:	4798      	blx	r3
 34036de2:	b00f      	add	sp, #60	@ 0x3c
 34036de4:	e8bd 8ff0 	ldmia.w	sp!, {r4, r5, r6, r7, r8, r9, sl, fp, pc}
-34036de8:	341d4cbc 	.word	0x341d4cbc
-34036dec:	341d4cb6 	.word	0x341d4cb6
+34036de8:	341194bc 	.word	0x341194bc
+34036dec:	341194b6 	.word	0x341194b6
 34036df0:	fffff800 	.word	0xfffff800
 
 34036df4 <CRC_Lock>:
@@ -119199,7 +119201,7 @@ void TouchGFXGeneratedHAL::FlushCache()
 34037e5a:	d1f2      	bne.n	34037e42 <sbrk_aligned+0x22>
 34037e5c:	e7ef      	b.n	34037e3e <sbrk_aligned+0x1e>
 34037e5e:	bf00      	nop
-34037e60:	341d5710 	.word	0x341d5710
+34037e60:	34119f10 	.word	0x34119f10
 
 34037e64 <_malloc_r>:
 34037e64:	e92d 43f8 	stmdb	sp!, {r3, r4, r5, r6, r7, r8, r9, lr}
@@ -119309,19 +119311,19 @@ void TouchGFXGeneratedHAL::FlushCache()
 34037f5a:	6005      	str	r5, [r0, #0]
 34037f5c:	e7d6      	b.n	34037f0c <_malloc_r+0xa8>
 34037f5e:	bf00      	nop
-34037f60:	341d5714 	.word	0x341d5714
+34037f60:	34119f14 	.word	0x34119f14
 
 34037f64 <__malloc_lock>:
 34037f64:	4801      	ldr	r0, [pc, #4]	@ (34037f6c <__malloc_lock+0x8>)
 34037f66:	f000 bb50 	b.w	3403860a <__retarget_lock_acquire_recursive>
 34037f6a:	bf00      	nop
-34037f6c:	341d5858 	.word	0x341d5858
+34037f6c:	3411a058 	.word	0x3411a058
 
 34037f70 <__malloc_unlock>:
 34037f70:	4801      	ldr	r0, [pc, #4]	@ (34037f78 <__malloc_unlock+0x8>)
 34037f72:	f000 bb4b 	b.w	3403860c <__retarget_lock_release_recursive>
 34037f76:	bf00      	nop
-34037f78:	341d5858 	.word	0x341d5858
+34037f78:	3411a058 	.word	0x3411a058
 
 34037f7c <__cxa_atexit>:
 34037f7c:	b510      	push	{r4, lr}
@@ -119379,7 +119381,7 @@ void TouchGFXGeneratedHAL::FlushCache()
 34037ff4:	340382af 	.word	0x340382af
 34037ff8:	340382e7 	.word	0x340382e7
 34037ffc:	3403830b 	.word	0x3403830b
-34038000:	341d5718 	.word	0x341d5718
+34038000:	34119f18 	.word	0x34119f18
 
 34038004 <stdio_exit_handler>:
 34038004:	4a02      	ldr	r2, [pc, #8]	@ (34038010 <stdio_exit_handler+0xc>)
@@ -119414,9 +119416,9 @@ void TouchGFXGeneratedHAL::FlushCache()
 34038048:	f001 b844 	b.w	340390d4 <_fflush_r>
 3403804c:	bd10      	pop	{r4, pc}
 3403804e:	bf00      	nop
-34038050:	341d5718 	.word	0x341d5718
-34038054:	341d5780 	.word	0x341d5780
-34038058:	341d57e8 	.word	0x341d57e8
+34038050:	34119f18 	.word	0x34119f18
+34038054:	34119f80 	.word	0x34119f80
+34038058:	34119fe8 	.word	0x34119fe8
 
 3403805c <global_stdio_init.part.0>:
 3403805c:	b510      	push	{r4, lr}
@@ -119437,21 +119439,21 @@ void TouchGFXGeneratedHAL::FlushCache()
 34038082:	2112      	movs	r1, #18
 34038084:	e8bd 4010 	ldmia.w	sp!, {r4, lr}
 34038088:	f7ff bf86 	b.w	34037f98 <std>
-3403808c:	341d5850 	.word	0x341d5850
-34038090:	341d5718 	.word	0x341d5718
+3403808c:	3411a050 	.word	0x3411a050
+34038090:	34119f18 	.word	0x34119f18
 34038094:	34038005 	.word	0x34038005
 
 34038098 <__sfp_lock_acquire>:
 34038098:	4801      	ldr	r0, [pc, #4]	@ (340380a0 <__sfp_lock_acquire+0x8>)
 3403809a:	f000 bab6 	b.w	3403860a <__retarget_lock_acquire_recursive>
 3403809e:	bf00      	nop
-340380a0:	341d585a 	.word	0x341d585a
+340380a0:	3411a05a 	.word	0x3411a05a
 
 340380a4 <__sfp_lock_release>:
 340380a4:	4801      	ldr	r0, [pc, #4]	@ (340380ac <__sfp_lock_release+0x8>)
 340380a6:	f000 bab1 	b.w	3403860c <__retarget_lock_release_recursive>
 340380aa:	bf00      	nop
-340380ac:	341d585a 	.word	0x341d585a
+340380ac:	3411a05a 	.word	0x3411a05a
 
 340380b0 <__sinit>:
 340380b0:	b510      	push	{r4, lr}
@@ -119471,7 +119473,7 @@ void TouchGFXGeneratedHAL::FlushCache()
 340380d4:	e7f2      	b.n	340380bc <__sinit+0xc>
 340380d6:	bf00      	nop
 340380d8:	3403801d 	.word	0x3403801d
-340380dc:	341d5850 	.word	0x341d5850
+340380dc:	3411a050 	.word	0x3411a050
 
 340380e0 <fiprintf>:
 340380e0:	b40e      	push	{r1, r2, r3}
@@ -119948,7 +119950,7 @@ void TouchGFXGeneratedHAL::FlushCache()
 340384f6:	b103      	cbz	r3, 340384fa <_close_r+0x1a>
 340384f8:	6023      	str	r3, [r4, #0]
 340384fa:	bd38      	pop	{r3, r4, r5, pc}
-340384fc:	341d5854 	.word	0x341d5854
+340384fc:	3411a054 	.word	0x3411a054
 
 34038500 <_lseek_r>:
 34038500:	b538      	push	{r3, r4, r5, lr}
@@ -119966,7 +119968,7 @@ void TouchGFXGeneratedHAL::FlushCache()
 3403851a:	b103      	cbz	r3, 3403851e <_lseek_r+0x1e>
 3403851c:	6023      	str	r3, [r4, #0]
 3403851e:	bd38      	pop	{r3, r4, r5, pc}
-34038520:	341d5854 	.word	0x341d5854
+34038520:	3411a054 	.word	0x3411a054
 
 34038524 <_read_r>:
 34038524:	b538      	push	{r3, r4, r5, lr}
@@ -119984,7 +119986,7 @@ void TouchGFXGeneratedHAL::FlushCache()
 3403853e:	b103      	cbz	r3, 34038542 <_read_r+0x1e>
 34038540:	6023      	str	r3, [r4, #0]
 34038542:	bd38      	pop	{r3, r4, r5, pc}
-34038544:	341d5854 	.word	0x341d5854
+34038544:	3411a054 	.word	0x3411a054
 
 34038548 <_kill_r>:
 34038548:	b538      	push	{r3, r4, r5, lr}
@@ -120002,7 +120004,7 @@ void TouchGFXGeneratedHAL::FlushCache()
 34038562:	6023      	str	r3, [r4, #0]
 34038564:	bd38      	pop	{r3, r4, r5, pc}
 34038566:	bf00      	nop
-34038568:	341d5854 	.word	0x341d5854
+34038568:	3411a054 	.word	0x3411a054
 
 3403856c <_getpid_r>:
 3403856c:	f7ca bc68 	b.w	34002e40 <_getpid>
@@ -120021,7 +120023,7 @@ void TouchGFXGeneratedHAL::FlushCache()
 34038586:	b103      	cbz	r3, 3403858a <_sbrk_r+0x1a>
 34038588:	6023      	str	r3, [r4, #0]
 3403858a:	bd38      	pop	{r3, r4, r5, pc}
-3403858c:	341d5854 	.word	0x341d5854
+3403858c:	3411a054 	.word	0x3411a054
 
 34038590 <_write_r>:
 34038590:	b538      	push	{r3, r4, r5, lr}
@@ -120039,7 +120041,7 @@ void TouchGFXGeneratedHAL::FlushCache()
 340385aa:	b103      	cbz	r3, 340385ae <_write_r+0x1e>
 340385ac:	6023      	str	r3, [r4, #0]
 340385ae:	bd38      	pop	{r3, r4, r5, pc}
-340385b0:	341d5854 	.word	0x341d5854
+340385b0:	3411a054 	.word	0x3411a054
 
 340385b4 <__errno>:
 340385b4:	4b01      	ldr	r3, [pc, #4]	@ (340385bc <__errno+0x8>)
@@ -120165,8 +120167,8 @@ void TouchGFXGeneratedHAL::FlushCache()
 340386cc:	e7c9      	b.n	34038662 <__register_exitproc+0x3a>
 340386ce:	bf00      	nop
 340386d0:	34111688 	.word	0x34111688
-340386d4:	341d58e8 	.word	0x341d58e8
-340386d8:	341d585c 	.word	0x341d585c
+340386d4:	3411a0e8 	.word	0x3411a0e8
+340386d8:	3411a05c 	.word	0x3411a05c
 340386dc:	3403e2f0 	.word	0x3403e2f0
 340386e0:	34037e01 	.word	0x34037e01
 
@@ -120239,7 +120241,7 @@ void TouchGFXGeneratedHAL::FlushCache()
 3403876e:	e7ca      	b.n	34038706 <_free_r+0x22>
 34038770:	bd38      	pop	{r3, r4, r5, pc}
 34038772:	bf00      	nop
-34038774:	341d5714 	.word	0x341d5714
+34038774:	34119f14 	.word	0x34119f14
 
 34038778 <__ssputs_r>:
 34038778:	e92d 47f0 	stmdb	sp!, {r4, r5, r6, r7, r8, r9, sl, lr}
@@ -121378,7 +121380,7 @@ void TouchGFXGeneratedHAL::FlushCache()
 34039202:	6023      	str	r3, [r4, #0]
 34039204:	bd38      	pop	{r3, r4, r5, pc}
 34039206:	bf00      	nop
-34039208:	341d5854 	.word	0x341d5854
+34039208:	3411a054 	.word	0x3411a054
 
 3403920c <_isatty_r>:
 3403920c:	b538      	push	{r3, r4, r5, lr}
@@ -121394,7 +121396,7 @@ void TouchGFXGeneratedHAL::FlushCache()
 34039222:	b103      	cbz	r3, 34039226 <_isatty_r+0x1a>
 34039224:	6023      	str	r3, [r4, #0]
 34039226:	bd38      	pop	{r3, r4, r5, pc}
-34039228:	341d5854 	.word	0x341d5854
+34039228:	3411a054 	.word	0x3411a054
 
 3403922c <memchr>:
 3403922c:	b2c9      	uxtb	r1, r1
@@ -121477,11 +121479,11 @@ void TouchGFXGeneratedHAL::FlushCache()
 
 Disassembly of section .gnu.sgstubs:
 
-341cd0a0 <SECURE_SystemCoreClockUpdate>:
-341cd0a0:	e97f e97f 	sg
-341cd0a4:	f636 b9ac 	b.w	34003400 <__acle_se_SECURE_SystemCoreClockUpdate>
+341118a0 <SECURE_SystemCoreClockUpdate>:
+341118a0:	e97f e97f 	sg
+341118a4:	f6f1 bdac 	b.w	34003400 <__acle_se_SECURE_SystemCoreClockUpdate>
 
-341cd0a8 <SECURE_RegisterCallback>:
-341cd0a8:	e97f e97f 	sg
-341cd0ac:	f635 bdf2 	b.w	34002c94 <__acle_se_SECURE_RegisterCallback>
+341118a8 <SECURE_RegisterCallback>:
+341118a8:	e97f e97f 	sg
+341118ac:	f6f1 b9f2 	b.w	34002c94 <__acle_se_SECURE_RegisterCallback>
 	...

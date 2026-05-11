@@ -189,6 +189,9 @@ void HAL_XSPI_MspInit(XSPI_HandleTypeDef* xspiHandle)
     GPIO_InitStruct.Alternate = GPIO_AF9_XSPIM_P1;
     HAL_GPIO_Init(GPIOO, &GPIO_InitStruct);
 
+    /* XSPI1 interrupt Init */
+    HAL_NVIC_SetPriority(XSPI1_IRQn, 5, 0);
+    HAL_NVIC_EnableIRQ(XSPI1_IRQn);
   /* USER CODE BEGIN XSPI1_MspInit 1 */
 
   /* USER CODE END XSPI1_MspInit 1 */
@@ -240,6 +243,9 @@ void HAL_XSPI_MspInit(XSPI_HandleTypeDef* xspiHandle)
     GPIO_InitStruct.Alternate = GPIO_AF9_XSPIM_P2;
     HAL_GPIO_Init(GPION, &GPIO_InitStruct);
 
+    /* XSPI2 interrupt Init */
+    HAL_NVIC_SetPriority(XSPI2_IRQn, 5, 0);
+    HAL_NVIC_EnableIRQ(XSPI2_IRQn);
   /* USER CODE BEGIN XSPI2_MspInit 1 */
 
   /* USER CODE END XSPI2_MspInit 1 */
@@ -280,6 +286,8 @@ void HAL_XSPI_MspDeInit(XSPI_HandleTypeDef* xspiHandle)
 
     HAL_GPIO_DeInit(GPIOO, GPIO_PIN_5|GPIO_PIN_2|GPIO_PIN_0|GPIO_PIN_4);
 
+    /* XSPI1 interrupt Deinit */
+    HAL_NVIC_DisableIRQ(XSPI1_IRQn);
   /* USER CODE BEGIN XSPI1_MspDeInit 1 */
 
   /* USER CODE END XSPI1_MspDeInit 1 */
@@ -313,6 +321,8 @@ void HAL_XSPI_MspDeInit(XSPI_HandleTypeDef* xspiHandle)
                           |GPIO_PIN_3|GPIO_PIN_5|GPIO_PIN_1|GPIO_PIN_9
                           |GPIO_PIN_2|GPIO_PIN_10|GPIO_PIN_11);
 
+    /* XSPI2 interrupt Deinit */
+    HAL_NVIC_DisableIRQ(XSPI2_IRQn);
   /* USER CODE BEGIN XSPI2_MspDeInit 1 */
 
   /* USER CODE END XSPI2_MspDeInit 1 */

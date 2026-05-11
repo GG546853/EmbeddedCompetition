@@ -56,7 +56,10 @@
 
 /* External variables --------------------------------------------------------*/
 extern DCMIPP_HandleTypeDef hdcmipp;
+extern DMA2D_HandleTypeDef hdma2d;
 extern UART_HandleTypeDef huart1;
+extern XSPI_HandleTypeDef hxspi1;
+extern XSPI_HandleTypeDef hxspi2;
 extern TIM_HandleTypeDef htim6;
 
 /* USER CODE BEGIN EV */
@@ -191,6 +194,20 @@ void DCMIPP_IRQHandler(void)
 }
 
 /**
+  * @brief This function handles DMA2D global interrupt.
+  */
+void DMA2D_IRQHandler(void)
+{
+  /* USER CODE BEGIN DMA2D_IRQn 0 */
+
+  /* USER CODE END DMA2D_IRQn 0 */
+  HAL_DMA2D_IRQHandler(&hdma2d);
+  /* USER CODE BEGIN DMA2D_IRQn 1 */
+
+  /* USER CODE END DMA2D_IRQn 1 */
+}
+
+/**
   * @brief This function handles TIM6 global interrupt.
   */
 void TIM6_IRQHandler(void)
@@ -216,6 +233,34 @@ void USART1_IRQHandler(void)
   /* USER CODE BEGIN USART1_IRQn 1 */
 
   /* USER CODE END USART1_IRQn 1 */
+}
+
+/**
+  * @brief This function handles XSPI1 global interrupt.
+  */
+void XSPI1_IRQHandler(void)
+{
+  /* USER CODE BEGIN XSPI1_IRQn 0 */
+
+  /* USER CODE END XSPI1_IRQn 0 */
+  HAL_XSPI_IRQHandler(&hxspi1);
+  /* USER CODE BEGIN XSPI1_IRQn 1 */
+
+  /* USER CODE END XSPI1_IRQn 1 */
+}
+
+/**
+  * @brief This function handles XSPI2 global interrupt.
+  */
+void XSPI2_IRQHandler(void)
+{
+  /* USER CODE BEGIN XSPI2_IRQn 0 */
+
+  /* USER CODE END XSPI2_IRQn 0 */
+  HAL_XSPI_IRQHandler(&hxspi2);
+  /* USER CODE BEGIN XSPI2_IRQn 1 */
+
+  /* USER CODE END XSPI2_IRQn 1 */
 }
 
 /* USER CODE BEGIN 1 */

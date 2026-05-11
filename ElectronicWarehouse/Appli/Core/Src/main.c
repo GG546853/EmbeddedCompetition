@@ -139,14 +139,14 @@ int main(void)
   MX_TouchGFX_PreOSInit();
   /* USER CODE BEGIN 2 */
 #ifdef DEBUG
-  MX_XSPI1_Init();
+  //MX_XSPI1_Init();
   if (HyperRAM_Init(&HyperRAMObject, &hxspi1) != HyperRAM_OK)
   {
       Error_Handler();
   }
   HyperRAM_EnableMemoryMappedMode(&HyperRAMObject);
 
-  MX_XSPI2_Init();
+  //MX_XSPI2_Init();
   uint32_t xspi2_clk = HAL_RCCEx_GetPeriphCLKFreq(RCC_PERIPHCLK_XSPI2);
   if (NORFlash_Init(&NORFlashObject, &hxspi2, xspi2_clk) != NORFlash_OK)
     {
@@ -334,6 +334,41 @@ void PeriphCommonClock_Config(void)
       __NOP();
   }
 
+
+void XSPI3_IRQHandler()
+{
+	__NOP();
+}
+
+void WWDG_IRQHandler()
+{
+	__NOP();
+}
+
+void WAKEUP_PIN_IRQHandler()
+{
+	__NOP();
+}
+
+void VENC_IRQHandler()
+{
+	__NOP();
+}
+
+void USB2_OTG_HS_IRQHandler()
+{
+	__NOP();
+}
+
+void USB1_OTG_HS_IRQHandler()
+{
+	__NOP();
+}
+
+void USART6_IRQHandler()
+{
+	__NOP();
+}
 /* USER CODE END 4 */
 
 /**

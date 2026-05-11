@@ -6,5 +6,12 @@
 ../Core/Src/main.c:319:8:HAL_DCMIPP_PIPE_VsyncEventCallback	1
 ../Core/Src/main.c:325:8:HAL_LTDC_ErrorCallback	1
 ../Core/Src/main.c:331:8:HAL_DCMIPP_ErrorCallback	1
-../Core/Src/main.c:347:6:HAL_TIM_PeriodElapsedCallback	2
-../Core/Src/main.c:365:6:Error_Handler	1
+../Core/Src/main.c:338:6:XSPI3_IRQHandler	1
+../Core/Src/main.c:343:6:WWDG_IRQHandler	1
+../Core/Src/main.c:348:6:WAKEUP_PIN_IRQHandler	1
+../Core/Src/main.c:353:6:VENC_IRQHandler	1
+../Core/Src/main.c:358:6:USB2_OTG_HS_IRQHandler	1
+../Core/Src/main.c:363:6:USB1_OTG_HS_IRQHandler	1
+../Core/Src/main.c:368:6:USART6_IRQHandler	1
+../Core/Src/main.c:382:6:HAL_TIM_PeriodElapsedCallback	2
+../Core/Src/main.c:400:6:Error_Handler	1

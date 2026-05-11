@@ -26,6 +26,7 @@
 
 using namespace touchgfx;
 
+extern uint16_t g_ltdc_lcd_framebuf[480 * 800] __attribute__((section(".EXTRAM")));
 void TouchGFXHAL::initialize()
 {
     // Calling parent implementation of initialize().
@@ -35,6 +36,10 @@ void TouchGFXHAL::initialize()
     // Please note, HAL::initialize() must be called to initialize the framework.
 
     TouchGFXGeneratedHAL::initialize();
+
+
+    //setFrameBufferStartAddresses((void*)g_ltdc_lcd_framebuf, (void*)0, (void*)0);
+
 }
 
 /**

@@ -26,6 +26,7 @@
 #include "Sensor_task.h"
 #include "imx335.h"
 #include "rgblcd.h"
+#include "app_touchgfx.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -47,6 +48,13 @@
 /* USER CODE BEGIN Variables */
 
 /* USER CODE END Variables */
+/* Definitions for defaultTask */
+osThreadId_t defaultTaskHandle;
+const osThreadAttr_t defaultTask_attributes = {
+  .name = "defaultTask",
+  .priority = (osPriority_t) osPriorityNormal,
+  .stack_size = 2048 * 4
+};
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -75,6 +83,7 @@ void vApplicationStackOverflowHook(xTaskHandle xTask, char *pcTaskName)
    /* Run time stack overflow checking is performed if
    configCHECK_FOR_STACK_OVERFLOW is defined to 1 or 2. This hook function is
    called if a stack overflow is detected. */
+	__NOP();
 }
 /* USER CODE END 4 */
 
@@ -116,17 +125,37 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
   /* USER CODE END RTOS_QUEUES */
+  /* creation of defaultTask */
+  defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
   RGBLED_TaskHandle = osThreadNew(RGBLED_Task, NULL, &RGBLEDTask_attributes);
-  Sensor_TaskHandle = osThreadNew(Sensor_Task, NULL, &SensorTask_attributes);
+  //Sensor_TaskHandle = osThreadNew(Sensor_Task, NULL, &SensorTask_attributes);
   /* USER CODE END RTOS_THREADS */
 
   /* USER CODE BEGIN RTOS_EVENTS */
   /* add events, ... */
   /* USER CODE END RTOS_EVENTS */
 
+}
+/* USER CODE BEGIN Header_StartDefaultTask */
+/**
+* @brief Function implementing the defaultTask thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartDefaultTask */
+void StartDefaultTask(void *argument)
+{
+  /* USER CODE BEGIN defaultTask */
+  /* Infinite loop */
+  for(;;)
+  {
+	  MX_TouchGFX_Process();
+    osDelay(1);
+  }
+  /* USER CODE END defaultTask */
 }
 
 /* Private application code --------------------------------------------------*/

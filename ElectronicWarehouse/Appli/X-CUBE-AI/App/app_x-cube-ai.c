@@ -58,10 +58,35 @@
 #include <math.h>
 
  typedef struct {
- float x1, y1, x2, y2;
- float conf;
- int keep;
- } Box;
+     float x1, y1, x2, y2;   // 矩形框
+     float score;            // 最终得分 (cls * obj)
+     struct {
+         float x, y;
+     } landmarks[5];         // 5个关键点
+     int keep;               // NMS 标志位
+ } FaceDetection;
+
+ typedef struct {
+     int stride;
+     int map_size;
+     // 6个Tensor的索引 (基于12个输出的典型排列)
+     int cls_idx; // 分类
+     int obj_idx; // 目标存在感
+     int reg_idx; // 框回归
+     int kps_idx; // 关键点回归
+ } YuNetLayer;
+
+ float scales[12] = {
+     0.003292752, 0.003212299, 0.002707064, // 0,1,2: Cls
+     0.019418273, 0.015351823, 0.016416648, // 3,4,5: Obj (注意：这里用了原本 obj 的 scale)
+     0.011400674, 0.011022569, 0.012532321, // 6,7,8: Reg
+     0.003796757, 0.003871595, 0.000669989  // 9,10,11:Kps (注意：这里用了原本 kps 的 scale)
+ };
+ int32_t zps[12] = {-128, -128, -128, -128, -128, -128, -61, -46, -16, -26, -33, -45};
+
+#define CONF_THRESH 0.5f
+#define MAX_CANDIDATES 1024
+
 
  //extern uint8_t g_ai_cam_buf[];
  extern uint8_t g_ltdc_layer2_framebuf[480 * 800 * 3];
@@ -72,7 +97,110 @@
 
   __attribute__((section(".camera_buf")))
  __attribute__((aligned(32)))
- Box boxes[2100];
+
+ FaceDetection boxes[2100];
+
+  int yunet_decode(const LL_Buffer_InfoTypeDef* obuffersInfos, FaceDetection* results) {
+      int valid_count = 0;
+
+      // YuNet 的三个尺度定义
+      YuNetLayer layers[3] = {
+          {8,  40, 0, 3, 6, 9},   // Stride 8:  cls=0, obj=3, reg=6, kps=9
+          {16, 20, 1, 4, 7, 10},  // Stride 16: cls=1, obj=4, reg=7, kps=10
+          {32, 10, 2, 5, 8, 11}   // Stride 32: cls=2, obj=5, reg=8, kps=11
+      };
+
+      for (int l = 0; l < 3; l++) {
+          YuNetLayer layer = layers[l];
+          int8_t *p_cls = (int8_t *)LL_Buffer_addr_start(&obuffersInfos[layer.cls_idx]);
+          int8_t *p_obj = (int8_t *)LL_Buffer_addr_start(&obuffersInfos[layer.obj_idx]);
+          int8_t *p_reg = (int8_t *)LL_Buffer_addr_start(&obuffersInfos[layer.reg_idx]);
+          int8_t *p_kps = (int8_t *)LL_Buffer_addr_start(&obuffersInfos[layer.kps_idx]);
+
+          for (int y = 0; y < layer.map_size; y++) {
+              for (int x = 0; x < layer.map_size; x++) {
+                  int idx = y * layer.map_size + x;
+
+                  // 1. 反量化得分并计算最终 Score = cls * obj
+                  float score_cls = (float)(p_cls[idx] - zps[layer.cls_idx]) * scales[layer.cls_idx];
+                  float score_obj = (float)(p_obj[idx] - zps[layer.obj_idx]) * scales[layer.obj_idx];
+                  float final_score = score_cls * score_obj;
+
+                  if (final_score > CONF_THRESH) {
+
+                      if (valid_count >= MAX_CANDIDATES) break;
+
+                      // 2. 解码边界框 (BBox)
+                      // dx, dy, dw, dh
+                      float dx = (float)(p_reg[idx * 4 + 0] - zps[layer.reg_idx]) * scales[layer.reg_idx];
+                      float dy = (float)(p_reg[idx * 4 + 1] - zps[layer.reg_idx]) * scales[layer.reg_idx];
+                      float dw = (float)(p_reg[idx * 4 + 2] - zps[layer.reg_idx]) * scales[layer.reg_idx];
+                      float dh = (float)(p_reg[idx * 4 + 3] - zps[layer.reg_idx]) * scales[layer.reg_idx];
+
+                      // 中心点解码公式: (grid_index + offset) * stride
+                      float cx = (x + dx) * layer.stride;
+                      float cy = (y + dy) * layer.stride;
+                      float w  = expf(dw) * layer.stride;
+                      float h  = expf(dh) * layer.stride;
+
+                      results[valid_count].x1 = cx - w / 2.0f;
+                      results[valid_count].y1 = cy - h / 2.0f;
+                      results[valid_count].x2 = cx + w / 2.0f;
+                      results[valid_count].y2 = cy + h / 2.0f;
+                      results[valid_count].score = final_score;
+                      results[valid_count].keep = 1;
+
+                      // 3. 解码 5 个关键点 (Landmarks)
+                      for (int n = 0; n < 5; n++) {
+                          float kpx = (float)(p_kps[idx * 10 + n * 2 + 0] - zps[layer.kps_idx]) * scales[layer.kps_idx];
+                          float kpy = (float)(p_kps[idx * 10 + n * 2 + 1] - zps[layer.kps_idx]) * scales[layer.kps_idx];
+                          results[valid_count].landmarks[n].x = (x + kpx) * layer.stride;
+                          results[valid_count].landmarks[n].y = (y + kpy) * layer.stride;
+                      }
+
+                      valid_count++;
+                  }
+              }
+          }
+      }
+      return valid_count;
+  }
+
+  void do_nms(FaceDetection* boxes, int count, float iou_thresh) {
+      // 1. 冒泡排序（按 score 从高到低）
+      for (int i = 0; i < count - 1; i++) {
+          for (int j = 0; j < count - i - 1; j++) {
+              if (boxes[j].score < boxes[j+1].score) {
+                  FaceDetection temp = boxes[j];
+                  boxes[j] = boxes[j+1];
+                  boxes[j+1] = temp;
+              }
+          }
+      }
+
+      // 2. IoU 计算与剔除
+      for (int i = 0; i < count; i++) {
+          if (!boxes[i].keep) continue;
+          for (int j = i + 1; j < count; j++) {
+              if (!boxes[j].keep) continue;
+
+              float xx1 = fmaxf(boxes[i].x1, boxes[j].x1);
+              float yy1 = fmaxf(boxes[i].y1, boxes[j].y1);
+              float xx2 = fminf(boxes[i].x2, boxes[j].x2);
+              float yy2 = fminf(boxes[i].y2, boxes[j].y2);
+
+              float w = fmaxf(0, xx2 - xx1);
+              float h = fmaxf(0, yy2 - yy1);
+              float inter = w * h;
+              if (inter > 0) {
+                  float area_i = (boxes[i].x2 - boxes[i].x1) * (boxes[i].y2 - boxes[i].y1);
+                  float area_j = (boxes[j].x2 - boxes[j].x1) * (boxes[j].y2 - boxes[j].y1);
+                  float iou = inter / (area_i + area_j - inter);
+                  if (iou > iou_thresh) boxes[j].keep = 0;
+              }
+          }
+      }
+  }
 
 /* USER CODE END includes */
 
@@ -199,202 +327,27 @@ void MX_X_CUBE_AI_Process(void)
             }
         } while (ll_aton_rt_ret != LL_ATON_RT_DONE);
 
-        // =====================================================================
-        // 【关键修复 1】：必须无效化所有 12 个输出张量的 Cache
-        // =====================================================================
         for (int i = 0; i < 12; i++) {
             uint32_t addr = (uint32_t)LL_Buffer_addr_start(&obuffersInfos[i]);
             uint32_t len = obuffersInfos[i].offset_end - obuffersInfos[i].offset_start;
             SCB_InvalidateDCache_by_Addr((uint32_t*)addr, len);
         }
+        for (int i = 0; i < 12; i++) {
+            uint32_t addr = (uint32_t)LL_Buffer_addr_start(&obuffersInfos[i]);
 
-        // =====================================================================
-        // 【关键修复 2】：定义提取 12 个输出中我们需要的 6 个张量指针 (int8_t)
-        // =====================================================================
-        int8_t *cls_8  = (int8_t *)LL_Buffer_addr_start(&obuffersInfos[0]); // 1600x1
-        int8_t *cls_16 = (int8_t *)LL_Buffer_addr_start(&obuffersInfos[1]); // 400x1
-        int8_t *cls_32 = (int8_t *)LL_Buffer_addr_start(&obuffersInfos[2]); // 100x1
+            int8_t *ptr = (int8_t *)LL_Buffer_addr_start(&obuffersInfos[i]);
+            printf("Tensor [%d] (len %ld): %d, %d, %d, %d\n\r",
+                       i,
+                       obuffersInfos[i].offset_end - obuffersInfos[i].offset_start,
+                       ptr[0], ptr[1], ptr[2], ptr[3]);
 
-        int8_t *reg_8  = (int8_t *)LL_Buffer_addr_start(&obuffersInfos[6]); // 1600x4
-        int8_t *reg_16 = (int8_t *)LL_Buffer_addr_start(&obuffersInfos[7]); // 400x4
-        int8_t *reg_32 = (int8_t *)LL_Buffer_addr_start(&obuffersInfos[8]); // 100x4
-
-        // 从你的 Analyze 报告中抄来的反量化参数 (Scale 和 ZeroPoint)
-        float s_cls_8 = 0.003292752f, z_cls_8 = -128.0f;
-        float s_cls_16= 0.003212299f, z_cls_16= -128.0f;
-        float s_cls_32= 0.002707064f, z_cls_32= -128.0f;
-        float s_reg_8 = 0.011400674f, z_reg_8 = -61.0f;
-        float s_reg_16= 0.011022569f, z_reg_16= -46.0f;
-        float s_reg_32= 0.012532321f, z_reg_32= -16.0f;
-
-        int valid_count = 0;
-
-        // =====================================================================
-        // 【关键修复 3】：手撕 YuNet 的反量化与 Anchor 解码逻辑
-        // =====================================================================
-        // 我们写一个统一的宏/内联逻辑来处理 3 个不同的特征层 (Stride=8, 16, 32)
-        int strides[] = {8, 16, 32};
-        int map_sizes[] = {40, 20, 10}; // 320/8=40, 320/16=20, 320/32=10
-        int8_t* cls_ptrs[] = {cls_8, cls_16, cls_32};
-        int8_t* reg_ptrs[] = {reg_8, reg_16, reg_32};
-        float s_cls[] = {s_cls_8, s_cls_16, s_cls_32};
-        float z_cls[] = {z_cls_8, z_cls_16, z_cls_32};
-        float s_reg[] = {s_reg_8, s_reg_16, s_reg_32};
-        float z_reg[] = {z_reg_8, z_reg_16, z_reg_32};
-
-        for (int s = 0; s < 3; s++) {
-            int stride = strides[s];
-            int map_size = map_sizes[s];
-
-            for (int y = 0; y < map_size; y++) {
-                for (int x = 0; x < map_size; x++) {
-                    int idx = y * map_size + x;
-
-                    // 1. 读取并反量化置信度
-                    float conf = ((float)cls_ptrs[s][idx] - z_cls[s]) * s_cls[s];
-
-                    // 阈值过滤 (YuNet 建议 0.4 到 0.6)
-                    if (conf > 0.5f) {
-                        // 2. 读取并反量化 BBox 偏移量
-                        float dx = ((float)reg_ptrs[s][idx * 4 + 0] - z_reg[s]) * s_reg[s];
-                        float dy = ((float)reg_ptrs[s][idx * 4 + 1] - z_reg[s]) * s_reg[s];
-                        float dw = ((float)reg_ptrs[s][idx * 4 + 2] - z_reg[s]) * s_reg[s];
-                        float dh = ((float)reg_ptrs[s][idx * 4 + 3] - z_reg[s]) * s_reg[s];
-
-                        // 3. Anchor 解码公式，还原为 320x320 尺寸下的真实像素坐标
-                        float cx = (x + dx) * stride;
-                        float cy = (y + dy) * stride;
-                        float w  = expf(dw) * stride;
-                        float h  = expf(dh) * stride;
-
-                        // 4. 存入你的 boxes 数组
-                        if(valid_count < 2100) {
-                            boxes[valid_count].x1 = cx - w / 2.0f;
-                            boxes[valid_count].y1 = cy - h / 2.0f;
-                            boxes[valid_count].x2 = cx + w / 2.0f;
-                            boxes[valid_count].y2 = cy + h / 2.0f;
-                            boxes[valid_count].conf = conf;
-                            boxes[valid_count].keep = 1;
-                            valid_count++;
-                        }
-                    }
-                }
-            }
+            uint32_t len = obuffersInfos[i].offset_end - obuffersInfos[i].offset_start;
+            SCB_InvalidateDCache_by_Addr((uint32_t*)addr, len);
         }
 
-        // =====================================================================
-        // 【关键修复 4】：做 NMS 前，必须按置信度从大到小排序
-        // =====================================================================
-        for (int i = 0; i < valid_count - 1; i++) {
-            for (int j = 0; j < valid_count - i - 1; j++) {
-                if (boxes[j].conf < boxes[j + 1].conf) {
-                    Box temp = boxes[j];
-                    boxes[j] = boxes[j + 1];
-                    boxes[j + 1] = temp;
-                }
-            }
-        }
-
-        // 你的 NMS 代码 (基本保持不变，建议将 IoU 阈值从 0.7 降为 0.45 以免重叠框剔除失败)
-        for (int i = 0; i < valid_count; i++) {
-            if(boxes[i].keep){
-                for(int j = i + 1; j < valid_count; j++){
-                    if(boxes[j].keep){
-                        float x1 = (boxes[i].x1 > boxes[j].x1) ? boxes[i].x1 : boxes[j].x1;
-                        float y1 = (boxes[i].y1 > boxes[j].y1) ? boxes[i].y1 : boxes[j].y1;
-                        float x2 = (boxes[i].x2 < boxes[j].x2) ? boxes[i].x2 : boxes[j].x2;
-                        float y2 = (boxes[i].y2 < boxes[j].y2) ? boxes[i].y2 : boxes[j].y2;
-                        float intersection = (x2 - x1) * (y2 - y1);
-                        if (intersection < 0) intersection = 0;
-                        float area_i = (boxes[i].x2 - boxes[i].x1) * (boxes[i].y2 - boxes[i].y1);
-                        float area_j = (boxes[j].x2 - boxes[j].x1) * (boxes[j].y2 - boxes[j].y1);
-                        float union_area = area_i + area_j - intersection;
-                        float iou = (union_area > 0) ? (intersection / union_area) : 0;
-
-                        if(iou > 0.45f){ // 【微调】：目标检测通用 NMS 阈值为 0.45 左右
-                            boxes[j].keep = 0;
-                        }
-                    }
-                }
-            }
-        }
-
-        // =====================================================================
-        // 后续你的 DMA2D 画图代码 (完全保留，未做任何修改！)
-        // =====================================================================
-        int final_count = 0;
-        hdma2d.Init.Mode = DMA2D_R2M;
-        hdma2d.Init.ColorMode = DMA2D_OUTPUT_RGB888;
-        hdma2d.Init.OutputOffset = 0;
-        if (HAL_DMA2D_Init(&hdma2d) != HAL_OK) { }
-
-        HAL_DMA2D_ConfigLayer(&hdma2d,1);
-        HAL_DMA2D_Start(&hdma2d, 0x00000000, (uint32_t)g_ltdc_layer2_framebuf, 800, 480);
-        HAL_DMA2D_PollForTransfer(&hdma2d, 1000);
-
-        for (int i = 0; i < valid_count; i++) {
-            if(boxes[i].keep){
-                final_count++;
-                int display_x1 = (int)(boxes[i].x1 * 2.5f);
-                int display_y1 = (int)(boxes[i].y1 * 1.5f);
-                int display_x2 = (int)(boxes[i].x2 * 2.5f);
-                int display_y2 = (int)(boxes[i].y2 * 1.5f);
-
-                // ... (此处省略你原有的边界限制和 4 条边的 DMA2D 绘制代码，直接沿用即可) ...
-                int display_width = display_x2 - display_x1;
-                int display_height = display_y2 - display_y1;
-
-                if (display_x1 < 0) display_x1 = 0;
-                if (display_y1 < 0) display_y1 = 0;
-                if (display_x2 > 800) display_x2 = 800;
-                if (display_y2 > 480) display_y2 = 480;
-                display_width = display_x2 - display_x1;
-                display_height = display_y2 - display_y1;
-                if (display_width < 0) display_width = 0;
-                if (display_height < 0) display_height = 0;
-                if (display_width > 0 && display_height > 0) {
-                    if (display_y1 >= 480) display_y1 = 479;
-                    if (display_y2 > 480) display_y2 = 480;
-                    if (display_x1 >= 800) display_x1 = 799;
-                    if (display_x2 > 800) display_x2 = 800;
-                    display_width = display_x2 - display_x1;
-                    display_height = display_y2 - display_y1;
-                    if (display_width <= 0 || display_height <= 0) continue;
-
-                    if (display_y1 < 480) {
-                        hdma2d.Init.Mode = DMA2D_R2M;
-                        hdma2d.Init.ColorMode = DMA2D_OUTPUT_RGB888;
-                        hdma2d.Init.OutputOffset = 800 - display_width;
-                        hdma2d.Init.RedBlueSwap = DMA2D_RB_REGULAR;
-                        HAL_DMA2D_Init(&hdma2d);
-                        HAL_DMA2D_ConfigLayer(&hdma2d, 1);
-                        HAL_DMA2D_Start(&hdma2d, 0x00FF0000, (uint32_t)&g_ltdc_layer2_framebuf[(display_y1 * 800 + display_x1) * 3], display_width, 1);
-                        HAL_DMA2D_PollForTransfer(&hdma2d, 100);
-                    }
-                    if (display_y2  <= 480 && display_y2 > display_y1) {
-                        hdma2d.Init.OutputOffset = 800 - display_width;
-                        HAL_DMA2D_Init(&hdma2d);
-                        HAL_DMA2D_Start(&hdma2d, 0x00FF0000, (uint32_t)&g_ltdc_layer2_framebuf[((display_y2 - 1) * 800 + display_x1) * 3], display_width, 1);
-                        HAL_DMA2D_PollForTransfer(&hdma2d, 100);
-                    }
-                    if (display_x1  < 800) {
-                        hdma2d.Init.OutputOffset = 800 - 1;
-                        HAL_DMA2D_Init(&hdma2d);
-                        HAL_DMA2D_Start(&hdma2d, 0x00FF0000, (uint32_t)&g_ltdc_layer2_framebuf[(display_y1 * 800 + display_x1) * 3], 1, display_height);
-                        HAL_DMA2D_PollForTransfer(&hdma2d, 100);
-                    }
-                    if (display_x2 <= 800 && display_x2 > display_x1) {
-                        hdma2d.Init.OutputOffset = 800 - 1;
-                        HAL_DMA2D_Init(&hdma2d);
-                        HAL_DMA2D_Start(&hdma2d, 0x00FF0000, (uint32_t)&g_ltdc_layer2_framebuf[(display_y1 * 800 + (display_x2 - 1)) * 3], 1, display_height);
-                        HAL_DMA2D_PollForTransfer(&hdma2d, 100);
-                    }
-                }
-            }
-        }
-
-        LL_ATON_RT_Reset_Network(&NN_Instance_Default);
-        vTaskDelay(pdMS_TO_TICKS(10));
+        int count = yunet_decode(obuffersInfos, boxes);
+        printf("Valid detection candidates: %d\n\r", count);
+        do_nms(boxes, count, 0.45f);
     }
     /* USER CODE END 6 */
 }

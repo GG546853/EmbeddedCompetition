@@ -348,6 +348,83 @@ void MX_X_CUBE_AI_Process(void)
         int count = yunet_decode(obuffersInfos, boxes);
         printf("Valid detection candidates: %d\n\r", count);
         do_nms(boxes, count, 0.45f);
+
+        int final_count = 0;
+
+        hdma2d.Init.Mode = DMA2D_R2M;                 // 寄存器到内存(纯色填充)
+        hdma2d.Init.ColorMode = DMA2D_OUTPUT_RGB888;  // 设定输出颜色格式
+        hdma2d.Init.OutputOffset = 0;                 // 【关键】重置偏移量为0，否则清屏会错乱
+        if (HAL_DMA2D_Init(&hdma2d) != HAL_OK) {
+            // 初始化错误处理
+        }
+
+        HAL_DMA2D_ConfigLayer(&hdma2d,1);
+        HAL_DMA2D_Start(&hdma2d, 0x00000000, (uint32_t)g_ltdc_layer2_framebuf, 800, 480);
+        HAL_DMA2D_PollForTransfer(&hdma2d, 1000);
+
+        for (int i = 0; i < count; i++) {
+        	if(boxes[i].keep){
+        		final_count++;
+        		int display_x1 = (int)(boxes[i].x1 * 2.5);
+        		int display_y1 = (int)(boxes[i].y1 * 1.5);
+        		int display_x2 = (int)(boxes[i].x2 * 2.5);
+        		int display_y2 = (int)(boxes[i].y2 * 1.5);
+        		int display_width = display_x2 - display_x1;
+        		int display_height = display_y2 - display_y1;
+
+        		if (display_x1 < 0) display_x1 = 0;
+        		if (display_y1 < 0) display_y1 = 0;
+        		if (display_x2 > 800) display_x2 = 800;
+        		if (display_y2 > 480) display_y2 = 480;
+        		display_width = display_x2 - display_x1;
+        		display_height = display_y2 - display_y1;
+        		if (display_width < 0) display_width = 0;
+        		if (display_height < 0) display_height = 0;
+        		if (display_width > 0 && display_height > 0) {
+        			if (display_y1 >= 480) display_y1 = 479;
+        			if (display_y2 > 480) display_y2 = 480;
+        			if (display_x1 >= 800) display_x1 = 799;
+        			if (display_x2 > 800) display_x2 = 800;
+        			display_width = display_x2 - display_x1;
+        			display_height = display_y2 - display_y1;
+        			if (display_width <= 0 || display_height <= 0) continue;
+
+        			if (display_y1 < 480) {
+        				hdma2d.Init.Mode = DMA2D_R2M;
+        				hdma2d.Init.ColorMode = DMA2D_OUTPUT_RGB888;
+        				hdma2d.Init.OutputOffset = 800 - display_width;
+        				hdma2d.Init.RedBlueSwap = DMA2D_RB_REGULAR;
+        				HAL_DMA2D_Init(&hdma2d);
+        				HAL_DMA2D_ConfigLayer(&hdma2d, 1);
+        				HAL_DMA2D_Start(&hdma2d, 0x00FF0000, (uint32_t)&g_ltdc_layer2_framebuf[(display_y1 * 800 + display_x1) * 3], display_width, 1);
+        				HAL_DMA2D_PollForTransfer(&hdma2d, 100);
+        			}
+        			if (display_y2  <= 480 && display_y2 > display_y1) {
+        				hdma2d.Init.OutputOffset = 800 - display_width;
+        				HAL_DMA2D_Init(&hdma2d);
+        				HAL_DMA2D_Start(&hdma2d, 0x00FF0000, (uint32_t)&g_ltdc_layer2_framebuf[((display_y2 - 1) * 800 + display_x1) * 3], display_width, 1);
+        				HAL_DMA2D_PollForTransfer(&hdma2d, 100);
+        			}
+        			if (display_x1  < 800) {
+        				hdma2d.Init.OutputOffset = 800 - 1;
+        				HAL_DMA2D_Init(&hdma2d);
+        				HAL_DMA2D_Start(&hdma2d, 0x00FF0000, (uint32_t)&g_ltdc_layer2_framebuf[(display_y1 * 800 + display_x1) * 3], 1, display_height);
+        				HAL_DMA2D_PollForTransfer(&hdma2d, 100);
+        			}
+        			if (display_x2 <= 800 && display_x2 > display_x1) {
+        				hdma2d.Init.OutputOffset = 800 - 1;
+        				HAL_DMA2D_Init(&hdma2d);
+        				HAL_DMA2D_Start(&hdma2d, 0x00FF0000, (uint32_t)&g_ltdc_layer2_framebuf[(display_y1 * 800 + (display_x2 - 1)) * 3], 1, display_height);
+        				HAL_DMA2D_PollForTransfer(&hdma2d, 100);
+        			}
+        		}
+
+        	}
+        }
+
+
+            LL_ATON_RT_Reset_Network(&NN_Instance_Default);
+            //vTaskDelay(pdMS_TO_TICKS(10));
     }
     /* USER CODE END 6 */
 }

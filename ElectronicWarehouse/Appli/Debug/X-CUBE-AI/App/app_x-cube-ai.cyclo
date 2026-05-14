@@ -15,4 +15,4 @@
 ../X-CUBE-AI/App/app_x-cube-ai.c:169:8:do_nms	10
 ../X-CUBE-AI/App/app_x-cube-ai.c:213:6:set_clk_sleep_mode	1
 ../X-CUBE-AI/App/app_x-cube-ai.c:252:6:MX_X_CUBE_AI_Init	1
-../X-CUBE-AI/App/app_x-cube-ai.c:295:6:MX_X_CUBE_AI_Process	20
+../X-CUBE-AI/App/app_x-cube-ai.c:295:6:MX_X_CUBE_AI_Process	42

@@ -101,3 +101,4 @@
 "./Middlewares/STM32_MW_ISP/isp/Src/isp_tool_com.o"
 "./X-CUBE-AI/App/app_x-cube-ai.o"
 "./X-CUBE-AI/App/network.o"
+"./X-CUBE-AI/App/network_1.o"

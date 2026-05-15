@@ -308,18 +308,37 @@ void MX_X_CUBE_AI_Process(void)
     SCB_CleanDCache_by_Addr((uint32_t*)buffer_in, buff_in_len);
     SCB_InvalidateDCache_by_Addr((uint32_t*)buffer_in, buff_in_len);
 
-    if (HAL_DCMIPP_CSI_PIPE_Start(&hdcmipp, DCMIPP_PIPE2, DCMIPP_VIRTUAL_CHANNEL0, (uint32_t)buffer_in, DCMIPP_MODE_SNAPSHOT) != HAL_OK) {
+    if (HAL_DCMIPP_CSI_PIPE_Start(&hdcmipp, DCMIPP_PIPE2, DCMIPP_VIRTUAL_CHANNEL0, (uint32_t)g_ai_cam_buf, DCMIPP_MODE_SNAPSHOT) != HAL_OK) {
         printf("ERROR: DCMIPP PIPE2 Start Failed!\r\n");
     }
 
     if(osSemaphoreAcquire(cam_frame_sem, pdMS_TO_TICKS(100)) != osOK)
-        while(1);
+    	return;
+
+
+    SCB_InvalidateDCache_by_Addr((uint32_t*)buffer_in, buff_in_len);
+
+
+    int8_t *chw_input = (int8_t *)buffer_in;
+    uint8_t *hwc_camera = (uint8_t *)g_ai_cam_buf;
+    int spatial_pixels = 320 * 320;
+
+    for (int i = 0; i < spatial_pixels; i++) {
+        // HWC 的内存排列是: R, G, B, R, G, B ...
+        // CHW 需要分别把 R, G, B 集中存放
+        chw_input[0 * spatial_pixels + i] = (int8_t)((int16_t)hwc_camera[i * 3 + 0] - 128); // R 通道
+        chw_input[1 * spatial_pixels + i] = (int8_t)((int16_t)hwc_camera[i * 3 + 1] - 128); // G 通道
+        chw_input[2 * spatial_pixels + i] = (int8_t)((int16_t)hwc_camera[i * 3 + 2] - 128); // B 通道
+    }
+
+    SCB_CleanDCache_by_Addr((uint32_t*)buffer_in, buff_in_len);
 
     for (int inferenceNb = 0; inferenceNb < 1; ++inferenceNb) {
         SCB_CleanDCache_by_Addr((uint32_t*)buffer_in, buff_in_len);
         SCB_InvalidateDCache_by_Addr((uint32_t*)buffer_in, buff_in_len);
 
         LL_ATON_RT_Init_Network(&NN_Instance_Default);
+
         do {
             ll_aton_rt_ret = LL_ATON_RT_RunEpochBlock(&NN_Instance_Default);
             if (ll_aton_rt_ret == LL_ATON_RT_WFE) {
@@ -329,18 +348,6 @@ void MX_X_CUBE_AI_Process(void)
 
         for (int i = 0; i < 12; i++) {
             uint32_t addr = (uint32_t)LL_Buffer_addr_start(&obuffersInfos[i]);
-            uint32_t len = obuffersInfos[i].offset_end - obuffersInfos[i].offset_start;
-            SCB_InvalidateDCache_by_Addr((uint32_t*)addr, len);
-        }
-        for (int i = 0; i < 12; i++) {
-            uint32_t addr = (uint32_t)LL_Buffer_addr_start(&obuffersInfos[i]);
-
-            int8_t *ptr = (int8_t *)LL_Buffer_addr_start(&obuffersInfos[i]);
-            printf("Tensor [%d] (len %ld): %d, %d, %d, %d\n\r",
-                       i,
-                       obuffersInfos[i].offset_end - obuffersInfos[i].offset_start,
-                       ptr[0], ptr[1], ptr[2], ptr[3]);
-
             uint32_t len = obuffersInfos[i].offset_end - obuffersInfos[i].offset_start;
             SCB_InvalidateDCache_by_Addr((uint32_t*)addr, len);
         }
@@ -357,10 +364,8 @@ void MX_X_CUBE_AI_Process(void)
         if (HAL_DMA2D_Init(&hdma2d) != HAL_OK) {
             // 初始化错误处理
         }
-
-        HAL_DMA2D_ConfigLayer(&hdma2d,1);
         HAL_DMA2D_Start(&hdma2d, 0x00000000, (uint32_t)g_ltdc_layer2_framebuf, 800, 480);
-        HAL_DMA2D_PollForTransfer(&hdma2d, 1000);
+        HAL_DMA2D_PollForTransfer(&hdma2d, 100);
 
         for (int i = 0; i < count; i++) {
         	if(boxes[i].keep){

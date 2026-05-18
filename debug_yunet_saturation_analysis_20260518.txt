@@ -1,0 +1,134 @@
+================================================================================
+ YuNet 人脸检测模型异常排查报告
+ 日期: 2026-05-18
+ 分支: scheme_ai_0.1
+ 硬件: STM32N647 (STM32N6 NPU) + IMX335 摄像头 + RGB LCD 800x480
+ 最终结论: 该模型 int8 量化损坏严重，不可用，建议更换模型
+================================================================================
+
+一、问题现象
+-----------
+屏幕显示大量大小不一、杂乱无章的红色检测框（200 个框全部画出）。
+串口输出显示所有候选框的 score 均为 0.8129（理论最大值）。
+模型输出 buffer 大小正确（12 个输出，总计 ~30KB），说明 NPU 推理本身无硬件错误。
+
+
+二、排查过程
+-----------
+
+【步骤 1】对比 ST 官方参考代码，检查数据流
+  - 对比文件: st_face_detection_reference_code (Python 后处理)、
+    st_model_zoo/face_detection/yunet (模型配置)、
+    AI_MODEL_REPORT.md (Neural ART 编译报告)
+  - 验证项: 输出 buffer 索引映射、反量化 scale/zp、decode 公式、
+    NMS 逻辑、NCHW 布局、输入量化参数
+  - 结果: 代码逻辑全部正确，无 bug
+
+【步骤 2】发现 BGR/RGB 通道问题
+  - ST 所有配置文件均指定 color_mode: bgr (OpenCV 惯例)
+  - DCMIPP 摄像头输出 RGB888
+  - 修复: transpose_rgb_to_nchw() 中交换 R/B 通道
+    - camera B → model B plane (channel 0)
+    - camera G → model G plane (channel 1)
+    - camera R → model R plane (channel 2)
+  - 结果: 屏幕仍然显示大量杂乱框，问题未解决
+
+【步骤 3】分析 Serial.txt（第一轮调试输出）
+  - 所有 200 个候选框的 score 均为 0.8129
+  - 0.8129 = (127+128)*0.003292752 * (127+128)*0.003796757
+  - 即 cls=127 且 obj=127，达到 int8 理论最大值
+  - 但前 20 个 cls 值正常（31~89），说明部分锚点正常、部分饱和
+
+【步骤 4】分析 Serial2.txt（第二轮，min/max/avg + per-box 原始值）
+  - S8 cls: min=-66, max=127(始终), avg 从 68 逐步降到 15
+  - 饱和框坐标在 13 帧内从图像顶部(y≈37)向下移动到底部(y≈287)
+  - 后期帧出现非饱和框(score 0.73~0.79)
+  - 推断: 饱和区域在移动 → 需排查 DCMIPP 时序
+
+【步骤 5】分析 Serial3.txt（第三轮，三 stride 统计 + T1~T4 时间戳）
+  - 时序结论: 完全正常，排除 DCMIPP 同步问题
+    · snap (T2-T1): 45~50ms    合理（320×320 快照）
+    · prep (T3-T2): 10~11ms    正常（transpose + cache）
+    · infer (T4-T3): 30~31ms   符合预期（NPU 推理）
+    · PIPE2 done → T2: ≤1 tick  信号量同步正确
+
+  - 饱和分布:
+    · S16: cls sat127=8/400, obj sat127=8/400  始终固定（每帧相同）
+    · S32: cls sat127=2/100, obj sat127=2/100  始终固定（每帧相同）
+    · S8:  cls sat127=38~278, obj sat127=194~419  剧烈变化（场景依赖）
+
+  - "半饱和"锚点（obj 独立于 cls 饱和）:
+    · anchor[241]: cls=31(正常), obj=127(饱和)
+    → obj 分支比 cls 更容易溢出（sat127 计数高 2~6 倍）
+
+【步骤 6】分析 Serial4.txt（第四轮，加入饱和过滤后的验证测试）
+  - 代码改动: yunet_decode() 中过滤 cls==127 或 obj==127 的锚点
+  - 过滤生效: score=0.8129 的框完全消失，最高分降至 0.62~0.71
+
+  - 暴露更深层问题: 未饱和的"正常"输出同样无效
+
+    问题 A — S8 输出值持续暴跌:
+      cls avg: 9 → 8 → 9 → 6 → 6 → -3 → -39 → -42 → -33 → -33
+      obj avg: 7 → 7 → 6 → 4 → 3 → -5 → -40 → -43 → -34 → -33
+      cls[0..19] 在 Serial3 为 35~60 (正值)，在 Serial4 为 -55~-86 (负值)
+      数值持续下探，模型输出分布完全变化
+
+    问题 B — 候选框数量崩塌:
+      valid_count: 200 → 187 → 101 → 26 → 26 → 26 → 26
+      从 200 跌到 26 后稳定，大量锚点连置信度阈值(0.5)都过不了
+
+    问题 C — 连续帧输出完全不变:
+      第 4~10 帧的 boxes[0-5] 坐标完全一致（小数点后 4 位不变）
+      模型输出不再响应摄像头变化 → 推理结果等同于随机噪声
+
+    问题 D — 剩余框质量极差:
+      · y1=-19.6 (负值，超出图像边界)
+      · y2=339.8 (超出 320×320 输入范围)
+      · 框分布随机散布，不对应任何人脸
+      · score 0.62~0.71，无区分度
+
+  - S16/S32 死神经元最终确认:
+    无论 Serial2/3/4，S16 sat127 始终 = 9 (8 个 cls + 1 个额外 obj)
+    无论 Serial2/3/4，S32 sat127 始终 = 2
+    跨越多次测试、不同时间、不同场景均不变 → 模型固有的量化损坏
+
+
+三、根因判断
+-----------
+不是代码 bug，不是 DCMIPP 时序问题，是 YuNet int8 QDQ 量化模型质量不合格。
+
+两层问题:
+1. 部分通道/锚点激活值超出 int8 校准范围 → 截断到 127（饱和）
+2. 即使未饱和的输出，数值分布极不稳定（Serial3 正 60+ → Serial4 负 -86），
+   检测框质量差、坐标越界、连续帧不变 → 模型在该 NPU 编译结果下基本不可用
+
+具体机制:
+1. QDQ 量化在校准时使用特定数据集确定每层激活范围的 min/max
+2. Neural ART 编译器将这些范围固化为 int8 [-128, 127] 的映射参数
+3. 当校准数据集与部署场景（IMX335 实拍）差异过大时:
+   - 超出范围的激活被截断（→ 127 或 -128）
+   - 范围内的激活也因为量化误差累积而偏移
+4. S16/S32 的固定饱和锚点说明校准时这些位置从未被激活 → 校准数据不覆盖这些特征
+
+
+四、最终结论
+-----------
+该 yunetn_320_qdq_int8.onnx 模型经 Neural ART 编译后在 STM32N6 NPU 上不可用。
+建议放弃该模型，寻找替代方案:
+  - 同一模型的不同量化版本（非 QDQ，使用 STM32N6 校准数据重新量化的版本）
+  - 其他架构的人脸检测模型（如 BlazeFace、RetinaFace 的 STM32N6 适配版）
+  - 若需保留 YuNet，需要用 IMX335 实拍图重新做量化校准
+
+
+五、相关文件
+-----------
+  ElectronicWarehouse/Appli/X-CUBE-AI/App/app_x-cube-ai.c   主 AI 管线 (含 BGR 修复 + 饱和过滤)
+  ElectronicWarehouse/Appli/APP/Sensor_task.c               传感器任务
+  ElectronicWarehouse/Appli/Core/Src/main.c                 DCMIPP 回调 (含 PIPE2 时间戳)
+  ElectronicWarehouse/AI_MODEL_REPORT.md                    模型分析报告
+  ElectronicWarehouse/.ai/network_yunetn_320_qdq_int8.onnx_c_info.json  编译后模型信息
+  st_face_detection_reference_code/                         ST 官方参考代码
+  st_model_zoo/face_detection/yunet/                        模型 zoo
+  Serial.txt  / Serial2.txt  / Serial3.txt  / Serial4.txt   四轮调试串口输出
+  debug_yunet_saturation_analysis_20260518.txt              本报告
+================================================================================

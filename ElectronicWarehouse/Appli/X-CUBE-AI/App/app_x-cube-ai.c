@@ -98,74 +98,98 @@
   __attribute__((section(".camera_buf")))
  __attribute__((aligned(32)))
 
- FaceDetection boxes[2100];
+ FaceDetection boxes[200];
+
+#define CONF_THRESHOLD 0.5f  // 置信度阈值
+#define MAX_RESULTS 200      // 结果数组最大长度
+#define INPUT_SIZE 320
+
 
   int yunet_decode(const LL_Buffer_InfoTypeDef* obuffersInfos, FaceDetection* results) {
       int valid_count = 0;
 
-      // YuNet 的三个尺度定义
+      // 定义三层 Stride 的结构体
       YuNetLayer layers[3] = {
-          {8,  40, 0, 3, 6, 9},   // Stride 8:  cls=0, obj=3, reg=6, kps=9
-          {16, 20, 1, 4, 7, 10},  // Stride 16: cls=1, obj=4, reg=7, kps=10
-          {32, 10, 2, 5, 8, 11}   // Stride 32: cls=2, obj=5, reg=8, kps=11
+          {8,  40, 0, 3, 6, 9},   // Stride 8:  1600个anchor
+          {16, 20, 1, 4, 7, 10},  // Stride 16: 400个anchor
+          {32, 10, 2, 5, 8, 11}   // Stride 32: 100个anchor
       };
 
       for (int l = 0; l < 3; l++) {
           YuNetLayer layer = layers[l];
-          int8_t *p_cls = (int8_t *)LL_Buffer_addr_start(&obuffersInfos[layer.cls_idx]);
-          int8_t *p_obj = (int8_t *)LL_Buffer_addr_start(&obuffersInfos[layer.obj_idx]);
-          int8_t *p_reg = (int8_t *)LL_Buffer_addr_start(&obuffersInfos[layer.reg_idx]);
-          int8_t *p_kps = (int8_t *)LL_Buffer_addr_start(&obuffersInfos[layer.kps_idx]);
+          int stride = layer.stride;
+          int map_size = layer.map_size;
 
-          for (int y = 0; y < layer.map_size; y++) {
-              for (int x = 0; x < layer.map_size; x++) {
-                  int idx = y * layer.map_size + x;
+          // 获取对应的 int8 原始数据指针
+          int8_t* cls_ptr = (int8_t*)LL_Buffer_addr_start(&obuffersInfos[layer.cls_idx]);
+          int8_t* obj_ptr = (int8_t*)LL_Buffer_addr_start(&obuffersInfos[layer.obj_idx]);
+          int8_t* reg_ptr = (int8_t*)LL_Buffer_addr_start(&obuffersInfos[layer.reg_idx]);
+          int8_t* kps_ptr = (int8_t*)LL_Buffer_addr_start(&obuffersInfos[layer.kps_idx]);
 
-                  // 1. 反量化得分并计算最终 Score = cls * obj
-                  float score_cls = (float)(p_cls[idx] - zps[layer.cls_idx]) * scales[layer.cls_idx];
-                  float score_obj = (float)(p_obj[idx] - zps[layer.obj_idx]) * scales[layer.obj_idx];
-                  float final_score = score_cls * score_obj;
+          // 遍历特征图 (row x col)
+          for (int y = 0; y < map_size; y++) {
+              for (int x = 0; x < map_size; x++) {
+                  int anchor_idx = y * map_size + x;
 
-                  if (final_score > CONF_THRESH) {
+                  // 1. 反量化并计算最终得分 (Score = Cls * Obj)
+                  float cls_score = (cls_ptr[anchor_idx] - zps[layer.cls_idx]) * scales[layer.cls_idx];
+                  float obj_score = (obj_ptr[anchor_idx] - zps[layer.obj_idx]) * scales[layer.obj_idx];
+                  float final_score = cls_score * obj_score;
 
-                      if (valid_count >= MAX_CANDIDATES) break;
+                  // 阈值过滤
+                  if (final_score < CONF_THRESHOLD) continue;
+                  // 过滤饱和锚点: cls或obj达到int8上限(127)说明量化溢出，结果不可靠
+                  if (cls_ptr[anchor_idx] == 127 || obj_ptr[anchor_idx] == 127) continue;
+                  if (valid_count >= MAX_RESULTS) return valid_count;
 
-                      // 2. 解码边界框 (BBox)
-                      // dx, dy, dw, dh
-                      float dx = (float)(p_reg[idx * 4 + 0] - zps[layer.reg_idx]) * scales[layer.reg_idx];
-                      float dy = (float)(p_reg[idx * 4 + 1] - zps[layer.reg_idx]) * scales[layer.reg_idx];
-                      float dw = (float)(p_reg[idx * 4 + 2] - zps[layer.reg_idx]) * scales[layer.reg_idx];
-                      float dh = (float)(p_reg[idx * 4 + 3] - zps[layer.reg_idx]) * scales[layer.reg_idx];
+                  // 2. 解码边界框 (Bounding Box)
+                  // reg_ptr 包含 4 个值: [dx, dy, dw, dh]
+                  float dx = (reg_ptr[anchor_idx * 4 + 0] - zps[layer.reg_idx]) * scales[layer.reg_idx];
+                  float dy = (reg_ptr[anchor_idx * 4 + 1] - zps[layer.reg_idx]) * scales[layer.reg_idx];
+                  float dw = (reg_ptr[anchor_idx * 4 + 2] - zps[layer.reg_idx]) * scales[layer.reg_idx];
+                  float dh = (reg_ptr[anchor_idx * 4 + 3] - zps[layer.reg_idx]) * scales[layer.reg_idx];
 
-                      // 中心点解码公式: (grid_index + offset) * stride
-                      float cx = (x + dx) * layer.stride;
-                      float cy = (y + dy) * layer.stride;
-                      float w  = expf(dw) * layer.stride;
-                      float h  = expf(dh) * layer.stride;
+                  // 计算中心点坐标 (像素)
+                  float cx = (dx * stride) + (x * stride);
+                  float cy = (dy * stride) + (y * stride);
+                  // 计算宽高 (使用 exp 还原)
+                  float w = expf(dw) * stride;
+                  float h = expf(dh) * stride;
 
-                      results[valid_count].x1 = cx - w / 2.0f;
-                      results[valid_count].y1 = cy - h / 2.0f;
-                      results[valid_count].x2 = cx + w / 2.0f;
-                      results[valid_count].y2 = cy + h / 2.0f;
-                      results[valid_count].score = final_score;
-                      results[valid_count].keep = 1;
+                  // 转为矩形框 (x1, y1, x2, y2)
+                  results[valid_count].x1 = cx - w / 2.0f;
+                  results[valid_count].y1 = cy - h / 2.0f;
+                  results[valid_count].x2 = cx + w / 2.0f;
+                  results[valid_count].y2 = cy + h / 2.0f;
+                  results[valid_count].score = final_score;
 
-                      // 3. 解码 5 个关键点 (Landmarks)
-                      for (int n = 0; n < 5; n++) {
-                          float kpx = (float)(p_kps[idx * 10 + n * 2 + 0] - zps[layer.kps_idx]) * scales[layer.kps_idx];
-                          float kpy = (float)(p_kps[idx * 10 + n * 2 + 1] - zps[layer.kps_idx]) * scales[layer.kps_idx];
-                          results[valid_count].landmarks[n].x = (x + kpx) * layer.stride;
-                          results[valid_count].landmarks[n].y = (y + kpy) * layer.stride;
-                      }
-
-                      valid_count++;
+                  if (valid_count < 5) {
+                      printf("DEBUG anchor[%d]: cls_raw=%d, obj_raw=%d, dx=%.4f(reg=%d), dw=%.4f(reg=%d), score=%.4f\r\n",
+                          anchor_idx,
+                          cls_ptr[anchor_idx], obj_ptr[anchor_idx],
+                          dx, reg_ptr[anchor_idx * 4 + 0],
+                          dw, reg_ptr[anchor_idx * 4 + 2],
+                          final_score);
                   }
+                  results[valid_count].keep = 1;
+
+                  // 3. 解码 5 个关键点 (Landmarks)
+                  // kps_ptr 包含 10 个值: [dx0, dy0, dx1, dy1, ...]
+                  for (int k = 0; k < 5; k++) {
+                      float kpx = (kps_ptr[anchor_idx * 10 + k * 2 + 0] - zps[layer.kps_idx]) * scales[layer.kps_idx];
+                      float kpy = (kps_ptr[anchor_idx * 10 + k * 2 + 1] - zps[layer.kps_idx]) * scales[layer.kps_idx];
+
+                      results[valid_count].landmarks[k].x = (kpx * stride) + (x * stride);
+                      results[valid_count].landmarks[k].y = (kpy * stride) + (y * stride);
+                  }
+
+                  valid_count++;
               }
           }
       }
+
       return valid_count;
   }
-
   void do_nms(FaceDetection* boxes, int count, float iou_thresh) {
       // 1. 冒泡排序（按 score 从高到低）
       for (int i = 0; i < count - 1; i++) {
@@ -202,6 +226,24 @@
       }
   }
 
+
+  // 伪代码：将 NHWC (320*320*3) 转换为 NCHW (3*320*320)
+  // 同时完成 uint8 到 int8 的转换 (假设 offset 是 -128)
+  void transpose_rgb_to_nchw(uint8_t* src, int8_t* dst, int width, int height) {
+      int image_size = width * height;
+      // Model expects BGR channel order (OpenCV convention), camera DCMIPP outputs RGB.
+      // NCHW layout: plane 0 = B, plane 1 = G, plane 2 = R
+      int8_t* dst_b = dst;                  // model channel 0 (B)
+      int8_t* dst_g = dst + image_size;     // model channel 1 (G)
+      int8_t* dst_r = dst + 2 * image_size; // model channel 2 (R)
+
+      for (int i = 0; i < image_size; i++) {
+          // Camera RGB → Model BGR: swap R and B
+          dst_b[i] = (int8_t)((int)src[i * 3 + 2] - 128); // camera B → model B plane
+          dst_g[i] = (int8_t)((int)src[i * 3 + 1] - 128); // camera G → model G plane
+          dst_r[i] = (int8_t)((int)src[i * 3 + 0] - 128); // camera R → model R plane
+      }
+  }
 /* USER CODE END includes */
 
 /* Entry points --------------------------------------------------------------*/
@@ -308,6 +350,9 @@ void MX_X_CUBE_AI_Process(void)
     SCB_CleanDCache_by_Addr((uint32_t*)buffer_in, buff_in_len);
     SCB_InvalidateDCache_by_Addr((uint32_t*)buffer_in, buff_in_len);
 
+    // ===== 第3点 T1: 发起快照前 =====
+    TickType_t t1 = xTaskGetTickCount();
+
     if (HAL_DCMIPP_CSI_PIPE_Start(&hdcmipp, DCMIPP_PIPE2, DCMIPP_VIRTUAL_CHANNEL0, (uint32_t)g_ai_cam_buf, DCMIPP_MODE_SNAPSHOT) != HAL_OK) {
         printf("ERROR: DCMIPP PIPE2 Start Failed!\r\n");
     }
@@ -315,29 +360,21 @@ void MX_X_CUBE_AI_Process(void)
     if(osSemaphoreAcquire(cam_frame_sem, pdMS_TO_TICKS(100)) != osOK)
     	return;
 
+    // ===== 第3点 T2: 拿到信号量 =====
+    TickType_t t2 = xTaskGetTickCount();
 
-    SCB_InvalidateDCache_by_Addr((uint32_t*)buffer_in, buff_in_len);
+    SCB_InvalidateDCache_by_Addr((uint32_t*)g_ai_cam_buf, 320 * 320 * 3);
+    transpose_rgb_to_nchw(g_ai_cam_buf, buffer_in, 320, 320);
 
-
-    int8_t *chw_input = (int8_t *)buffer_in;
-    uint8_t *hwc_camera = (uint8_t *)g_ai_cam_buf;
-    int spatial_pixels = 320 * 320;
-
-    for (int i = 0; i < spatial_pixels; i++) {
-        // HWC 的内存排列是: R, G, B, R, G, B ...
-        // CHW 需要分别把 R, G, B 集中存放
-        chw_input[0 * spatial_pixels + i] = (int8_t)((int16_t)hwc_camera[i * 3 + 0] - 128); // R 通道
-        chw_input[1 * spatial_pixels + i] = (int8_t)((int16_t)hwc_camera[i * 3 + 1] - 128); // G 通道
-        chw_input[2 * spatial_pixels + i] = (int8_t)((int16_t)hwc_camera[i * 3 + 2] - 128); // B 通道
-    }
+    // ===== 第3点 T3: 预处理完成 =====
+    TickType_t t3 = xTaskGetTickCount();
 
     SCB_CleanDCache_by_Addr((uint32_t*)buffer_in, buff_in_len);
+
 
     for (int inferenceNb = 0; inferenceNb < 1; ++inferenceNb) {
         SCB_CleanDCache_by_Addr((uint32_t*)buffer_in, buff_in_len);
         SCB_InvalidateDCache_by_Addr((uint32_t*)buffer_in, buff_in_len);
-
-        LL_ATON_RT_Init_Network(&NN_Instance_Default);
 
         do {
             ll_aton_rt_ret = LL_ATON_RT_RunEpochBlock(&NN_Instance_Default);
@@ -352,9 +389,80 @@ void MX_X_CUBE_AI_Process(void)
             SCB_InvalidateDCache_by_Addr((uint32_t*)addr, len);
         }
 
+        // ===== 第3点 T4: NPU推理完成 =====
+        TickType_t t4 = xTaskGetTickCount();
+        printf("Timing: T1(snap->)=%lu T2(snapOK)=%lu T3(prepOK)=%lu T4(npudone)=%lu  |  snap=%lums prep=%lums infer=%lums\r\n",
+            (unsigned long)t1, (unsigned long)t2, (unsigned long)t3, (unsigned long)t4,
+            (unsigned long)(t2 - t1), (unsigned long)(t3 - t2), (unsigned long)(t4 - t3));
+
+        printf("\r\n========== Frame Stats ==========\r\n");
+
+        // ===== 第1点 & 第2点: 三个stride的cls/obj统计 + 饱和计数 =====
+        int strides[3] = {8, 16, 32};
+        int map_sizes[3] = {40, 20, 10};
+        int cls_indices[3] = {0, 1, 2};
+        int obj_indices[3] = {3, 4, 5};
+
+        for (int s = 0; s < 3; s++) {
+            int8_t* cls_ptr = (int8_t*)LL_Buffer_addr_start(&obuffersInfos[cls_indices[s]]);
+            int8_t* obj_ptr = (int8_t*)LL_Buffer_addr_start(&obuffersInfos[obj_indices[s]]);
+            int total = map_sizes[s] * map_sizes[s];
+
+            int cls_min = 127, cls_max = -128, cls_sat = 0;
+            int obj_min = 127, obj_max = -128, obj_sat = 0;
+            long cls_sum = 0, obj_sum = 0;
+
+            for (int i = 0; i < total; i++) {
+                if (cls_ptr[i] < cls_min) cls_min = cls_ptr[i];
+                if (cls_ptr[i] > cls_max) cls_max = cls_ptr[i];
+                if (cls_ptr[i] == 127) cls_sat++;
+                cls_sum += cls_ptr[i];
+
+                if (obj_ptr[i] < obj_min) obj_min = obj_ptr[i];
+                if (obj_ptr[i] > obj_max) obj_max = obj_ptr[i];
+                if (obj_ptr[i] == 127) obj_sat++;
+                obj_sum += obj_ptr[i];
+            }
+
+            printf("Stride %2d (idx %d/%d): cls min=%d max=%d avg=%ld sat127=%d  |  obj min=%d max=%d avg=%ld sat127=%d\r\n",
+                strides[s], cls_indices[s], obj_indices[s],
+                cls_min, cls_max, cls_sum / total, cls_sat,
+                obj_min, obj_max, obj_sum / total, obj_sat);
+        }
+
+        // stride-8 前20个 raw 值保留
+        {
+            int8_t* cls8 = (int8_t*)LL_Buffer_addr_start(&obuffersInfos[0]);
+            int8_t* obj8 = (int8_t*)LL_Buffer_addr_start(&obuffersInfos[3]);
+            printf("cls[0..19] S8: ");
+            for (int i = 0; i < 20; i++) printf("%d ", cls8[i]);
+            printf("\r\nobj[0..19] S8: ");
+            for (int i = 0; i < 20; i++) printf("%d ", obj8[i]);
+            printf("\r\n");
+        }
+
+        printf("==================================\r\n\r\n");
+
+
+
         int count = yunet_decode(obuffersInfos, boxes);
         printf("Valid detection candidates: %d\n\r", count);
         do_nms(boxes, count, 0.45f);
+
+        printf("--- boxes[0-5]---\r\n");
+        for (int i = 0; i < 6; i++) {
+            printf("boxes[%d]: score:%.4f, x1=%.4f, y1=%.4f, x2=%.4f, y2=%.4f\r\n", i, boxes[i].score,boxes[i].x1,boxes[i].y1,boxes[i].x2,boxes[i].y2);
+        }
+
+        printf("------------------------------\r\n");
+
+//        printf("--- AI Model Outputs Check ---\r\n");
+//        for (int i = 0; i < 12; i++) {
+//            uint32_t size = obuffersInfos[i].offset_end - obuffersInfos[i].offset_start;
+//            printf("Index [%d]: Size = %lu bytes\r\n", i, size);
+//        }
+//        printf("------------------------------\r\n");
+
 
         int final_count = 0;
 
@@ -429,7 +537,7 @@ void MX_X_CUBE_AI_Process(void)
 
 
             LL_ATON_RT_Reset_Network(&NN_Instance_Default);
-            //vTaskDelay(pdMS_TO_TICKS(10));
+            vTaskDelay(pdMS_TO_TICKS(10));
     }
     /* USER CODE END 6 */
 }

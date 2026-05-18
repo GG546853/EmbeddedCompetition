@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git -C \"C:\\\\Users\\\\96022\\\\Desktop\\\\EmbeddedCompetition\" ls-tree -r --name-only HEAD)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\96022\\\\Desktop\\\\EmbeddedCompetition\" -Depth 0)",
+      "Bash(Select-Object Name, PSIsContainer)",
+      "Bash(Format-Table Name, PSIsContainer -AutoSize)",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\96022\\\\Desktop\\\\EmbeddedCompetition\" -Depth 2 -Directory | ForEach-Object { $_.FullName.Replace\\(\"C:\\\\Users\\\\96022\\\\Desktop\\\\EmbeddedCompetition\\\\\", \"\"\\) })",
+      "Bash(Get-Content *)",
+      "PowerShell(Get-Content *)"
+    ]
+  }
+}

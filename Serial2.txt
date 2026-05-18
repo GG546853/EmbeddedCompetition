@@ -1,0 +1,314 @@
+--- Raw int8 values (first 20) ---
+cls (Index 0, Stride 8): 67 61 68 65 64 65 66 63 62 66 65 64 67 65 64 66 66 64 68 68 
+obj (Index 3, Stride 8): 67 67 68 71 69 68 67 69 68 67 66 72 66 67 64 67 73 69 71 71 cls (Stride 8): min=-61, max=127, avg=68
+
+----------------------------------
+
+DEBUG anchor[93]: cls_raw=73, obj_raw=75, dx=0.7296(reg=3), dw=0.5700(reg=-11), score=0.5101
+DEBUG anchor[97]: cls_raw=71, obj_raw=73, dx=0.0912(reg=-53), dw=0.0684(reg=-55), score=0.5001
+DEBUG anchor[160]: cls_raw=78, obj_raw=79, dx=1.3339(reg=56), dw=1.2997(reg=53), score=0.5331
+DEBUG anchor[161]: cls_raw=89, obj_raw=84, dx=1.3111(reg=54), dw=1.3681(reg=59), score=0.5751
+DEBUG anchor[162]: cls_raw=110, obj_raw=114, dx=1.3225(reg=55), dw=1.2997(reg=53), score=0.7201
+Valid detection candidates: 200
+--- boxes[0-5]---
+boxes[0]: score:0.8129, x1=45.0262, y1=37.2411, x2=66.8435, y2=58.8110
+boxes[1]: score:0.8129, x1=51.8933, y1=36.9350, x2=75.7940, y2=58.7523
+boxes[2]: score:0.8129, x1=60.2581, y1=37.5396, x2=84.1588, y2=59.6070
+boxes[3]: score:0.8129, x1=68.1211, y1=37.5588, x2=92.2958, y2=60.1351
+boxes[4]: score:0.8129, x1=76.8054, y1=36.0132, x2=100.7060, y2=61.3158
+boxes[5]: score:0.8129, x1=84.4154, y1=36.5298, x2=110.0081, y2=60.9817
+------------------------------
+
+--- Raw int8 values (first 20) ---
+cls (Index 0, Stride 8): 64 62 61 65 63 65 65 64 70 66 67 61 66 66 67 64 65 67 61 67 
+obj (Index 3, Stride 8): 65 68 66 67 69 67 64 67 69 68 70 69 68 67 68 66 70 71 66 73 cls (Stride 8): min=-64, max=127, avg=68
+
+----------------------------------
+
+DEBUG anchor[160]: cls_raw=78, obj_raw=76, dx=1.3681(reg=59), dw=1.2655(reg=50), score=0.5254
+DEBUG anchor[161]: cls_raw=83, obj_raw=85, dx=1.3453(reg=57), dw=1.2997(reg=53), score=0.5619
+DEBUG anchor[162]: cls_raw=109, obj_raw=109, dx=1.2997(reg=53), dw=1.2655(reg=50), score=0.7022
+DEBUG anchor[163]: cls_raw=97, obj_raw=107, dx=1.3111(reg=54), dw=1.2541(reg=49), score=0.6610
+DEBUG anchor[164]: cls_raw=88, obj_raw=89, dx=1.2085(reg=45), dw=1.2313(reg=47), score=0.5860
+Valid detection candidates: 200
+--- boxes[0-5]---
+boxes[0]: score:0.8129, x1=45.4771, y1=37.7827, x2=63.6565, y2=55.3509
+boxes[1]: score:0.8129, x1=53.1762, y1=37.0868, x2=71.7749, y2=56.7765
+boxes[2]: score:0.8129, x1=61.6002, y1=37.1563, x2=80.6278, y2=57.0717
+boxes[3]: score:0.8129, x1=68.6274, y1=37.6735, x2=89.2358, y2=56.9193
+boxes[4]: score:0.8129, x1=76.9922, y1=36.8161, x2=97.6006, y2=58.1415
+boxes[5]: score:0.8129, x1=85.0898, y1=37.5125, x2=106.4152, y2=58.3572
+------------------------------
+
+--- Raw int8 values (first 20) ---
+cls (Index 0, Stride 8): 61 66 64 62 66 63 65 66 66 66 65 64 68 64 66 64 67 67 66 63 
+obj (Index 3, Stride 8): 67 68 66 67 67 66 68 67 69 67 69 71 68 68 67 71 73 71 70 71 cls (Stride 8): min=-64, max=127, avg=68
+
+----------------------------------
+
+DEBUG anchor[94]: cls_raw=72, obj_raw=74, dx=0.0570(reg=-56), dw=0.0000(reg=-61), score=0.5051
+DEBUG anchor[99]: cls_raw=72, obj_raw=74, dx=0.1140(reg=-51), dw=0.0912(reg=-53), score=0.5051
+DEBUG anchor[160]: cls_raw=79, obj_raw=73, dx=1.3225(reg=55), dw=1.3339(reg=56), score=0.5202
+DEBUG anchor[161]: cls_raw=80, obj_raw=81, dx=1.3111(reg=54), dw=1.3453(reg=57), score=0.5435
+DEBUG anchor[162]: cls_raw=102, obj_raw=101, dx=1.3111(reg=54), dw=1.2997(reg=53), score=0.6585
+Valid detection candidates: 200
+--- boxes[0-5]---
+boxes[0]: score:0.8129, x1=45.6340, y1=38.0883, x2=65.3237, y2=56.6870
+boxes[1]: score:0.8129, x1=52.6634, y1=36.5425, x2=73.7471, y2=57.8679
+boxes[2]: score:0.8129, x1=60.8100, y1=36.8100, x2=82.8774, y2=58.8774
+boxes[3]: score:0.8129, x1=68.7909, y1=37.0483, x2=91.6261, y2=59.3687
+boxes[4]: score:0.8129, x1=76.7379, y1=36.6085, x2=99.3143, y2=59.4437
+boxes[5]: score:0.8129, x1=85.2469, y1=37.2072, x2=108.0821, y2=60.3042
+------------------------------
+
+--- Raw int8 values (first 20) ---
+cls (Index 0, Stride 8): 66 64 61 62 64 66 60 66 69 67 66 65 65 66 67 67 66 68 69 64 
+obj (Index 3, Stride 8): 64 66 65 66 67 71 70 71 69 72 70 66 72 69 67 72 71 70 74 70 cls (Stride 8): min=-66, max=127, avg=68
+
+----------------------------------
+
+DEBUG anchor[92]: cls_raw=71, obj_raw=73, dx=0.8322(reg=12), dw=0.7866(reg=8), score=0.5001
+DEBUG anchor[96]: cls_raw=69, obj_raw=76, dx=0.0912(reg=-53), dw=0.0684(reg=-55), score=0.5024
+DEBUG anchor[97]: cls_raw=70, obj_raw=74, dx=0.0684(reg=-55), dw=0.0684(reg=-55), score=0.5000
+DEBUG anchor[160]: cls_raw=78, obj_raw=72, dx=1.3111(reg=54), dw=1.3111(reg=54), score=0.5151
+DEBUG anchor[161]: cls_raw=83, obj_raw=83, dx=1.2769(reg=51), dw=1.3339(reg=56), score=0.5566
+Valid detection candidates: 200
+--- boxes[0-5]---
+boxes[0]: score:0.8129, x1=44.9836, y1=36.8946, x2=68.3454, y2=61.3465
+boxes[1]: score:0.8129, x1=52.3241, y1=36.1044, x2=77.9169, y2=61.4071
+boxes[2]: score:0.8129, x1=60.6126, y1=36.8862, x2=85.6284, y2=61.9021
+boxes[3]: score:0.8129, x1=67.9378, y1=36.4510, x2=94.1208, y2=62.3373
+boxes[4]: score:0.8129, x1=75.6918, y1=35.6006, x2=103.0965, y2=63.0053
+boxes[5]: score:0.8129, x1=84.1478, y1=36.1478, x2=111.5525, y2=63.5525
+------------------------------
+
+--- Raw int8 values (first 20) ---
+cls (Index 0, Stride 8): 65 65 65 66 66 64 65 64 66 68 63 62 66 64 62 62 65 65 64 64 
+obj (Index 3, Stride 8): 67 64 65 67 70 70 70 67 68 66 71 68 69 71 67 68 72 69 68 68 cls (Stride 8): min=-59, max=127, avg=68
+
+----------------------------------
+
+DEBUG anchor[107]: cls_raw=70, obj_raw=74, dx=0.7296(reg=3), dw=0.7524(reg=5), score=0.5000
+DEBUG anchor[160]: cls_raw=77, obj_raw=74, dx=1.2997(reg=53), dw=1.3567(reg=58), score=0.5177
+DEBUG anchor[161]: cls_raw=82, obj_raw=82, dx=1.3681(reg=59), dw=1.3339(reg=56), score=0.5513
+DEBUG anchor[162]: cls_raw=102, obj_raw=103, dx=1.2997(reg=53), dw=1.2769(reg=51), score=0.6642
+DEBUG anchor[163]: cls_raw=96, obj_raw=119, dx=1.3111(reg=54), dw=1.2883(reg=52), score=0.6917
+Valid detection candidates: 200
+--- boxes[0-5]---
+boxes[0]: score:0.8129, x1=45.1160, y1=37.2469, x2=68.2130, y2=60.0821
+boxes[1]: score:0.8129, x1=52.3024, y1=36.1211, x2=75.9321, y2=60.2958
+boxes[2]: score:0.8129, x1=60.7122, y1=36.4808, x2=85.1641, y2=61.2131
+boxes[3]: score:0.8129, x1=67.9593, y1=36.7038, x2=93.5521, y2=61.7197
+boxes[4]: score:0.8129, x1=77.7617, y1=35.8789, x2=101.3914, y2=62.3622
+boxes[5]: score:0.8129, x1=83.6918, y1=35.9383, x2=111.0965, y2=63.0324
+------------------------------
+
+--- Raw int8 values (first 20) ---
+cls (Index 0, Stride 8): 64 63 64 62 68 62 67 66 68 67 64 66 65 64 66 66 62 65 67 61 
+obj (Index 3, Stride 8): 69 70 66 66 66 68 67 70 71 66 67 68 64 68 69 70 67 71 72 70 cls (Stride 8): min=-61, max=127, avg=68
+
+----------------------------------
+
+DEBUG anchor[160]: cls_raw=79, obj_raw=74, dx=1.2769(reg=51), dw=1.3339(reg=56), score=0.5227
+DEBUG anchor[161]: cls_raw=81, obj_raw=82, dx=1.3339(reg=56), dw=1.3453(reg=57), score=0.5487
+DEBUG anchor[162]: cls_raw=104, obj_raw=109, dx=1.3453(reg=57), dw=1.3111(reg=54), score=0.6874
+DEBUG anchor[163]: cls_raw=101, obj_raw=112, dx=1.3111(reg=54), dw=1.2655(reg=50), score=0.6871
+DEBUG anchor[164]: cls_raw=88, obj_raw=93, dx=1.2199(reg=46), dw=1.2883(reg=52), score=0.5968
+Valid detection candidates: 200
+--- boxes[0-5]---
+boxes[0]: score:0.8129, x1=44.6890, y1=36.1417, x2=70.2817, y2=61.7345
+boxes[1]: score:0.8129, x1=52.1202, y1=36.3032, x2=78.3033, y2=63.3972
+boxes[2]: score:0.8129, x1=60.5127, y1=35.3441, x2=87.9174, y2=64.3563
+boxes[3]: score:0.8129, x1=67.7623, y1=36.2120, x2=96.1205, y2=63.3060
+boxes[4]: score:0.8129, x1=76.7303, y1=35.5799, x2=103.5172, y2=63.9381
+boxes[5]: score:0.8129, x1=83.4173, y1=36.3095, x2=112.1007, y2=64.6677
+------------------------------
+
+--- Raw int8 values (first 20) ---
+cls (Index 0, Stride 8): 63 60 66 64 63 65 64 67 69 62 65 63 64 65 66 65 67 68 67 65 
+obj (Index 3, Stride 8): 63 62 71 68 70 67 68 71 66 66 67 68 67 67 70 71 70 73 69 66 cls (Stride 8): min=-64, max=127, avg=68
+
+----------------------------------
+
+DEBUG anchor[160]: cls_raw=74, obj_raw=73, dx=1.2769(reg=51), dw=1.3339(reg=56), score=0.5076
+DEBUG anchor[161]: cls_raw=82, obj_raw=81, dx=1.2769(reg=51), dw=1.2997(reg=53), score=0.5487
+DEBUG anchor[162]: cls_raw=107, obj_raw=103, dx=1.2769(reg=51), dw=1.3225(reg=55), score=0.6787
+DEBUG anchor[163]: cls_raw=99, obj_raw=116, dx=1.2313(reg=47), dw=1.2541(reg=49), score=0.6924
+DEBUG anchor[164]: cls_raw=93, obj_raw=94, dx=1.2655(reg=50), dw=1.2427(reg=48), score=0.6134
+Valid detection candidates: 200
+--- boxes[0-5]---
+boxes[0]: score:0.8129, x1=45.6220, y1=37.0332, x2=68.9839, y2=61.2079
+boxes[1]: score:0.8129, x1=52.1956, y1=36.6210, x2=77.4983, y2=61.0729
+boxes[2]: score:0.8129, x1=60.7038, y1=36.4154, x2=85.7197, y2=62.0081
+boxes[3]: score:0.8129, x1=68.5423, y1=35.4435, x2=94.4285, y2=63.1624
+boxes[4]: score:0.8129, x1=76.2437, y1=35.9654, x2=102.7270, y2=63.3701
+boxes[5]: score:0.8129, x1=84.2437, y1=36.3938, x2=110.7270, y2=62.5769
+------------------------------
+
+--- Raw int8 values (first 20) ---
+cls (Index 0, Stride 8): 63 60 65 66 64 62 62 61 64 68 63 62 61 61 64 63 61 65 67 64 
+obj (Index 3, Stride 8): 66 66 64 64 65 66 62 68 66 67 67 64 71 62 67 70 65 70 70 69 cls (Stride 8): min=-61, max=127, avg=66
+
+----------------------------------
+
+DEBUG anchor[160]: cls_raw=78, obj_raw=77, dx=1.2769(reg=51), dw=1.3111(reg=54), score=0.5280
+DEBUG anchor[161]: cls_raw=89, obj_raw=92, dx=1.2427(reg=48), dw=1.2997(reg=53), score=0.5968
+DEBUG anchor[162]: cls_raw=108, obj_raw=119, dx=1.2997(reg=53), dw=1.2541(reg=49), score=0.7288
+DEBUG anchor[163]: cls_raw=81, obj_raw=96, dx=1.2427(reg=48), dw=1.3453(reg=57), score=0.5853
+DEBUG anchor[164]: cls_raw=80, obj_raw=93, dx=1.2313(reg=47), dw=1.2199(reg=46), score=0.5747
+Valid detection candidates: 200
+--- boxes[0-5]---
+boxes[0]: score:0.8129, x1=45.2983, y1=37.1624, x2=57.0861, y2=49.2220
+boxes[1]: score:0.8129, x1=53.1395, y1=36.8267, x2=65.0625, y2=49.7401
+boxes[2]: score:0.8129, x1=62.1877, y1=37.2827, x2=74.3856, y2=50.1961
+boxes[3]: score:0.8129, x1=68.9911, y1=37.3739, x2=81.7581, y2=50.2874
+boxes[4]: score:0.8129, x1=77.5383, y1=37.6965, x2=90.3054, y2=51.0592
+boxes[5]: score:0.8129, x1=85.1322, y1=37.4512, x2=99.4411, y2=51.1221
+------------------------------
+
+--- Raw int8 values (first 20) ---
+cls (Index 0, Stride 8): 62 61 60 65 65 62 65 63 65 65 62 64 63 59 62 64 68 63 62 66 
+obj (Index 3, Stride 8): 68 64 65 65 67 62 64 65 67 67 70 63 63 67 65 67 67 66 66 68 cls (Stride 8): min=-61, max=127, avg=63
+
+----------------------------------
+
+DEBUG anchor[161]: cls_raw=76, obj_raw=84, dx=1.2997(reg=53), dw=1.3111(reg=54), score=0.5407
+DEBUG anchor[162]: cls_raw=106, obj_raw=112, dx=1.2769(reg=51), dw=1.2541(reg=49), score=0.7021
+DEBUG anchor[163]: cls_raw=105, obj_raw=106, dx=1.3111(reg=54), dw=1.2427(reg=48), score=0.6816
+DEBUG anchor[164]: cls_raw=79, obj_raw=90, dx=1.2541(reg=49), dw=1.1971(reg=44), score=0.5642
+DEBUG anchor[165]: cls_raw=80, obj_raw=94, dx=1.1173(reg=37), dw=1.2313(reg=47), score=0.5773
+Valid detection candidates: 200
+--- boxes[0-5]---
+boxes[0]: score:0.8129, x1=45.0634, y1=36.8409, x2=57.6858, y2=49.1787
+boxes[1]: score:0.8129, x1=52.9179, y1=37.6405, x2=65.8313, y2=49.8384
+boxes[2]: score:0.8129, x1=61.1915, y1=37.4651, x2=74.1049, y2=50.3786
+boxes[3]: score:0.8129, x1=69.4074, y1=37.4823, x2=82.6187, y2=50.5438
+boxes[4]: score:0.8129, x1=77.5563, y1=37.2688, x2=90.4698, y2=50.9397
+boxes[5]: score:0.8129, x1=85.0199, y1=37.2326, x2=99.0062, y2=51.7055
+------------------------------
+
+--- Raw int8 values (first 20) ---
+cls (Index 0, Stride 8): 62 60 60 62 65 61 60 61 64 64 59 59 62 62 59 62 59 64 64 65 
+obj (Index 3, Stride 8): 64 66 63 64 66 63 65 63 67 63 62 66 62 63 64 67 64 66 66 64 cls (Stride 8): min=-61, max=127, avg=51
+
+----------------------------------
+
+DEBUG anchor[164]: cls_raw=60, obj_raw=95, dx=1.1857(reg=43), dw=1.1857(reg=43), score=0.5241
+DEBUG anchor[165]: cls_raw=75, obj_raw=94, dx=1.1743(reg=42), dw=1.1401(reg=39), score=0.5634
+DEBUG anchor[166]: cls_raw=69, obj_raw=84, dx=1.0945(reg=35), dw=1.1401(reg=39), score=0.5221
+DEBUG anchor[198]: cls_raw=40, obj_raw=112, dx=0.9463(reg=22), dw=0.9805(reg=25), score=0.5041
+DEBUG anchor[204]: cls_raw=61, obj_raw=109, dx=0.4332(reg=-23), dw=0.4560(reg=-21), score=0.5600
+Valid detection candidates: 200
+--- boxes[0-5]---
+boxes[0]: score:0.8129, x1=109.5281, y1=37.3147, x2=124.5045, y2=51.6235
+boxes[1]: score:0.8129, x1=52.8678, y1=101.4150, x2=67.3407, y2=115.8879
+boxes[2]: score:0.8129, x1=60.9862, y1=101.3457, x2=76.1344, y2=116.3221
+boxes[3]: score:0.8129, x1=69.5378, y1=101.9531, x2=84.8596, y2=116.2619
+boxes[4]: score:0.8129, x1=76.9972, y1=101.4446, x2=93.2178, y2=118.2296
+boxes[5]: score:0.8129, x1=86.0009, y1=102.0899, x2=101.8558, y2=118.4965
+------------------------------
+
+--- Raw int8 values (first 20) ---
+cls (Index 0, Stride 8): 65 60 62 59 60 61 61 59 62 61 61 59 60 63 57 60 62 61 58 57 
+obj (Index 3, Stride 8): 61 62 66 64 65 59 61 62 62 59 64 62 64 63 66 64 67 63 65 66 cls (Stride 8): min=-66, max=127, avg=39
+
+----------------------------------
+
+DEBUG anchor[167]: cls_raw=59, obj_raw=87, dx=1.1059(reg=36), dw=1.0831(reg=34), score=0.5026
+DEBUG anchor[168]: cls_raw=83, obj_raw=84, dx=1.0261(reg=29), dw=1.0375(reg=30), score=0.5592
+DEBUG anchor[208]: cls_raw=34, obj_raw=127, dx=0.4788(reg=-19), dw=0.3876(reg=-27), score=0.5164
+DEBUG anchor[209]: cls_raw=38, obj_raw=127, dx=0.3990(reg=-26), dw=0.4332(reg=-23), score=0.5292
+DEBUG anchor[210]: cls_raw=43, obj_raw=127, dx=0.4674(reg=-20), dw=0.4674(reg=-20), score=0.5451
+Valid detection candidates: 200
+--- boxes[0-5]---
+boxes[0]: score:0.8129, x1=58.6683, y1=163.4164, x2=92.3154, y2=195.9322
+boxes[1]: score:0.8129, x1=66.4754, y1=162.5771, x2=100.5083, y2=196.2242
+boxes[2]: score:0.8129, x1=74.2803, y1=162.8591, x2=108.7034, y2=196.1247
+boxes[3]: score:0.8129, x1=83.2359, y1=162.1211, x2=115.3830, y2=195.7682
+boxes[4]: score:0.8129, x1=90.8692, y1=163.0415, x2=123.3849, y2=196.3071
+boxes[5]: score:0.8129, x1=99.0533, y1=162.1106, x2=130.8360, y2=196.1435
+------------------------------
+
+--- Raw int8 values (first 20) ---
+cls (Index 0, Stride 8): 60 60 66 54 58 60 55 61 60 59 57 62 62 58 59 59 60 59 64 61 
+obj (Index 3, Stride 8): 60 65 61 61 66 62 62 65 65 62 61 62 62 63 62 64 61 62 65 65 cls (Stride 8): min=-66, max=127, avg=21
+
+----------------------------------
+
+DEBUG anchor[169]: cls_raw=57, obj_raw=90, dx=0.9235(reg=20), dw=0.9121(reg=19), score=0.5042
+DEBUG anchor[170]: cls_raw=78, obj_raw=82, dx=0.8893(reg=17), dw=0.8436(reg=13), score=0.5408
+DEBUG anchor[171]: cls_raw=66, obj_raw=82, dx=0.8322(reg=12), dw=0.7866(reg=8), score=0.5093
+DEBUG anchor[215]: cls_raw=29, obj_raw=127, dx=0.4902(reg=-18), dw=0.5130(reg=-16), score=0.5005
+DEBUG anchor[216]: cls_raw=32, obj_raw=127, dx=0.5358(reg=-14), dw=0.5130(reg=-16), score=0.5101
+Valid detection candidates: 200
+--- boxes[0-5]---
+boxes[0]: score:0.8129, x1=98.3199, y1=226.2287, x2=133.9407, y2=261.8495
+boxes[1]: score:0.8129, x1=105.7267, y1=226.4111, x2=142.1691, y2=262.0319
+boxes[2]: score:0.8129, x1=112.8927, y1=225.4889, x2=151.9151, y2=262.7717
+boxes[3]: score:0.8129, x1=122.2740, y1=226.4805, x2=158.7163, y2=262.5097
+boxes[4]: score:0.8129, x1=129.0590, y1=225.7914, x2=167.2016, y2=262.6516
+boxes[5]: score:0.8129, x1=138.9038, y1=226.7042, x2=173.7216, y2=261.9212
+------------------------------
+
+--- Raw int8 values (first 20) ---
+cls (Index 0, Stride 8): 58 59 62 57 62 60 58 59 64 58 59 60 59 57 55 60 54 58 59 59 
+obj (Index 3, Stride 8): 60 62 64 62 65 61 60 61 64 62 62 64 59 63 62 63 63 65 60 65 cls (Stride 8): min=-66, max=127, avg=15
+
+----------------------------------
+
+DEBUG anchor[170]: cls_raw=53, obj_raw=95, dx=0.9007(reg=18), dw=0.8322(reg=12), score=0.5046
+DEBUG anchor[171]: cls_raw=78, obj_raw=84, dx=0.8094(reg=10), dw=0.7866(reg=8), score=0.5460
+DEBUG anchor[212]: cls_raw=29, obj_raw=127, dx=0.4218(reg=-24), dw=0.4332(reg=-23), score=0.5005
+DEBUG anchor[213]: cls_raw=29, obj_raw=127, dx=0.4902(reg=-18), dw=0.5358(reg=-14), score=0.5005
+DEBUG anchor[214]: cls_raw=39, obj_raw=127, dx=0.4902(reg=-18), dw=0.5358(reg=-14), score=0.5324
+Valid detection candidates: 200
+--- boxes[0-5]---
+boxes[0]: score:0.8129, x1=71.6311, y1=286.9614, x2=115.3657, y2=332.2178
+boxes[1]: score:0.8129, x1=79.3091, y1=286.9614, x2=124.0525, y2=332.2178
+boxes[2]: score:0.8129, x1=88.6399, y1=287.7451, x2=130.9041, y2=331.9813
+boxes[3]: score:0.8129, x1=95.7223, y1=287.7451, x2=139.4570, y2=331.9813
+boxes[4]: score:0.7938, x1=55.1692, y1=287.6539, x2=101.4693, y2=331.8901
+boxes[5]: score:0.7906, x1=62.4395, y1=288.3064, x2=108.7397, y2=331.0552
+------------------------------
+
+--- Raw int8 values (first 20) ---
+cls (Index 0, Stride 8): 59 61 55 59 58 57 61 62 62 58 58 63 58 58 58 55 57 58 60 59 
+obj (Index 3, Stride 8): 62 62 60 65 62 61 63 64 61 60 59 65 60 64 64 64 62 60 64 62 cls (Stride 8): min=-64, max=127, avg=16
+
+----------------------------------
+
+DEBUG anchor[170]: cls_raw=65, obj_raw=89, dx=0.9121(reg=19), dw=0.7866(reg=8), score=0.5236
+DEBUG anchor[171]: cls_raw=100, obj_raw=80, dx=0.8208(reg=11), dw=0.7638(reg=6), score=0.5929
+DEBUG anchor[214]: cls_raw=29, obj_raw=127, dx=0.4332(reg=-23), dw=0.4788(reg=-19), score=0.5005
+DEBUG anchor[215]: cls_raw=33, obj_raw=127, dx=0.4788(reg=-19), dw=0.4674(reg=-20), score=0.5133
+DEBUG anchor[216]: cls_raw=35, obj_raw=127, dx=0.4788(reg=-19), dw=0.5016(reg=-17), score=0.5196
+Valid detection candidates: 200
+--- boxes[0-5]---
+boxes[0]: score:0.8129, x1=71.9701, y1=288.2152, x2=115.2091, y2=330.9640
+boxes[1]: score:0.8129, x1=79.5627, y1=287.5086, x2=123.7989, y2=332.7650
+boxes[2]: score:0.8129, x1=87.9276, y1=287.3803, x2=132.1637, y2=331.6165
+boxes[3]: score:0.8129, x1=95.0526, y1=287.4003, x2=140.3090, y2=332.1437
+boxes[4]: score:0.8129, x1=104.3064, y1=287.8135, x2=147.0552, y2=331.5482
+boxes[5]: score:0.8129, x1=111.1067, y1=286.4395, x2=155.3429, y2=332.7397
+------------------------------
+
+--- Raw int8 values (first 20) ---
+cls (Index 0, Stride 8): 64 62 60 59 54 63 62 62 55 64 61 59 57 58 60 59 59 58 57 58 
+obj (Index 3, Stride 8): 62 64 61 64 64 62 64 59 64 65 62 61 61 62 60 61 62 62 64 63 cls (Stride 8): min=-64, max=127, avg=15
+
+----------------------------------
+
+DEBUG anchor[169]: cls_raw=67, obj_raw=85, dx=0.9235(reg=20), dw=0.9235(reg=20), score=0.5193
+DEBUG anchor[170]: cls_raw=102, obj_raw=78, dx=0.9007(reg=18), dw=0.9007(reg=18), score=0.5923
+DEBUG anchor[211]: cls_raw=33, obj_raw=127, dx=0.4218(reg=-24), dw=0.4218(reg=-24), score=0.5133
+DEBUG anchor[212]: cls_raw=32, obj_raw=127, dx=0.4902(reg=-18), dw=0.5130(reg=-16), score=0.5101
+DEBUG anchor[213]: cls_raw=33, obj_raw=127, dx=0.4902(reg=-18), dw=0.4218(reg=-24), score=0.5133
+Valid detection candidates: 200
+--- boxes[0-5]---
+boxes[0]: score:0.8129, x1=72.6399, y1=286.9926, x2=114.9041, y2=330.7273
+boxes[1]: score:0.7906, x1=62.7790, y1=288.3976, x2=108.0354, y2=331.1464
+boxes[2]: score:0.7810, x1=54.6219, y1=287.4003, x2=100.9221, y2=332.1437
+boxes[3]: score:0.7587, x1=47.1692, y1=287.3262, x2=93.4693, y2=332.5826
+boxes[4]: score:0.7332, x1=122.2287, y1=226.1157, x2=157.8495, y2=262.1449
+boxes[5]: score:0.7300, x1=39.0913, y1=287.8876, x2=86.4593, y2=333.6629
+------------------------------

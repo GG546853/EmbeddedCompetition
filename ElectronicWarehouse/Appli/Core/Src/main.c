@@ -323,8 +323,9 @@ void PeriphCommonClock_Config(void)
     imx335_dcmipp_pipe_frame_cb(hdcmipp, Pipe);
     if (Pipe == DCMIPP_PIPE2)
     {
-        // 释放信号量，通知 AI 任务“图像写完了，可以开始推理了！”
         if (cam_frame_sem != NULL) {
+            // ===== 第4点: 信号量给出前的时间戳 =====
+            printf("PIPE2 frame done, tick=%lu\r\n", (unsigned long)xTaskGetTickCount());
             osSemaphoreRelease(cam_frame_sem);
         }
     }

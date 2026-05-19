@@ -1,0 +1,9 @@
+Debug/
+Release/
+*.su
+*.cyclo
+*.o
+*.d
+*.hex
+*.bin
+.git/

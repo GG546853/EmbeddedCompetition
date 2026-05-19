@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\96022\\\\Desktop\\\\STM32N6-GettingStarted-FaceDetection-main\" -Directory | ForEach-Object { Write-Output $_.FullName })",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\96022\\\\Desktop\\\\STM32N6-GettingStarted-FaceDetection-main\\\\Application\" -Recurse -Directory | ForEach-Object { Write-Output $_.FullName })",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\96022\\\\Desktop\\\\STM32N6-GettingStarted-FaceDetection-main\\\\Middlewares\" -Recurse -Directory | ForEach-Object { Write-Output $_.FullName })"
+    ]
+  }
+}

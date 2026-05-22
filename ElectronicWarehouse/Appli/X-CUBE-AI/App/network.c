@@ -27,11 +27,10 @@
  * BUILD_AUTHOR    "aitest"
  *
  * Command Line options:
- * --load-mdesc-file = "C:/Users/96022/STM32Cube/Repository/Packs/STMicroelectronics/X-CUBE-AI/10.2.0/scripts/N6_scripts/my_mdescs/stm32n6"
+ * --load-mdesc-file = "C:/Users/96022/STM32Cube/Repository/Packs/STMicroelectronics/X-CUBE-AI/10.2.0/Utilities/configs/stm32n6"
  * --load-mpool-file = "C:/Users/96022/STM32Cube/Repository/Packs/STMicroelectronics/X-CUBE-AI/10.2.0/scripts/N6_scripts/my_mpools/stm32n6"
  * --cache-maintenance = true
  * --enable-virtual-mem-pools = true
- * --native-float = true
  * --json-quant-file = "C:/Users/96022/.stm32cubemx/network_output/blazeface_front_128_quant_pc_ff_od_wider_face_OE_3_3_0_Q.json"
  * --optimization = 3
  * --Os = true
@@ -39,7 +38,7 @@
  * --Ocache-opt = true
  * --output-info-file = "c_info"
  * --onnx-input = "C:/Users/96022/.stm32cubemx/network_output/blazeface_front_128_quant_pc_ff_od_wider_face_OE_3_3_0.onnx"
- * --out-dir-prefix = "C:/Users/96022/AppData/Local/Temp/mxAI_workspace273038433650004132549186817012090/neural_art__network/"
+ * --out-dir-prefix = "C:/Users/96022/AppData/Local/Temp/mxAI_workspace2445626744930015113699500853879249/neural_art__network/"
  * --all-buffers-info = true
  * --mvei = true
  * --Oauto-sched = true

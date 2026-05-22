@@ -319,8 +319,25 @@ void MX_X_CUBE_AI_Process(void)
      *   idx[2] = boxes_1 (6144 floats, 24576 B)
      *   idx[3] = boxes_0 (8192 floats, 32768 B)
      */
+    /* Print input + output buffer info (EVERY frame until we see it in serial) */
+    printf("[L0] Input: addr=0x%08X size=%lu name=%s\r\n",
+           (uint32_t)input_f32, input_f32_len, ibuffersInfos[0].name);
+    printf("[L0] Output buffers (from obuffersInfos):\r\n");
+    for (int i = 0; i < 4; i++) {
+        uint32_t sz = obuffersInfos[i].offset_end - obuffersInfos[i].offset_start;
+        printf("[L0]   [%d] name=%s size=%lu addr=0x%08X\r\n",
+               i, obuffersInfos[i].name, sz,
+               (uint32_t)LL_Buffer_addr_start(&obuffersInfos[i]));
+    }
+
     size_t out_idx[4];
     sort_output_indices(out_idx, obuffersInfos, 4);
+
+    printf("[L0] Sorted indices: %d %d %d %d\r\n",
+           (int)out_idx[0], (int)out_idx[1], (int)out_idx[2], (int)out_idx[3]);
+    printf("[L0] Mapped: idx0->%s, idx1->%s, idx2->%s, idx3->%s\r\n",
+           obuffersInfos[out_idx[0]].name, obuffersInfos[out_idx[1]].name,
+           obuffersInfos[out_idx[2]].name, obuffersInfos[out_idx[3]].name);
 
     float *proba_1 = (float *)LL_Buffer_addr_start(&obuffersInfos[out_idx[0]]);
     float *proba_0 = (float *)LL_Buffer_addr_start(&obuffersInfos[out_idx[1]]);
@@ -367,13 +384,65 @@ void MX_X_CUBE_AI_Process(void)
         SCB_InvalidateDCache_by_Addr((uint32_t *)addr, len);
     }
 
+    /* ---- DEBUG: dump ALL 4 raw output buffers (by original index, not sorted) ---- */
+    for (int i = 0; i < 4; i++) {
+        uint8_t *raw = (uint8_t *)LL_Buffer_addr_start(&obuffersInfos[i]);
+        uint32_t sz = obuffersInfos[i].offset_end - obuffersInfos[i].offset_start;
+        printf("[L2] RAW[%d] %s (%luB): ", i, obuffersInfos[i].name, sz);
+        for (int j = 0; j < 16 && j < (int)sz; j++) printf("%02X ", raw[j]);
+        printf("\r\n");
+    }
+
+    /* ---- Manual DequantizeLinear: NOR flash scale/zp are corrupt (0.0/0). ---- */
+    /* ---- Use correct values from quantization JSON.                         ---- */
+    /* Dequantize formula: f32 = (int8 - zp) * scale                           */
+
+    /* Debug: check NOR flash scale/zp for ALL 4 DequantizeLinear ops */
+    printf("[L2] NOR scale/zp: "
+           "b0_s=%.6f b0_z=%d b1_s=%.6f b1_z=%d p0_s=%.6f p0_z=%d p1_s=%.6f p1_z=%d\r\n",
+           (double)*(float *)(0x71000000UL + 0x28780), (int)*(int8_t *)(0x71000000UL + 0x28920),
+           (double)*(float *)(0x71000000UL + 0x28790), (int)*(int8_t *)(0x71000000UL + 0x28930),
+           (double)*(float *)(0x71000000UL + 0x287A0), (int)*(int8_t *)(0x71000000UL + 0x28940),
+           (double)*(float *)(0x71000000UL + 0x287B0), (int)*(int8_t *)(0x71000000UL + 0x28950));
+
+    /* proba_0: int8@0x342EA000 → f32@proba_0 (sorted idx 1 = Transpose_255_out_0) */
+    {
+        const float scale_0 = 0.0369369201362133f;
+        const int8_t zp_0   = 49;
+        int8_t  *p0_in  = (int8_t *)(0x342E0000UL + 40960);   /* 0x342EA000 */
+        float   *p0_out = proba_0;                            /* 0x342F6000 */
+        for (int i = 0; i < AI_BLAZEFACE_OUT_0_NB_BOXES; i++) {
+            p0_out[i] = ((float)(p0_in[i] - zp_0)) * scale_0;
+        }
+    }
+
+    /* proba_1: int8@0x342E7E00 → f32@proba_1 (sorted idx 0 = Transpose_237_out_0) */
+    {
+        const float scale_1 = 1.2246984243392944f;
+        const int8_t zp_1   = 126;
+        int8_t  *p1_in  = (int8_t *)(0x342E0000UL + 32256);   /* 0x342E7E00 */
+        float   *p1_out = proba_1;                            /* 0x342E7800 */
+        for (int i = 0; i < AI_BLAZEFACE_OUT_1_NB_BOXES; i++) {
+            p1_out[i] = ((float)(p1_in[i] - zp_1)) * scale_1;
+        }
+    }
+
     /* Decode: stride 0 (512 boxes) + stride 1 (384 boxes) */
-    int total = blazeface_decode_stride(boxes, boxes_0, proba_0,
-                                         g_Anchors_0, AI_BLAZEFACE_OUT_0_NB_BOXES,
-                                         AI_BLAZEFACE_CONF_THRESHOLD);
-    total += blazeface_decode_stride(boxes + total, boxes_1, proba_1,
-                                      g_Anchors_1, AI_BLAZEFACE_OUT_1_NB_BOXES,
-                                      AI_BLAZEFACE_CONF_THRESHOLD);
+    int s0 = blazeface_decode_stride(boxes, boxes_0, proba_0,
+                                     g_Anchors_0, AI_BLAZEFACE_OUT_0_NB_BOXES,
+                                     AI_BLAZEFACE_CONF_THRESHOLD);
+    int s1 = blazeface_decode_stride(boxes + s0, boxes_1, proba_1,
+                                     g_Anchors_1, AI_BLAZEFACE_OUT_1_NB_BOXES,
+                                     AI_BLAZEFACE_CONF_THRESHOLD);
+    int total = s0 + s1;
+
+    /* ---- DEBUG Level 3: boxes that passed confidence threshold ---- */
+    printf("[L3] decode: stride0=%d stride1=%d total=%d\r\n", s0, s1, total);
+    for (int i = 0; i < total && i < 5; i++) {
+        printf("[L3]   box[%d]: ctr=(%.3f,%.3f) wh=(%.3f,%.3f) conf=%.3f\r\n",
+               i, boxes[i].x_center, boxes[i].y_center,
+               boxes[i].width, boxes[i].height, boxes[i].conf);
+    }
 
     /* NMS */
     int n_results = blazeface_nms(boxes, total, AI_BLAZEFACE_IOU_THRESHOLD,

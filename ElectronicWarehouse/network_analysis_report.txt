@@ -1,0 +1,205 @@
+
+
+Analyzing model 
+C:/Users/96022/STM32Cube/Repository/Packs/STMicroelectronics/X-CUBE-AI/10.2.0/Utilities/windows/stedgeai.exe analyze --target stm32n6 --name network -m C:/Users/96022/Desktop/stm32ai-modelzoo-4.1.0/face_detection/facedetect_front/Public_pretrainedmodel_public_dataset/widerface/blazeface_front_128/blazeface_front_128_int8.tflite --st-neural-art n6-allmems-O3@C:/Users/96022/STM32Cube/Repository/Packs/STMicroelectronics/X-CUBE-AI/10.2.0/scripts/N6_scripts/user_neuralart.json --workspace C:/Users/96022/AppData/Local/Temp/mxAI_workspace1285657414860012826090029260655751 --output C:/Users/96022/.stm32cubemx/network_output 
+ST Edge AI Core v2.2.0-20266 2adc00962 
+WARNING: Unsupported keys in the current profile n6-allmems-O3 are ignored: memory_desc 
+ > memory_desc is not a valid key anymore, use machine_desc instead 
+ >>>> EXECUTING NEURAL ART COMPILER 
+   C:/Users/96022/STM32Cube/Repository/Packs/STMicroelectronics/X-CUBE-AI/10.2.0/Utilities/windows/atonn.exe -i "C:/Users/96022/.stm32cubemx/network_output/blazeface_front_128_int8_OE_3_3_0.onnx" --json-quant-file "C:/Users/96022/.stm32cubemx/network_output/blazeface_front_128_int8_OE_3_3_0_Q.json" -g "network.c" --load-mdesc "C:/Users/96022/STM32Cube/Repository/Packs/STMicroelectronics/X-CUBE-AI/10.2.0/Utilities/configs/stm32n6.mdesc" --load-mpool "C:/Users/96022/STM32Cube/Repository/Packs/STMicroelectronics/X-CUBE-AI/10.2.0/scripts/N6_scripts/my_mpools/stm32n6.mpool" --save-mpool-file "C:/Users/96022/AppData/Local/Temp/mxAI_workspace1285657414860012826090029260655751/neural_art__network/stm32n6.mpool" --out-dir-prefix "C:/Users/96022/AppData/Local/Temp/mxAI_workspace1285657414860012826090029260655751/neural_art__network/" --Os --optimization 3 --all-buffers-info --mvei --cache-maintenance --Oauto-sched --native-float --enable-virtual-mem-pools --Omax-ca-pipe 4 --Ocache-opt --output-info-file "c_info.json" 
+ <<<< DONE EXECUTING NEURAL ART COMPILER 
+  
+ Exec/report summary (analyze) 
+ ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- 
+ model file         :   C:\Users\96022\Desktop\stm32ai-modelzoo-4.1.0\face_detection\facedetect_front\Public_pretrainedmodel_public_dataset\widerface\blazeface_front_128\blazeface_front_128_int8.tflite    
+ type               :   tflite                                                                                                                                                                               
+ c_name             :   network                                                                                                                                                                              
+ options            :   allocate-inputs, allocate-outputs                                                                                                                                                    
+ optimization       :   balanced                                                                                                                                                                             
+ target/series      :   stm32n6npu                                                                                                                                                                           
+ workspace dir      :   C:\Users\96022\AppData\Local\Temp\mxAI_workspace1285657414860012826090029260655751                                                                                                   
+ output dir         :   C:\Users\96022\.stm32cubemx\network_output                                                                                                                                           
+ model_fmt          :   ss/sa per tensor                                                                                                                                                                     
+ model_name         :   blazeface_front_128_int8                                                                                                                                                             
+ model_hash         :   0xcfd211f7761b489880fefc952f490531                                                                                                                                                   
+ params #           :   101,390 items (105.42 KiB)                                                                                                                                                           
+ ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- 
+ input 1/1          :   'Input_0_out_0', f32(1x128x128x3), 192.00 KBytes, activations                                                                                                                        
+ output 1/4         :   'Transpose_246_out_0', f32(1x512x16), 32.00 KBytes, activations                                                                                                                      
+ output 2/4         :   'Transpose_255_out_0', f32(1x512x1), 2.00 KBytes, activations                                                                                                                        
+ output 3/4         :   'Transpose_237_out_0', f32(1x384x1), 1.50 KBytes, activations                                                                                                                        
+ output 4/4         :   'Transpose_228_out_0', f32(1x384x16), 24.00 KBytes, activations                                                                                                                      
+ outputs (total)    :   59.50 KBytes                                                                                                                                                                         
+ macc               :   0                                                                                                                                                                                    
+ weights (ro)       :   166,225 B (162.33 KiB) (1 segment) / -239,335(-59.0%) vs float model                                                                                                                 
+ activations (rw)   :   540,672 B (528.00 KiB) (2 segments) *                                                                                                                                                
+ ram (total)        :   540,672 B (528.00 KiB) = 540,672 + 0 + 0                                                                                                                                             
+ ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- 
+ (*) 'input'/'output' buffers are allocated in the activations buffer 
+Computing AI RT data/code size (target=stm32n6npu).. 
+Compilation details 
+   --------------------------------------------------------------------------------- 
+Compiler version: 1.1.1-14 
+Compiler arguments:  -i C:\Users\96022\.stm32cubemx\network_output\blazeface_front_128_int8_OE_3_3_0.onnx --json-quant-file C:\Users\96022\.stm32cubemx\network_output\blazeface_front_128_int8_OE_3_3_0_Q.json -g network.c --load-mdesc C:\Users\96022\STM32Cube\Repository\Packs\STMicroelectronics\X-CUBE-AI\10.2.0\Utilities\configs\stm32n6.mdesc --load-mpool C:\Users\96022\STM32Cube\Repository\Packs\STMicroelectronics\X-CUBE-AI\10.2.0\scripts\N6_scripts\my_mpools\stm32n6.mpool --save-mpool-file C:\Users\96022\AppData\Local\Temp\mxAI_workspace1285657414860012826090029260655751\neural_art__network\stm32n6.mpool --out-dir-prefix C:\Users\96022\AppData\Local\Temp\mxAI_workspace1285657414860012826090029260655751\neural_art__network/ --Os --optimization 3 --all-buffers-info --mvei --cache-maintenance --Oauto-sched --native-float --enable-virtual-mem-pools --Omax-ca-pipe 4 --Ocache-opt --output-info-file c_info.json 
+==================================================================================== 
+Memory usage information  (input/output buffers are included in activations) 
+   --------------------------------------------------------------------------------- 
+ flexMEM    [0x34000000 - 0x34000000]:          0  B /          0  B  (  0.00 % used) -- weights:          0  B (  0.00 % used)  activations:          0  B (  0.00 % used) 
+ cpuRAM1    [0x34064000 - 0x34064000]:          0  B /          0  B  (  0.00 % used) -- weights:          0  B (  0.00 % used)  activations:          0  B (  0.00 % used) 
+ cpuRAM2    [0x34100000 - 0x34200000]:          0  B /      1.000 MB  (  0.00 % used) -- weights:          0  B (  0.00 % used)  activations:          0  B (  0.00 % used) 
+ npuRAM3    [0x34200000 - 0x34270000]:          0  B /    448.000 kB  (  0.00 % used) -- weights:          0  B (  0.00 % used)  activations:          0  B (  0.00 % used) 
+ npuRAM4    [0x34270000 - 0x342E0000]:    112.000 kB /    448.000 kB  ( 25.00 % used) -- weights:          0  B (  0.00 % used)  activations:    112.000 kB ( 25.00 % used) 
+ npuRAM5    [0x342E0000 - 0x34350000]:    416.000 kB /    448.000 kB  ( 92.86 % used) -- weights:          0  B (  0.00 % used)  activations:    416.000 kB ( 92.86 % used) 
+ npuRAM6    [0x34350000 - 0x343C0000]:          0  B /    448.000 kB  (  0.00 % used) -- weights:          0  B (  0.00 % used)  activations:          0  B (  0.00 % used) 
+ octoFlash  [0x71000000 - 0x78000000]:    162.329 kB /    112.000 MB  (  0.14 % used) -- weights:    162.329 kB (  0.14 % used)  activations:          0  B (  0.00 % used) 
+ hyperRAM   [0x90000000 - 0x92000000]:          0  B /     32.000 MB  (  0.00 % used) -- weights:          0  B (  0.00 % used)  activations:          0  B (  0.00 % used) 
+Total:                                           690.329 kB                                  -- weights:    162.329 kB                  activations:    528.000 kB 
+==================================================================================== 
+Used memory ranges 
+   --------------------------------------------------------------------------------- 
+ npuRAM4    [0x34270000 - 0x342E0000]: 0x34270000-0x3428C000 
+ npuRAM5    [0x342E0000 - 0x34350000]: 0x342E0000-0x34348000 
+ octoFlash  [0x71000000 - 0x78000000]: 0x71000000-0x71028960 
+==================================================================================== 
+Epochs details 
+   --------------------------------------------------------------------------------- 
+Total number of epochs: 95 of which 26 implemented in software 
+epoch ID   HW/SW/EC Operation (SW only) 
+epoch 1       HW 
+epoch 2      -SW-   (   QuantizeLinear   ) 
+epoch 3       HW 
+epoch 4       HW 
+epoch 5       HW 
+epoch 6       HW 
+epoch 7       HW 
+epoch 8      -SW-   (     Transpose      ) 
+epoch 9       HW 
+epoch 10      HW 
+epoch 11     -SW-   (     Transpose      ) 
+epoch 12      HW 
+epoch 13      HW 
+epoch 14      HW 
+epoch 15     -SW-   (     Transpose      ) 
+epoch 16      HW 
+epoch 17      HW 
+epoch 18     -SW-   (     Transpose      ) 
+epoch 19      HW 
+epoch 20      HW 
+epoch 21     -SW-   (     Transpose      ) 
+epoch 22      HW 
+epoch 23      HW 
+epoch 24     -SW-   (     Transpose      ) 
+epoch 25      HW 
+epoch 26      HW 
+epoch 27     -SW-   (     Transpose      ) 
+epoch 28      HW 
+epoch 29      HW 
+epoch 30     -SW-   (     Transpose      ) 
+epoch 31      HW 
+epoch 32      HW 
+epoch 33      HW 
+epoch 34     -SW-   (     Transpose      ) 
+epoch 35      HW 
+epoch 36      HW 
+epoch 37     -SW-   (     Transpose      ) 
+epoch 38      HW 
+epoch 39      HW 
+epoch 40     -SW-   (     Transpose      ) 
+epoch 41      HW 
+epoch 42      HW 
+epoch 43     -SW-   (     Transpose      ) 
+epoch 44      HW 
+epoch 45      HW 
+epoch 46     -SW-   (     Transpose      ) 
+epoch 47      HW 
+epoch 48      HW 
+epoch 49     -SW-   (     Transpose      ) 
+epoch 50      HW 
+epoch 51      HW 
+epoch 52     -SW-   (     Transpose      ) 
+epoch 53      HW 
+epoch 54      HW 
+epoch 55     -SW-   (     Transpose      ) 
+epoch 56      HW 
+epoch 57      HW 
+epoch 58     -SW-   (     Transpose      ) 
+epoch 59      HW 
+epoch 60      HW 
+epoch 61     -SW-   (     Transpose      ) 
+epoch 62      HW 
+epoch 63      HW 
+epoch 64     -SW-   (     Transpose      ) 
+epoch 65      HW 
+epoch 66      HW 
+epoch 67     -SW-   (     Transpose      ) 
+epoch 68      HW 
+epoch 69      HW 
+epoch 70      HW 
+epoch 71     -SW-   (     Transpose      ) 
+epoch 72      HW 
+epoch 73      HW 
+epoch 74      HW 
+epoch 75     -SW-   (  DequantizeLinear  ) 
+epoch 76      ?? 
+epoch 77      HW 
+epoch 78     -SW-   (     Transpose      ) 
+epoch 79      HW 
+epoch 80      HW 
+epoch 81      HW 
+epoch 82      HW 
+epoch 83      HW 
+epoch 84      HW 
+epoch 85      HW 
+epoch 86      HW 
+epoch 87      HW 
+epoch 88      HW 
+epoch 89      HW 
+epoch 90     -SW-   (  DequantizeLinear  ) 
+epoch 91      HW 
+epoch 92      HW 
+epoch 93     -SW-   (  DequantizeLinear  ) 
+epoch 94      HW 
+epoch 95      HW 
+==================================================================================== 
+ Requested memory size by section - "stm32n6npu" target 
+ ------------------------------- -------- --------- ------ --------- 
+ module                              text    rodata   data       bss 
+ ------------------------------- -------- --------- ------ --------- 
+ network.o                         13,212   102,668      0         0 
+ NetworkRuntime1020_CM55_GCC.a      3,068         0      0         0 
+ ll_aton_reloc_network.o                0         0      0         0 
+ lib (toolchain)*                     902       624      0         0 
+ ll atonn runtime                   9,240    17,069     72     1,637 
+ ------------------------------- -------- --------- ------ --------- 
+ RT total**                        26,422   120,361     72     1,637 
+ ------------------------------- -------- --------- ------ --------- 
+ weights                                0   166,225      0         0 
+ activations                            0         0      0   540,672 
+ io                                     0         0      0         0 
+ ------------------------------- -------- --------- ------ --------- 
+ TOTAL                             26,422   286,586     72   542,309 
+ ------------------------------- -------- --------- ------ --------- 
+ *  toolchain objects (libm/libgcc*) 
+ ** RT AI runtime objects (kernels+infrastructure) 
+  Summary - "stm32n6npu" target 
+  -------------------------------------------------- 
+               FLASH (ro)      %*   RAM (rw)      % 
+  -------------------------------------------------- 
+  RT total        146,855   46.9%      1,709   0.3% 
+  -------------------------------------------------- 
+  TOTAL           313,080            542,381 
+  -------------------------------------------------- 
+  *  rt/total 
+Creating txt report file C:\Users\96022\.stm32cubemx\network_output\network_analyze_report.txt 
+elapsed time (analyze): 40.559s 
+Model file:      blazeface_front_128_int8.tflite 
+Total Flash:     313080 B (305.74 KiB) 
+    Weights:     166225 B (162.33 KiB) 
+    Library:     146855 B (143.41 KiB) 
+Total Ram:       542381 B (529.67 KiB) 
+    Activations: 540672 B (528.00 KiB) 
+    Library:     1709 B (1.67 KiB) 
+    Input:       196608 B (192.00 KiB included in Activations) 
+    Output:      60928 B (59.50 KiB included in Activations) 
+Done 
+Analyze complete on AI model

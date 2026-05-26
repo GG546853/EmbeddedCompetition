@@ -3,20 +3,45 @@
   ******************************************************************************
   * @file    app_x-cube-ai.c
   * @author  X-CUBE-AI C code generator
-  * @brief   AI program body — BlazeFace Face Detection
+  * @brief   AI program body
+  ******************************************************************************
+  * @attention
+  *
+  * Copyright (c) 2026 STMicroelectronics.
+  * All rights reserved.
+  *
+  * This software is licensed under terms that can be found in the LICENSE file
+  * in the root directory of this software component.
+  * If no LICENSE file comes with this software, it is provided AS-IS.
+  *
   ******************************************************************************
   */
+
+ /*
+  * Description
+  *   v1.0 - Minimum template to show how to use the Neural ART Embedded Client API
+  *          Re-target of the printf function is out-of-scope.
+  *
+  *   For more information, see the embeded documentation:
+  *
+  *       [1] %X_CUBE_AI_DIR%/Documentation/index.html
+  *
+  *   X_CUBE_AI_DIR indicates the location where the X-CUBE-AI pack is installed
+  *   typical : C:\Users\[user_name]\STM32Cube\Repository\STMicroelectronics\X-CUBE-AI\7.1.0
+  */
+
 #ifdef __cplusplus
  extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
+
+/* System headers */
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <inttypes.h>
 #include <string.h>
-#include <math.h>
 
 #include "app_x-cube-ai.h"
 #include "main.h"
@@ -119,28 +144,31 @@ static int box_conf_cmp(const void *pa, const void *pb) {
 
 /*
  * Decode one detection head (float32 version).
- *  reg_f32  : [nb_det * 16] box regression + keypoints (already float32)
- *  score_f32: [nb_det] raw logit scores (float32, sigmoid NOT yet applied)
- *  anchors  : [nb_det * 2] (x_center, y_center) in [0,1] range
- */
-/*
- * Decode one detection head (float32 version).
  *
- * The model's DequantizeLinear uses scale = 1/255 for regression outputs,
- * converting uint8 pixel offsets into [0.0, 1.0] float32.  We multiply by
- * 255.0f to recover the original pixel-space offsets before normalizing by
- * image size.  Classification scores are logits — sigmoid is applied here.
+ * atonn v1.1.1-14's DequantizeLinear SW ops use the INPUT quantization
+ * params (scale=1/255, zp=-128) instead of each output tensor's own
+ * per-tensor params.  We must correct by multiplying:
+ *
+ *   correct_val = float32_DQ_output × 255.0 × per_tensor_scale
+ *
+ * reg_scale_mult  = 255.0 × scale_reg   (per-head regression scale)
+ * cls_scale_mult  = 255.0 × scale_cls   (per-head classification scale)
+ *
+ * Head 0: reg_scale=0.3067 → mult=78.21   cls_scale=0.03694 → mult=9.42
+ * Head 1: reg_scale=1.202  → mult=306.5   cls_scale=1.225   → mult=312.3
  */
 static int decode_head(const float *reg_f32, const float *score_f32,
                        const float *anchors, int nb_det,
-                       int start_idx)
+                       int start_idx,
+                       float reg_scale_mult, float cls_scale_mult)
 {
     float inv_size = 1.0f / (float)FD_IMG_SIZE;
     float th_logit = -logf(1.0f / FD_CONF_THRESHOLD - 1.0f);
     int det_count = start_idx;
 
     for (int d = 0; d < nb_det; d++) {
-        float score = score_f32[d];
+        /* Correct the logit for wrong-DQ-scale */
+        float score = score_f32[d] * cls_scale_mult;
         if (score < th_logit) {
             reg_f32  += FD_BOXE_STRIDE;
             continue;
@@ -154,11 +182,11 @@ static int decode_head(const float *reg_f32, const float *score_f32,
         float ax = anchors[2 * d];
         float ay = anchors[2 * d + 1];
 
-        /* Recover pixel-space offsets (model dequantized with scale=1/255) */
-        float dx = reg_f32[0] * 255.0f;
-        float dy = reg_f32[1] * 255.0f;
-        float dw = reg_f32[2] * 255.0f;
-        float dh = reg_f32[3] * 255.0f;
+        /* Recover pixel-space offsets with per-tensor scale correction */
+        float dx = reg_f32[0] * reg_scale_mult;
+        float dy = reg_f32[1] * reg_scale_mult;
+        float dw = reg_f32[2] * reg_scale_mult;
+        float dh = reg_f32[3] * reg_scale_mult;
 
         b->x_center = dx * inv_size + ax;
         b->y_center = dy * inv_size + ay;
@@ -166,8 +194,8 @@ static int decode_head(const float *reg_f32, const float *score_f32,
         b->height   = dh * inv_size;
 
         for (int k = 0; k < FD_NB_KEYPOINTS; k++) {
-            float kx = reg_f32[4 + 2 * k]     * 255.0f;
-            float ky = reg_f32[4 + 2 * k + 1] * 255.0f;
+            float kx = reg_f32[4 + 2 * k]     * reg_scale_mult;
+            float ky = reg_f32[4 + 2 * k + 1] * reg_scale_mult;
             b->keypoints[k].x = kx * inv_size + ax;
             b->keypoints[k].y = ky * inv_size + ay;
         }
@@ -200,22 +228,26 @@ static void dump_output_tensor(const char *label, const float *buf, int count) {
 }
 
 
-/* Entry points --------------------------------------------------------------*/
-LL_ATON_DECLARE_NAMED_NN_INSTANCE_AND_INTERFACE(Default)
+
 
 /* USER CODE END includes */
 
+/* Entry points --------------------------------------------------------------*/
 
-/* -------------------------------------------------------------------------- */
-/*                           Low-Power Clock Config                            */
-/* -------------------------------------------------------------------------- */
+LL_ATON_DECLARE_NAMED_NN_INSTANCE_AND_INTERFACE(Default)
+uint8_t *buffer_in;
+uint8_t *buffer_out;
+
 void set_clk_sleep_mode(void)
 {
+  /* Leave clocks enabled in Low Power modes */
+  // Low-power clock enable misc
 #if defined (CPU_IN_SECURE_STATE)
   __HAL_RCC_DBG_CLK_SLEEP_ENABLE();
 #endif
   __HAL_RCC_XSPIPHYCOMP_CLK_SLEEP_ENABLE();
 
+  // Low-power clock enable for memories
   __HAL_RCC_AXISRAM1_MEM_CLK_SLEEP_ENABLE();
   __HAL_RCC_AXISRAM2_MEM_CLK_SLEEP_ENABLE();
   __HAL_RCC_AXISRAM3_MEM_CLK_SLEEP_ENABLE();
@@ -224,23 +256,27 @@ void set_clk_sleep_mode(void)
   __HAL_RCC_AXISRAM6_MEM_CLK_SLEEP_ENABLE();
   __HAL_RCC_FLEXRAM_MEM_CLK_SLEEP_ENABLE();
   __HAL_RCC_CACHEAXIRAM_MEM_CLK_SLEEP_ENABLE();
-
+  // LP clock AHB1: None
+  // LP clock AHB2: None
+  // LP clock AHB3
 #if defined (CPU_IN_SECURE_STATE)
   __HAL_RCC_RIFSC_CLK_SLEEP_ENABLE();
   __HAL_RCC_RISAF_CLK_SLEEP_ENABLE();
   __HAL_RCC_IAC_CLK_SLEEP_ENABLE();
 #endif
-
+  // LP clock AHB4: None
+  // LP clocks AHB5
   __HAL_RCC_XSPI1_CLK_SLEEP_ENABLE();
   __HAL_RCC_XSPI2_CLK_SLEEP_ENABLE();
   __HAL_RCC_CACHEAXI_CLK_SLEEP_ENABLE();
   __HAL_RCC_NPU_CLK_SLEEP_ENABLE();
+  // LP clocks APB1: None
+  // LP clocks APB2
   __HAL_RCC_USART1_CLK_SLEEP_ENABLE();
+  // LP clocks APB4: None
+  // LP clocks APB5: None
 }
 
-/* -------------------------------------------------------------------------- */
-/*                                 AI Init                                     */
-/* -------------------------------------------------------------------------- */
 void MX_X_CUBE_AI_Init(void)
 {
     set_clk_sleep_mode();
@@ -248,7 +284,6 @@ void MX_X_CUBE_AI_Init(void)
     __HAL_RCC_NPU_FORCE_RESET();
     __HAL_RCC_NPU_RELEASE_RESET();
     npu_cache_init();
-
     /* USER CODE BEGIN 5 */
     __HAL_RCC_AXISRAM4_MEM_CLK_ENABLE();
     __HAL_RCC_AXISRAM5_MEM_CLK_ENABLE();
@@ -299,11 +334,6 @@ void MX_X_CUBE_AI_Init(void)
     /* USER CODE END 5 */
 }
 
-
-
-/* -------------------------------------------------------------------------- */
-/*                        AI Inference + Post-Process                          */
-/* -------------------------------------------------------------------------- */
 void MX_X_CUBE_AI_Process(void)
 {
     /* USER CODE BEGIN 6 */
@@ -361,11 +391,17 @@ void MX_X_CUBE_AI_Process(void)
     /* ==================== 4. BLAZEFACE POST-PROCESSING ==================== */
     int nb_detect = 0;
 
+    /*
+     * Head 0: reg_scale=0.3067→mult=78.21  cls_scale=0.03694→mult=9.42
+     * Head 1: reg_scale=1.202 →mult=306.5  cls_scale=1.225 →mult=312.3
+     */
     nb_detect = decode_head(buffer_out_f32[0], buffer_out_f32[1],
-                            g_Anchors_0, FD_NB_DETECTIONS_0, 0);
+                            g_Anchors_0, FD_NB_DETECTIONS_0, 0,
+                            78.21f, 9.419f);
 
     nb_detect = decode_head(buffer_out_f32[3], buffer_out_f32[2],
-                            g_Anchors_1, FD_NB_DETECTIONS_1, nb_detect);
+                            g_Anchors_1, FD_NB_DETECTIONS_1, nb_detect,
+                            306.5f, 312.3f);
 
 #if FD_DEBUG_PRINT
     printf("decode_head: %d raw detections (before NMS)\r\n", nb_detect);
@@ -509,7 +545,6 @@ void MX_X_CUBE_AI_Process(void)
     vTaskDelay(pdMS_TO_TICKS(10));
     /* USER CODE END 6 */
 }
-
 #ifdef __cplusplus
 }
 #endif

@@ -1,2 +1,0 @@
-../Drivers/BSP/SYS/sys.c:28:6:sys_clock_config_debug	3
-../Drivers/BSP/SYS/sys.c:91:6:sys_delay_us	4

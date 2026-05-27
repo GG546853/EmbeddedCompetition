@@ -9,7 +9,18 @@ RM := rm -rf
 
 # All of the sources participating in the build are defined here
 -include sources.mk
+-include Middlewares/stm32-vision-models-postprocessing/lib_vision_models_pp/Src/subdir.mk
+-include Middlewares/stedgeai-lib/SystemPerformance/Src/subdir.mk
+-include Middlewares/stedgeai-lib/Reloc/Src/subdir.mk
+-include Middlewares/stedgeai-lib/Npu/ll_aton/subdir.mk
+-include Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/subdir.mk
+-include Middlewares/stedgeai-lib/Npu/Devices/STM32H7xx/subdir.mk
+-include Middlewares/stedgeai-lib/Npu/Devices/SR6P3E/subdir.mk
+-include Middlewares/stedgeai-lib/Misc/Src/subdir.mk
+-include Middlewares/ai-postprocessing-wrapper/subdir.mk
 -include Middlewares/STM32_MW_ISP/isp/Src/subdir.mk
+-include Middlewares/ST/AI/Npu/ll_aton/subdir.mk
+-include Middlewares/ST/AI/Npu/Devices/STM32N6XX/subdir.mk
 -include Middlewares/RTOS2/CMSIS/RTOS2/Heap/Heap_4/subdir.mk
 -include Middlewares/RTOS2/CMSIS/RTOS2/Core/TZ_Secure_Only/subdir.mk
 -include Drivers/STM32N6xx_HAL_Driver/subdir.mk
@@ -78,8 +89,8 @@ all: main-build
 main-build: ElectronicWarehouse_Appli.elf secondary-outputs
 
 # Tool invocations
-ElectronicWarehouse_Appli.elf ElectronicWarehouse_Appli.map: $(OBJS) $(USER_OBJS) C:\Users\96022\Desktop\EmbeddedCompetition\ElectronicWarehouse\Appli\STM32N647X0HXQ_LRUN_RAMxspi1.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "ElectronicWarehouse_Appli.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m55 -T"C:\Users\96022\Desktop\EmbeddedCompetition\ElectronicWarehouse\Appli\STM32N647X0HXQ_LRUN_RAMxspi1.ld" --specs=nosys.specs -Wl,-Map="ElectronicWarehouse_Appli.map" -Wl,--gc-sections -static -Wl,--cmse-implib -Wl,--out-implib=./secure_nsclib.o -L"C:\Users\96022\Desktop\EmbeddedCompetition\ElectronicWarehouse\Appli\Middlewares\STM32_MW_ISP\evision\Lib" --specs=nano.specs -mfpu=fpv5-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+ElectronicWarehouse_Appli.elf ElectronicWarehouse_Appli.map: $(OBJS) $(USER_OBJS) C:\Users\96022\Desktop\EmbeddedCompetition\ElectronicWarehouse\Appli\STM32N647X0HXQ_LRUN.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "ElectronicWarehouse_Appli.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m55 -T"C:\Users\96022\Desktop\EmbeddedCompetition\ElectronicWarehouse\Appli\STM32N647X0HXQ_LRUN.ld" --specs=nosys.specs -Wl,-Map="ElectronicWarehouse_Appli.map" -Wl,--gc-sections -static -Wl,--cmse-implib -Wl,--out-implib=./secure_nsclib.o --specs=nano.specs -mfpu=fpv5-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 

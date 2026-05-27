@@ -40,5 +40,16 @@ Drivers/BSP/UART \
 Drivers/STM32N6xx_HAL_Driver \
 Middlewares/RTOS2/CMSIS/RTOS2/Core/TZ_Secure_Only \
 Middlewares/RTOS2/CMSIS/RTOS2/Heap/Heap_4 \
+Middlewares/ST/AI/Npu/Devices/STM32N6XX \
+Middlewares/ST/AI/Npu/ll_aton \
 Middlewares/STM32_MW_ISP/isp/Src \
+Middlewares/ai-postprocessing-wrapper \
+Middlewares/stedgeai-lib/Misc/Src \
+Middlewares/stedgeai-lib/Npu/Devices/SR6P3E \
+Middlewares/stedgeai-lib/Npu/Devices/STM32H7xx \
+Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx \
+Middlewares/stedgeai-lib/Npu/ll_aton \
+Middlewares/stedgeai-lib/Reloc/Src \
+Middlewares/stedgeai-lib/SystemPerformance/Src \
+Middlewares/stm32-vision-models-postprocessing/lib_vision_models_pp/Src \
 

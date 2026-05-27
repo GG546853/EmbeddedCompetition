@@ -135,14 +135,14 @@ int main(void)
   SystemIsolation_Config();
   /* USER CODE BEGIN 2 */
 #ifdef DEBUG
-  MX_XSPI1_Init();
+  //MX_XSPI1_Init();
   if (HyperRAM_Init(&HyperRAMObject, &hxspi1) != HyperRAM_OK)
   {
       Error_Handler();
   }
   HyperRAM_EnableMemoryMappedMode(&HyperRAMObject);
 
-  MX_XSPI2_Init();
+  //MX_XSPI2_Init();
   uint32_t xspi2_clk = HAL_RCCEx_GetPeriphCLKFreq(RCC_PERIPHCLK_XSPI2);
   if (NORFlash_Init(&NORFlashObject, &hxspi2, xspi2_clk) != NORFlash_OK)
     {

@@ -1,0 +1,7 @@
+../Middlewares/pp/Src/fd_pp_blazeface.c:26:16:fd_nms_comparator	96	static
+../Middlewares/pp/Src/fd_pp_blazeface.c:60:16:fd_pp_nmsFiltering_centroid	56	static
+../Middlewares/pp/Src/fd_pp_blazeface.c:122:16:fd_pp_scoreFiltering_centroid	32	static
+../Middlewares/pp/Src/fd_pp_blazeface.c:150:16:fd_pp_level_decode_and_store_is8	80	static
+../Middlewares/pp/Src/fd_pp_blazeface.c:219:16:fd_pp_getNNBoxes_centroid_is8	80	static
+../Middlewares/pp/Src/fd_pp_blazeface.c:275:9:fd_blazeface_pp_reset	16	static
+../Middlewares/pp/Src/fd_pp_blazeface.c:280:9:fd_blazeface_pp_process_int8	32	static

@@ -78,5 +78,8 @@
 "./Middlewares/STM32_MW_ISP/isp/Src/isp_core.o"
 "./Middlewares/STM32_MW_ISP/isp/Src/isp_services.o"
 "./Middlewares/STM32_MW_ISP/isp/Src/isp_tool_com.o"
+"./Middlewares/pp/Src/app_postprocess_fd_blazeface_ui.o"
+"./Middlewares/pp/Src/fd_pp_blazeface.o"
+"./Middlewares/pp/Src/vision_models_pp.o"
 "./Model/network.o"
 "./Model/stai_network.o"

@@ -10,6 +10,7 @@ RM := rm -rf
 # All of the sources participating in the build are defined here
 -include sources.mk
 -include Model/subdir.mk
+-include Middlewares/pp/Src/subdir.mk
 -include Middlewares/STM32_MW_ISP/isp/Src/subdir.mk
 -include Middlewares/RTOS2/CMSIS/RTOS2/Heap/Heap_4/subdir.mk
 -include Middlewares/RTOS2/CMSIS/RTOS2/Core/TZ_Secure_Only/subdir.mk

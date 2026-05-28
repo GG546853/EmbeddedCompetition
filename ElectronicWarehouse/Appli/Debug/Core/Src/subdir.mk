@@ -9,6 +9,8 @@ C_SRCS += \
 ../Core/Src/csi.c \
 ../Core/Src/dcmipp.c \
 ../Core/Src/dma2d.c \
+../Core/Src/fd_blazeface_anchors_0.c \
+../Core/Src/fd_blazeface_anchors_1.c \
 ../Core/Src/gpio.c \
 ../Core/Src/i2c.c \
 ../Core/Src/ltdc.c \
@@ -30,6 +32,8 @@ OBJS += \
 ./Core/Src/csi.o \
 ./Core/Src/dcmipp.o \
 ./Core/Src/dma2d.o \
+./Core/Src/fd_blazeface_anchors_0.o \
+./Core/Src/fd_blazeface_anchors_1.o \
 ./Core/Src/gpio.o \
 ./Core/Src/i2c.o \
 ./Core/Src/ltdc.o \
@@ -51,6 +55,8 @@ C_DEPS += \
 ./Core/Src/csi.d \
 ./Core/Src/dcmipp.d \
 ./Core/Src/dma2d.d \
+./Core/Src/fd_blazeface_anchors_0.d \
+./Core/Src/fd_blazeface_anchors_1.d \
 ./Core/Src/gpio.d \
 ./Core/Src/i2c.d \
 ./Core/Src/ltdc.d \
@@ -75,7 +81,7 @@ Core/Src/%.o Core/Src/%.su Core/Src/%.cyclo: ../Core/Src/%.c Core/Src/subdir.mk
 clean: clean-Core-2f-Src
 
 clean-Core-2f-Src:
-	-$(RM) ./Core/Src/app_freertos.cyclo ./Core/Src/app_freertos.d ./Core/Src/app_freertos.o ./Core/Src/app_freertos.su ./Core/Src/csi.cyclo ./Core/Src/csi.d ./Core/Src/csi.o ./Core/Src/csi.su ./Core/Src/dcmipp.cyclo ./Core/Src/dcmipp.d ./Core/Src/dcmipp.o ./Core/Src/dcmipp.su ./Core/Src/dma2d.cyclo ./Core/Src/dma2d.d ./Core/Src/dma2d.o ./Core/Src/dma2d.su ./Core/Src/gpio.cyclo ./Core/Src/gpio.d ./Core/Src/gpio.o ./Core/Src/gpio.su ./Core/Src/i2c.cyclo ./Core/Src/i2c.d ./Core/Src/i2c.o ./Core/Src/i2c.su ./Core/Src/ltdc.cyclo ./Core/Src/ltdc.d ./Core/Src/ltdc.o ./Core/Src/ltdc.su ./Core/Src/main.cyclo ./Core/Src/main.d ./Core/Src/main.o ./Core/Src/main.su ./Core/Src/ramcfg.cyclo ./Core/Src/ramcfg.d ./Core/Src/ramcfg.o ./Core/Src/ramcfg.su ./Core/Src/secure_nsc.cyclo ./Core/Src/secure_nsc.d ./Core/Src/secure_nsc.o ./Core/Src/secure_nsc.su ./Core/Src/stm32n6xx_hal_msp.cyclo ./Core/Src/stm32n6xx_hal_msp.d ./Core/Src/stm32n6xx_hal_msp.o ./Core/Src/stm32n6xx_hal_msp.su ./Core/Src/stm32n6xx_hal_timebase_tim.cyclo ./Core/Src/stm32n6xx_hal_timebase_tim.d ./Core/Src/stm32n6xx_hal_timebase_tim.o ./Core/Src/stm32n6xx_hal_timebase_tim.su ./Core/Src/stm32n6xx_it.cyclo ./Core/Src/stm32n6xx_it.d ./Core/Src/stm32n6xx_it.o ./Core/Src/stm32n6xx_it.su ./Core/Src/syscalls.cyclo ./Core/Src/syscalls.d ./Core/Src/syscalls.o ./Core/Src/syscalls.su ./Core/Src/sysmem.cyclo ./Core/Src/sysmem.d ./Core/Src/sysmem.o ./Core/Src/sysmem.su ./Core/Src/system_stm32n6xx_s.cyclo ./Core/Src/system_stm32n6xx_s.d ./Core/Src/system_stm32n6xx_s.o ./Core/Src/system_stm32n6xx_s.su ./Core/Src/usart.cyclo ./Core/Src/usart.d ./Core/Src/usart.o ./Core/Src/usart.su ./Core/Src/xspi.cyclo ./Core/Src/xspi.d ./Core/Src/xspi.o ./Core/Src/xspi.su ./Core/Src/xspim.cyclo ./Core/Src/xspim.d ./Core/Src/xspim.o ./Core/Src/xspim.su
+	-$(RM) ./Core/Src/app_freertos.cyclo ./Core/Src/app_freertos.d ./Core/Src/app_freertos.o ./Core/Src/app_freertos.su ./Core/Src/csi.cyclo ./Core/Src/csi.d ./Core/Src/csi.o ./Core/Src/csi.su ./Core/Src/dcmipp.cyclo ./Core/Src/dcmipp.d ./Core/Src/dcmipp.o ./Core/Src/dcmipp.su ./Core/Src/dma2d.cyclo ./Core/Src/dma2d.d ./Core/Src/dma2d.o ./Core/Src/dma2d.su ./Core/Src/fd_blazeface_anchors_0.cyclo ./Core/Src/fd_blazeface_anchors_0.d ./Core/Src/fd_blazeface_anchors_0.o ./Core/Src/fd_blazeface_anchors_0.su ./Core/Src/fd_blazeface_anchors_1.cyclo ./Core/Src/fd_blazeface_anchors_1.d ./Core/Src/fd_blazeface_anchors_1.o ./Core/Src/fd_blazeface_anchors_1.su ./Core/Src/gpio.cyclo ./Core/Src/gpio.d ./Core/Src/gpio.o ./Core/Src/gpio.su ./Core/Src/i2c.cyclo ./Core/Src/i2c.d ./Core/Src/i2c.o ./Core/Src/i2c.su ./Core/Src/ltdc.cyclo ./Core/Src/ltdc.d ./Core/Src/ltdc.o ./Core/Src/ltdc.su ./Core/Src/main.cyclo ./Core/Src/main.d ./Core/Src/main.o ./Core/Src/main.su ./Core/Src/ramcfg.cyclo ./Core/Src/ramcfg.d ./Core/Src/ramcfg.o ./Core/Src/ramcfg.su ./Core/Src/secure_nsc.cyclo ./Core/Src/secure_nsc.d ./Core/Src/secure_nsc.o ./Core/Src/secure_nsc.su ./Core/Src/stm32n6xx_hal_msp.cyclo ./Core/Src/stm32n6xx_hal_msp.d ./Core/Src/stm32n6xx_hal_msp.o ./Core/Src/stm32n6xx_hal_msp.su ./Core/Src/stm32n6xx_hal_timebase_tim.cyclo ./Core/Src/stm32n6xx_hal_timebase_tim.d ./Core/Src/stm32n6xx_hal_timebase_tim.o ./Core/Src/stm32n6xx_hal_timebase_tim.su ./Core/Src/stm32n6xx_it.cyclo ./Core/Src/stm32n6xx_it.d ./Core/Src/stm32n6xx_it.o ./Core/Src/stm32n6xx_it.su ./Core/Src/syscalls.cyclo ./Core/Src/syscalls.d ./Core/Src/syscalls.o ./Core/Src/syscalls.su ./Core/Src/sysmem.cyclo ./Core/Src/sysmem.d ./Core/Src/sysmem.o ./Core/Src/sysmem.su ./Core/Src/system_stm32n6xx_s.cyclo ./Core/Src/system_stm32n6xx_s.d ./Core/Src/system_stm32n6xx_s.o ./Core/Src/system_stm32n6xx_s.su ./Core/Src/usart.cyclo ./Core/Src/usart.d ./Core/Src/usart.o ./Core/Src/usart.su ./Core/Src/xspi.cyclo ./Core/Src/xspi.d ./Core/Src/xspi.o ./Core/Src/xspi.su ./Core/Src/xspim.cyclo ./Core/Src/xspim.d ./Core/Src/xspim.o ./Core/Src/xspim.su
 
 .PHONY: clean-Core-2f-Src
 

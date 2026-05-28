@@ -24,6 +24,7 @@
 /* USER CODE BEGIN Includes */
 #include "RGBLED_task.h"
 #include "Sensor_task.h"
+#include "AI_task.h"
 #include "imx335.h"
 #include "rgblcd.h"
 /* USER CODE END Includes */
@@ -57,7 +58,10 @@ const osThreadAttr_t defaultTask_attributes = {
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
-
+osSemaphoreId_t cam_frame_sem;
+const osSemaphoreAttr_t cam_frame_sem_attributes = {
+  .name = "cam_frame_sem"
+};
 /* USER CODE END FunctionPrototypes */
 
 /* USER CODE BEGIN 5 */
@@ -114,6 +118,7 @@ void MX_FREERTOS_Init(void) {
 
   /* USER CODE BEGIN RTOS_SEMAPHORES */
   /* add semaphores, ... */
+
   /* USER CODE END RTOS_SEMAPHORES */
 
   /* USER CODE BEGIN RTOS_TIMERS */
@@ -130,6 +135,7 @@ void MX_FREERTOS_Init(void) {
   /* add threads, ... */
   RGBLED_TaskHandle = osThreadNew(RGBLED_Task, NULL, &RGBLEDTask_attributes);
   Sensor_TaskHandle = osThreadNew(Sensor_Task, NULL, &SensorTask_attributes);
+  AITaskHandle = osThreadNew(StartAITask, NULL, &AITask_attributes);
   /* USER CODE END RTOS_THREADS */
 
   /* USER CODE BEGIN RTOS_EVENTS */

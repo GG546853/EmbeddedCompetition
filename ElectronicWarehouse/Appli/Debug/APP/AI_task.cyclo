@@ -1,0 +1,16 @@
+../../Drivers/STM32N6xx_HAL_Driver/Inc/stm32n6xx_ll_bus.h:679:22:LL_MEM_EnableClock	1
+../../Drivers/STM32N6xx_HAL_Driver/Inc/stm32n6xx_ll_bus.h:1009:22:LL_AHB2_GRP1_EnableClock	1
+../../Drivers/STM32N6xx_HAL_Driver/Inc/stm32n6xx_ll_bus.h:1165:22:LL_AHB3_GRP1_EnableClock	1
+../../Drivers/STM32N6xx_HAL_Driver/Inc/stm32n6xx_ll_bus.h:1755:22:LL_AHB5_GRP1_EnableClock	1
+../../Drivers/STM32N6xx_HAL_Driver/Inc/stm32n6xx_ll_bus.h:1945:22:LL_AHB5_GRP1_ForceReset	1
+../../Drivers/STM32N6xx_HAL_Driver/Inc/stm32n6xx_ll_bus.h:1999:22:LL_AHB5_GRP1_ReleaseReset	1
+../APP/AI_task.c:90:6:StartAITask	11
+../APP/AI_task.c:142:13:NPU_Init	1
+../APP/AI_task.c:181:12:NN_Init	8
+../APP/AI_task.c:222:12:PP_Init	4
+../APP/AI_task.c:253:12:CaptureSnapshot	3
+../APP/AI_task.c:276:13:ConvertPoint	1
+../APP/AI_task.c:282:12:ClampPoint	5
+../APP/AI_task.c:292:13:DrawKeypoint	2
+../APP/AI_task.c:301:13:DrawFace	4
+../APP/AI_task.c:330:13:DrawResults	2

@@ -1,0 +1,16 @@
+../../Drivers/STM32N6xx_HAL_Driver/Inc/stm32n6xx_ll_bus.h:679:22:LL_MEM_EnableClock	24	static
+../../Drivers/STM32N6xx_HAL_Driver/Inc/stm32n6xx_ll_bus.h:1009:22:LL_AHB2_GRP1_EnableClock	24	static
+../../Drivers/STM32N6xx_HAL_Driver/Inc/stm32n6xx_ll_bus.h:1165:22:LL_AHB3_GRP1_EnableClock	24	static
+../../Drivers/STM32N6xx_HAL_Driver/Inc/stm32n6xx_ll_bus.h:1755:22:LL_AHB5_GRP1_EnableClock	24	static
+../../Drivers/STM32N6xx_HAL_Driver/Inc/stm32n6xx_ll_bus.h:1945:22:LL_AHB5_GRP1_ForceReset	16	static
+../../Drivers/STM32N6xx_HAL_Driver/Inc/stm32n6xx_ll_bus.h:1999:22:LL_AHB5_GRP1_ReleaseReset	16	static
+../APP/AI_task.c:90:6:StartAITask	56	static,ignoring_inline_asm
+../APP/AI_task.c:142:13:NPU_Init	32	static
+../APP/AI_task.c:181:12:NN_Init	104	static
+../APP/AI_task.c:222:12:PP_Init	96	static
+../APP/AI_task.c:253:12:CaptureSnapshot	16	static
+../APP/AI_task.c:276:13:ConvertPoint	24	static
+../APP/AI_task.c:282:12:ClampPoint	24	static
+../APP/AI_task.c:292:13:DrawKeypoint	24	static
+../APP/AI_task.c:301:13:DrawFace	72	static
+../APP/AI_task.c:330:13:DrawResults	16	static

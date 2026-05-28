@@ -305,6 +305,59 @@ static uint8_t imx335_dcmipp_init(void)
         return 1;
     }
 
+
+
+    DCMIPP_CSI_PIPE_ConfTypeDef pipe2_csi_conf = {0};
+    pipe2_csi_conf.DataTypeMode = DCMIPP_DTMODE_DTIDA;
+    pipe2_csi_conf.DataTypeIDA = DCMIPP_DT_RAW10;
+    pipe2_csi_conf.DataTypeIDB = DCMIPP_DT_RAW10;
+	if (HAL_DCMIPP_CSI_PIPE_SetConfig(&hdcmipp, DCMIPP_PIPE2, &pipe2_csi_conf) != HAL_OK)
+	{
+    	return 1;
+	}
+    DCMIPP_PipeConfTypeDef pipe2_conf = {0};
+    pipe2_conf.FrameRate  = DCMIPP_FRAME_RATE_ALL;
+    pipe2_conf.PixelPipePitch = 128 * 3;
+    pipe2_conf.PixelPackerFormat = DCMIPP_PIXEL_PACKER_FORMAT_RGB888_YUV444_1; // NPU 喜欢 RGB 分离的格式
+    if (HAL_DCMIPP_PIPE_SetConfig(&hdcmipp, DCMIPP_PIPE2, &pipe2_conf) != HAL_OK)
+	{
+    	return 1;
+	}
+
+    DCMIPP_DecimationConfTypeDef decConfig = {0};
+    decConfig.HRatio = DCMIPP_HDEC_1_OUT_4;
+    decConfig.VRatio = DCMIPP_VDEC_1_OUT_4;
+    if (HAL_DCMIPP_PIPE_SetDecimationConfig(&hdcmipp, DCMIPP_PIPE2, &decConfig) != HAL_OK)
+    {
+        return 1;
+    }
+    if (HAL_DCMIPP_PIPE_EnableDecimation(&hdcmipp, DCMIPP_PIPE2) != HAL_OK)
+    {
+        return 1;
+    }
+
+    DCMIPP_DownsizeTypeDef pipe2_down_size = {0};
+    pipe2_down_size.HSize = 128;
+    pipe2_down_size.VSize = 128;
+
+    pipe2_down_size.HDivFactor = 202;
+
+    pipe2_down_size.VDivFactor = 269;
+
+    pipe2_down_size.VRatio = 31284;
+
+    pipe2_down_size.HRatio = 41734;
+
+    if (HAL_DCMIPP_PIPE_SetDownsizeConfig(&hdcmipp, DCMIPP_PIPE2, &pipe2_down_size) != HAL_OK)
+    {
+        return 1;
+    }
+
+    if (HAL_DCMIPP_PIPE_EnableDownsize(&hdcmipp, DCMIPP_PIPE2) != HAL_OK)
+    {
+        return 1;
+    }
+
     return 0;
 }
 

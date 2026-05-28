@@ -5,16 +5,19 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
+../APP/AI_task.c \
 ../APP/LCD_task.c \
 ../APP/RGBLED_task.c \
 ../APP/Sensor_task.c 
 
 OBJS += \
+./APP/AI_task.o \
 ./APP/LCD_task.o \
 ./APP/RGBLED_task.o \
 ./APP/Sensor_task.o 
 
 C_DEPS += \
+./APP/AI_task.d \
 ./APP/LCD_task.d \
 ./APP/RGBLED_task.d \
 ./APP/Sensor_task.d 
@@ -27,7 +30,7 @@ APP/%.o APP/%.su APP/%.cyclo: ../APP/%.c APP/subdir.mk
 clean: clean-APP
 
 clean-APP:
-	-$(RM) ./APP/LCD_task.cyclo ./APP/LCD_task.d ./APP/LCD_task.o ./APP/LCD_task.su ./APP/RGBLED_task.cyclo ./APP/RGBLED_task.d ./APP/RGBLED_task.o ./APP/RGBLED_task.su ./APP/Sensor_task.cyclo ./APP/Sensor_task.d ./APP/Sensor_task.o ./APP/Sensor_task.su
+	-$(RM) ./APP/AI_task.cyclo ./APP/AI_task.d ./APP/AI_task.o ./APP/AI_task.su ./APP/LCD_task.cyclo ./APP/LCD_task.d ./APP/LCD_task.o ./APP/LCD_task.su ./APP/RGBLED_task.cyclo ./APP/RGBLED_task.d ./APP/RGBLED_task.o ./APP/RGBLED_task.su ./APP/Sensor_task.cyclo ./APP/Sensor_task.d ./APP/Sensor_task.o ./APP/Sensor_task.su
 
 .PHONY: clean-APP
 

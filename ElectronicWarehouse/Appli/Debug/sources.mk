@@ -37,10 +37,13 @@ Drivers/BSP/RGBLCD \
 Drivers/BSP/SYS \
 Drivers/BSP/TOUCH \
 Drivers/BSP/UART \
+Drivers/STM32N6xx_HAL_Driver/Src \
 Drivers/STM32N6xx_HAL_Driver \
 Middlewares/RTOS2/CMSIS/RTOS2/Core/TZ_Secure_Only \
 Middlewares/RTOS2/CMSIS/RTOS2/Heap/Heap_4 \
 Middlewares/STM32_MW_ISP/isp/Src \
 Middlewares/pp/Src \
 Model \
+STM32N6xx \
+ll_aton \
 

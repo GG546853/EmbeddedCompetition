@@ -131,11 +131,13 @@
 					</folderInfo>
 					<sourceEntries>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="APP"/>
-						<entry excluding="st_ai_ws|st_ai_output" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Model"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Core"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Middlewares"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Drivers"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Middlewares"/>
+						<entry excluding="st_ai_ws|st_ai_output" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Model"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="STM32N6xx"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Secure/RTOS2"/>
+						<entry excluding="ll_aton_osal_zephyr.c|ll_aton_osal_threadx.c|ll_aton_osal_rtos_template.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="ll_aton"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -230,10 +232,10 @@
 					</folderInfo>
 					<sourceEntries>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="APP"/>
-						<entry excluding="st_ai_ws|st_ai_output" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Model"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Core"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Middlewares"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Drivers"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Middlewares"/>
+						<entry excluding="st_ai_ws|st_ai_output" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Model"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Secure/RTOS2"/>
 					</sourceEntries>
 				</configuration>

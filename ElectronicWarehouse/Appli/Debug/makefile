@@ -9,11 +9,14 @@ RM := rm -rf
 
 # All of the sources participating in the build are defined here
 -include sources.mk
+-include ll_aton/subdir.mk
+-include STM32N6xx/subdir.mk
 -include Model/subdir.mk
 -include Middlewares/pp/Src/subdir.mk
 -include Middlewares/STM32_MW_ISP/isp/Src/subdir.mk
 -include Middlewares/RTOS2/CMSIS/RTOS2/Heap/Heap_4/subdir.mk
 -include Middlewares/RTOS2/CMSIS/RTOS2/Core/TZ_Secure_Only/subdir.mk
+-include Drivers/STM32N6xx_HAL_Driver/Src/subdir.mk
 -include Drivers/STM32N6xx_HAL_Driver/subdir.mk
 -include Drivers/BSP/UART/subdir.mk
 -include Drivers/BSP/TOUCH/subdir.mk

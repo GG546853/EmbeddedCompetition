@@ -35,6 +35,21 @@
 	</natures>
 	<linkedResources>
 		<link>
+			<name>STM32N6xx</name>
+			<type>2</type>
+			<location>C:/ST/STEdgeAI/4.0/Middlewares/ST/AI/Npu/Devices/STM32N6xx</location>
+		</link>
+		<link>
+			<name>STM32N6xx0</name>
+			<type>2</type>
+			<location>C:/ST/STEdgeAI/4.0/Middlewares/ST/AI/Npu/Devices/STM32N6xx</location>
+		</link>
+		<link>
+			<name>ll_aton</name>
+			<type>2</type>
+			<location>C:/ST/STEdgeAI/4.0/Middlewares/ST/AI/Npu/ll_aton</location>
+		</link>
+		<link>
 			<name>Drivers/STM32N6xx_HAL_Driver/stm32n6xx_hal.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_hal.c</locationURI>

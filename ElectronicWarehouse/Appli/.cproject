@@ -64,6 +64,7 @@
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.option.includepaths.619862863" name="Include paths (-I)" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.option.includepaths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="../Core/Inc"/>
+									<listOptionValue builtIn="false" value="&quot;C:\Users\96022\Desktop\EmbeddedCompetition\ElectronicWarehouse\Appli\Drivers\STM32N6xx_HAL_Driver\Inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;C:\ST\STEdgeAI\4.0\Middlewares\ST\AI\Npu\Devices\STM32N6xx&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;C:\Users\96022\Desktop\EmbeddedCompetition\ElectronicWarehouse\Drivers\CMSIS\DSP\Include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;C:\ST\STEdgeAI\4.0\Middlewares\ST\AI\Npu\ll_aton&quot;"/>
@@ -130,14 +131,14 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="APP"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Core"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Drivers"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Middlewares"/>
-						<entry excluding="st_ai_ws|st_ai_output" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Model"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="STM32N6xx"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Secure/RTOS2"/>
 						<entry excluding="ll_aton_osal_zephyr.c|ll_aton_osal_threadx.c|ll_aton_osal_rtos_template.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="ll_aton"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="APP"/>
+						<entry excluding="st_ai_ws|st_ai_output" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Model"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Core"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Middlewares"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Drivers"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Secure/RTOS2"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -232,10 +233,10 @@
 					</folderInfo>
 					<sourceEntries>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="APP"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Core"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Drivers"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Middlewares"/>
 						<entry excluding="st_ai_ws|st_ai_output" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Model"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Core"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Middlewares"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Drivers"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Secure/RTOS2"/>
 					</sourceEntries>
 				</configuration>

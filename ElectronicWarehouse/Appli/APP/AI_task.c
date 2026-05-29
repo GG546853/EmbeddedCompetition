@@ -132,6 +132,7 @@ void StartAITask(void *argument)
 
         /* 6. 绘制检测结果到 LCD 前景层 */
         DrawResults();
+
     }
 }
 
@@ -185,28 +186,36 @@ static int NN_Init(void)
 
     /* ST.AI 运行时初始化 */
     ret = stai_runtime_init();
-    if (ret != STAI_SUCCESS) return -1;
+    if (ret != STAI_SUCCESS)
+    	return -1;
 
     /* 模型实例初始化 */
+    memset(network_context_buf, 0, STAI_NETWORK_CONTEXT_SIZE);
+
     ret = stai_network_init(network_context);
-    if (ret != STAI_SUCCESS) return -1;
+    if (ret != STAI_SUCCESS)
+    	return -1;
 
     /* 获取模型信息 */
     ret = stai_network_get_info(network_context, &info);
-    if (ret != STAI_SUCCESS) return -1;
+    if (ret != STAI_SUCCESS)
+    	return -1;
 
     /* 校验输入数 */
-    if (info.n_inputs != 1) return -1;
+    if (info.n_inputs != 1)
+    	return -1;
 
     /* 获取输入 buffer 指针 — 指向我们预分配的 nn_in[] */
     stai_ptr nn_in_ptr = nn_in;
     ret = stai_network_set_inputs(network_context, &nn_in_ptr, info.n_inputs);
-    if (ret != STAI_SUCCESS) return -1;
+    if (ret != STAI_SUCCESS)
+    	return -1;
 
     /* 获取输出 buffer 指针 — 由 runtime 内部管理 */
     stai_size n_outputs = STAI_NETWORK_OUT_NUM;
     ret = stai_network_get_outputs(network_context, nn_out, &n_outputs);
-    if (ret != STAI_SUCCESS) return -1;
+    if (ret != STAI_SUCCESS)
+    	return -1;
 
     for (stai_size i = 0; i < n_outputs; i++) {
         nn_out_len[i] = info.outputs[i].size_bytes;
@@ -261,7 +270,7 @@ static int CaptureSnapshot(void)
     }
 
     /* 阻塞等待帧完成 — ISR 中 osSemaphoreRelease(cam_frame_sem) 唤醒 */
-    if (osSemaphoreAcquire(cam_frame_sem, pdMS_TO_TICKS(100)) != osOK) {
+    if (osSemaphoreAcquire(cam_frame_sem, HAL_MAX_DELAY) != osOK) {
         HAL_DCMIPP_CSI_PIPE_Stop(&hdcmipp, DCMIPP_PIPE2, DCMIPP_VIRTUAL_CHANNEL0);
         return -1;
     }

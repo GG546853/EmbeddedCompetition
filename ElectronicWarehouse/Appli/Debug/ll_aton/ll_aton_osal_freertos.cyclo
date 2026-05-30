@@ -1,0 +1,12 @@
+../../Drivers/CMSIS/Include/core_cm55.h:4115:22:__NVIC_SetPriority	2
+C:/ST/STEdgeAI/4.0/Middlewares/ST/AI/Npu/ll_aton/ll_aton_osal_freertos.h:77:30:_my_xSemaphoreCreateBinaryStatic	2
+C:/ST/STEdgeAI/4.0/Middlewares/ST/AI/Npu/ll_aton/ll_aton_osal_freertos.h:92:30:_my_xSemaphoreCreateCountingStatic	2
+C:/ST/STEdgeAI/4.0/Middlewares/ST/AI/Npu/ll_aton/ll_aton_osal_freertos.h:107:30:_my_xSemaphoreCreateMutexStatic	2
+C:/ST/STEdgeAI/4.0/Middlewares/ST/AI/Npu/ll_aton/ll_aton_osal_rtos_template.c:52:6:aton_osal_freertos_init	1
+C:/ST/STEdgeAI/4.0/Middlewares/ST/AI/Npu/ll_aton/ll_aton_osal_rtos_template.c:86:6:aton_osal_freertos_deinit	1
+C:/ST/STEdgeAI/4.0/Middlewares/ST/AI/Npu/ll_aton/ll_aton_osal_rtos_template.c:95:6:aton_osal_freertos_dao_lock	3
+C:/ST/STEdgeAI/4.0/Middlewares/ST/AI/Npu/ll_aton/ll_aton_osal_rtos_template.c:164:6:aton_osal_freertos_dao_unlock	5
+C:/ST/STEdgeAI/4.0/Middlewares/ST/AI/Npu/ll_aton/ll_aton_osal_rtos_template.c:221:6:aton_osal_freertos_lock	1
+C:/ST/STEdgeAI/4.0/Middlewares/ST/AI/Npu/ll_aton/ll_aton_osal_rtos_template.c:233:6:aton_osal_freertos_unlock	1
+C:/ST/STEdgeAI/4.0/Middlewares/ST/AI/Npu/ll_aton/ll_aton_osal_rtos_template.c:272:6:aton_osal_freertos_wfe	1
+C:/ST/STEdgeAI/4.0/Middlewares/ST/AI/Npu/ll_aton/ll_aton_osal_rtos_template.c:287:6:aton_osal_freertos_signal_event	2

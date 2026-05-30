@@ -111,6 +111,8 @@ void StartAITask(void *argument)
         /* 2. D-Cache 无效化 */
         SCB_InvalidateDCache_by_Addr(nn_in, sizeof(nn_in));
 
+        //SCB_CleanDCache_by_Addr((uint32_t*)network_context, STAI_NETWORK_CONTEXT_SIZE);
+
         /* 3. NPU 推理 */
         int ret = stai_network_run(network_context, STAI_MODE_SYNC);
         if (ret != STAI_SUCCESS) {

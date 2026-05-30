@@ -24,8 +24,10 @@
 
 /* USER CODE END 0 */
 
+RAMCFG_HandleTypeDef hramcfg_SRAM3;
 RAMCFG_HandleTypeDef hramcfg_SRAM4;
 RAMCFG_HandleTypeDef hramcfg_SRAM5;
+RAMCFG_HandleTypeDef hramcfg_SRAM6;
 
 /* RAMCFG init function */
 void MX_RAMCFG_Init(void)
@@ -39,6 +41,14 @@ void MX_RAMCFG_Init(void)
 
   /* USER CODE END RAMCFG_Init 1 */
 
+  /** Initialize RAMCFG SRAM3
+  */
+  hramcfg_SRAM3.Instance = RAMCFG_SRAM3_AXI;
+  if (HAL_RAMCFG_Init(&hramcfg_SRAM3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
   /** Initialize RAMCFG SRAM4
   */
   hramcfg_SRAM4.Instance = RAMCFG_SRAM4_AXI;
@@ -51,6 +61,14 @@ void MX_RAMCFG_Init(void)
   */
   hramcfg_SRAM5.Instance = RAMCFG_SRAM5_AXI;
   if (HAL_RAMCFG_Init(&hramcfg_SRAM5) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Initialize RAMCFG SRAM6
+  */
+  hramcfg_SRAM6.Instance = RAMCFG_SRAM6_AXI;
+  if (HAL_RAMCFG_Init(&hramcfg_SRAM6) != HAL_OK)
   {
     Error_Handler();
   }

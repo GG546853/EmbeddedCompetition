@@ -108,10 +108,18 @@ void StartAITask(void *argument)
             continue;
         }
 
-        /* 2. D-Cache 无效化 */
+        /* 2. Cache 维护（对标官方 AI 例程的 cache 管理模式）*/
+
+        /* 2a. 输入 buffer：DCMIPP 通过 DMA 写入，CPU Cache 中的旧数据无效 */
         SCB_InvalidateDCache_by_Addr(nn_in, sizeof(nn_in));
 
-        //SCB_CleanDCache_by_Addr((uint32_t*)network_context, STAI_NETWORK_CONTEXT_SIZE);
+        /* 2b. 网络上下文在 HyperRAM（cacheable），Clean 确保 NPU 读到最新状态 */
+        SCB_CleanDCache_by_Addr(network_context_buf, STAI_NETWORK_CONTEXT_SIZE);
+
+        /* 2c. 输出 buffer 在 NPU SRAM，推理前 Invalidate 使得 NPU 能安全写入 */
+        for (int i = 0; i < STAI_NETWORK_OUT_NUM; i++) {
+            SCB_InvalidateDCache_by_Addr(nn_out[i], nn_out_len[i]);
+        }
 
         /* 3. NPU 推理 */
         int ret = stai_network_run(network_context, STAI_MODE_SYNC);
@@ -121,15 +129,16 @@ void StartAITask(void *argument)
 
         /* 4. 后处理 */
         pp_params.nb_detect = 0;
+
+        /* 4a. 推理后再次 Invalidate 输出，确保 CPU 看到 NPU 的写入结果 */
+        for (int i = 0; i < STAI_NETWORK_OUT_NUM; i++) {
+            SCB_InvalidateDCache_by_Addr(nn_out[i], nn_out_len[i]);
+        }
+
         ret = app_postprocess_run((void **)nn_out, STAI_NETWORK_OUT_NUM,
                                   &pp_output, &pp_params);
         if (ret != 0) {
             continue;
-        }
-
-        /* 5. 丢弃 NN 输出区域的 D-Cache */
-        for (int i = 0; i < STAI_NETWORK_OUT_NUM; i++) {
-            SCB_InvalidateDCache_by_Addr(nn_out[i], nn_out_len[i]);
         }
 
         /* 6. 绘制检测结果到 LCD 前景层 */
@@ -166,14 +175,34 @@ static void NPU_Init(void)
     hramcfg.Instance = RAMCFG_SRAM6_AXI;
     HAL_RAMCFG_EnableAXISRAM(&hramcfg);
 
-    /* RIF 安全配置 — NPU 的 Master 权限 */
+    /* RIF 安全配置 — RISAF 内存访问权限（LRUN 模式无 FSBL，需手动授予 NPU 访问权限）*/
     __HAL_RCC_RIFSC_CLK_ENABLE();
-    RIMC_MasterConfig_t RIMC_master = {0};
-    RIMC_master.MasterCID = RIF_CID_1;
-    RIMC_master.SecPriv = RIF_ATTRIBUTE_SEC | RIF_ATTRIBUTE_PRIV;
-    HAL_RIF_RIMC_ConfigMasterAttributes(RIF_MASTER_INDEX_NPU, &RIMC_master);
+
+    RISAF_BaseRegionConfig_t risaf_cfg;
+
+    /* RISAF4 — 保护 XSPI2 octoFlash (0x70000000)，授予 CID_1 只读 */
+    risaf_cfg.Filtering      = RISAF_FILTER_ENABLE;
+    risaf_cfg.Secure         = RIF_ATTRIBUTE_SEC | RIF_ATTRIBUTE_PRIV;
+    risaf_cfg.PrivWhitelist  = RIF_CID_1;
+    risaf_cfg.ReadWhitelist  = RIF_CID_1;
+    risaf_cfg.WriteWhitelist = 0;
+    risaf_cfg.StartAddress   = 0x70000000;
+    risaf_cfg.EndAddress     = 0x71FFFFFF;
+    HAL_RIF_RISAF_ConfigBaseRegion(RISAF4, RISAF_REGION_1, &risaf_cfg);
+
+    /* RISAF5 — 保护 XSPI1 HyperRAM (0x90000000)，授予 CID_1 读写 */
+    risaf_cfg.WriteWhitelist = RIF_CID_1;
+    risaf_cfg.StartAddress   = 0x90000000;
+    risaf_cfg.EndAddress     = 0x9FFFFFFF;
+    HAL_RIF_RISAF_ConfigBaseRegion(RISAF5, RISAF_REGION_1, &risaf_cfg);
+
+    /* RISAF6 — 保护 AXI SRAM (0x34000000-0x343FFFFF)，授予 CID_1 读写 */
+    risaf_cfg.StartAddress   = 0x34000000;
+    risaf_cfg.EndAddress     = 0x343FFFFF;
+    HAL_RIF_RISAF_ConfigBaseRegion(RISAF6, RISAF_REGION_1, &risaf_cfg);
 
     /* 使能 NPU 指令/数据 Cache */
+
     npu_cache_enable();
 }
 

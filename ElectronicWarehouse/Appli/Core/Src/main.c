@@ -19,6 +19,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "cmsis_os2.h"
+#include "cacheaxi.h"
 #include "csi.h"
 #include "dcmipp.h"
 #include "dma2d.h"
@@ -132,6 +133,7 @@ int main(void)
   MX_USART1_UART_Init();
   MX_XSPI2_Init();
   MX_RAMCFG_Init();
+  MX_CACHEAXI_Init();
   SystemIsolation_Config();
   /* USER CODE BEGIN 2 */
 #ifdef DEBUG
@@ -232,6 +234,8 @@ void PeriphCommonClock_Config(void)
   RIMC_master.MasterCID = RIF_CID_1;
   RIMC_master.SecPriv = RIF_ATTRIBUTE_SEC | RIF_ATTRIBUTE_PRIV;
   HAL_RIF_RIMC_ConfigMasterAttributes(RIF_MASTER_INDEX_LTDC2, &RIMC_master);
+
+  HAL_RIF_RIMC_ConfigMasterAttributes(RIF_MASTER_INDEX_NPU, &RIMC_master);
 
   /*RISUP configuration*/
   HAL_RIF_RISC_SetSlaveSecureAttributes(RIF_RISC_PERIPH_INDEX_TIM6 , RIF_ATTRIBUTE_SEC | RIF_ATTRIBUTE_PRIV);

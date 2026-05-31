@@ -1,5 +1,5 @@
 ST Edge AI Core v4.0.0-20500 359356bb0
-Created date          : 2026-05-26 23:14:13
+Created date          : 2026-05-31 10:26:13
 Parameters            : generate --model blazeface_front_128_quant_pc_ff_od_wider_face.tflite --target stm32n6 --st-neural-art default@user_neuralart.json --input-data-type uint8 --output-data-type int8 --no-inputs-allocation --no-outputs-allocation
 
 Model name - blazeface_front_128_quant_pc_ff_od_wider_face

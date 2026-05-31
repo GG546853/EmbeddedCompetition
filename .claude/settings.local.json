@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem -Recurse -File -Name \"C:\\\\Users\\\\96022\\\\Desktop\\\\EmbeddedCompetition\")",
+      "Bash(Select-Object -First 200)",
+      "Bash(Get-ChildItem -Recurse -Name \"C:\\\\Users\\\\96022\\\\Desktop\\\\【正点原子】STM32N647开发板\\\\【正点原子】N647开发板资料盘\\\\4，程序源码\\\\Software_Package\\\\Projects\\\\99_Applications\\\\991_AI_People_Detection\")",
+      "PowerShell(\\(Get-ChildItem -Recurse \"C:\\\\Users\\\\96022\\\\Desktop\\\\【正点原子】STM32N647开发板\\\\【正点原子】N647开发板资料盘\\\\4，程序源码\\\\Software_Package\\\\Projects\\\\99_Applications\\\\991_AI_People_Detection\" | Measure-Object\\).Count)",
+      "Bash(Get-ChildItem -Recurse -Filter \"stai.h\" -Path \"C:\\\\Users\\\\96022\\\\Desktop\\\\EmbeddedCompetition\" -ErrorAction SilentlyContinue)",
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(Get-ChildItem -Recurse -Filter \"npu_cache.h\" -Path \"C:\\\\Users\\\\96022\\\\Desktop\\\\EmbeddedCompetition\" -ErrorAction SilentlyContinue)",
+      "mcp__tavily__tavily_search",
+      "mcp__tavily__tavily_extract"
+    ]
+  }
+}

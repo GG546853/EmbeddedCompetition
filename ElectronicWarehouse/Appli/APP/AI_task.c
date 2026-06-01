@@ -152,7 +152,7 @@ void AI_Task(void *argument)
 
         /* 7. Run NPU inference + post-processing */
         memset(&result, 0, sizeof(result));
-        MX_X_CUBE_AI_Process(&result);
+        MX_X_CUBE_AI_Process_User(&result);
 
         /* 8. Print results via serial */
         printf("--- Frame ---\r\n");

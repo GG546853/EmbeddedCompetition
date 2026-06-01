@@ -1,3 +1,4 @@
+
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __APP_AI_H
 #define __APP_AI_H
@@ -25,12 +26,15 @@ extern "C" {
 #include "npu_cache.h"
 #include "ll_aton_runtime.h"
 
+void MX_X_CUBE_AI_Init(void);
+void MX_X_CUBE_AI_Process(void);
+/* USER CODE BEGIN includes */
 /* Post-processing parameters -----------------------------------------------*/
 #define AI_FD_MAX_DETECTIONS   3
 #define AI_FD_NUM_KEYPOINTS    6
 #define AI_FD_IMG_SIZE         128
-#define AI_FD_CONF_THRESHOLD   0.55f
-#define AI_FD_IOU_THRESHOLD    0.3f
+#define AI_FD_CONF_THRESHOLD   0.5f
+#define AI_FD_IOU_THRESHOLD    0.5f
 #define AI_FD_GRID_0_NB_BOXES  512
 #define AI_FD_GRID_1_NB_BOXES  384
 
@@ -47,16 +51,13 @@ typedef struct {
     uint32_t nb_detect;
 } ai_result_t;
 
-/* API ----------------------------------------------------------------------*/
-void MX_X_CUBE_AI_Init(void);
-void MX_X_CUBE_AI_Process(ai_result_t *result);
 
-/* USER CODE BEGIN includes */
-/* USER CODE END includes */
 
-/* Global input buffer pointer (set during init, used by camera capture) */
 extern uint8_t *buffer_in;
 
+
+void MX_X_CUBE_AI_Process_User(ai_result_t *result);
+/* USER CODE END includes */
 #ifdef __cplusplus
 }
 #endif

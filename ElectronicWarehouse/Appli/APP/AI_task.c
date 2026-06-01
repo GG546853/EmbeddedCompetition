@@ -5,14 +5,89 @@
 #include "dcmipp.h"
 #include "network_f.h"
 #include "main.h"
+#include "rgblcd.h"
 
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
+
+#define DISP_W 800
+#define DISP_H 480
+#define BOX_THICKNESS 3
+#define KP_SIZE 5
+
+extern uint8_t g_ltdc_layer2_framebuf[480 * 800 * 3];
+
+static inline void set_pixel(int x, int y, uint8_t r, uint8_t g, uint8_t b)
+{
+    if (x < 0 || x >= DISP_W || y < 0 || y >= DISP_H) return;
+    uint32_t off = (y * DISP_W + x) * 3;
+    g_ltdc_layer2_framebuf[off + 0] = r;
+    g_ltdc_layer2_framebuf[off + 1] = g;
+    g_ltdc_layer2_framebuf[off + 2] = b;
+}
+
+static void fill_rect(int x, int y, int w, int h, uint8_t r, uint8_t g, uint8_t b)
+{
+    if (x < 0) { w += x; x = 0; }
+    if (y < 0) { h += y; y = 0; }
+    if (x + w > DISP_W) w = DISP_W - x;
+    if (y + h > DISP_H) h = DISP_H - y;
+    if (w <= 0 || h <= 0) return;
+
+    for (int row = 0; row < h; row++) {
+        uint32_t off = ((y + row) * DISP_W + x) * 3;
+        for (int col = 0; col < w; col++) {
+            g_ltdc_layer2_framebuf[off + 0] = r;
+            g_ltdc_layer2_framebuf[off + 1] = g;
+            g_ltdc_layer2_framebuf[off + 2] = b;
+            off += 3;
+        }
+    }
+}
+
+static void draw_box(int x, int y, int w, int h, uint8_t r, uint8_t g, uint8_t b)
+{
+    fill_rect(x, y, w, BOX_THICKNESS, r, g, b);               /* top */
+    fill_rect(x, y + h - BOX_THICKNESS, w, BOX_THICKNESS, r, g, b); /* bottom */
+    fill_rect(x, y, BOX_THICKNESS, h, r, g, b);               /* left */
+    fill_rect(x + w - BOX_THICKNESS, y, BOX_THICKNESS, h, r, g, b); /* right */
+}
+
+static void draw_kp(int x, int y, uint8_t r, uint8_t g, uint8_t b)
+{
+    fill_rect(x - KP_SIZE/2, y - KP_SIZE/2, KP_SIZE, KP_SIZE, r, g, b);
+}
+
+static void draw_detections_on_display(ai_result_t *result)
+{
+    memset(g_ltdc_layer2_framebuf, 0, sizeof(g_ltdc_layer2_framebuf));
+
+    for (uint32_t i = 0; i < result->nb_detect; i++) {
+        ai_detection_t *d = &result->detections[i];
+
+        int bx = (int)(d->x_center * DISP_W - d->width  * DISP_W * 0.5f);
+        int by = (int)(d->y_center * DISP_H - d->height * DISP_H * 0.5f);
+        int bw = (int)(d->width  * DISP_W);
+        int bh = (int)(d->height * DISP_H);
+
+        draw_box(bx, by, bw, bh, 0, 255, 0);
+
+        for (int k = 0; k < 6; k++) {
+            int kx = (int)(d->keypoints[k][0] * DISP_W);
+            int ky = (int)(d->keypoints[k][1] * DISP_H);
+            draw_kp(kx, ky, 255, 0, 0);
+        }
+    }
+
+    SCB_CleanInvalidateDCache_by_Addr(
+        (uint32_t *)g_ltdc_layer2_framebuf, sizeof(g_ltdc_layer2_framebuf));
+}
 
 osThreadId_t AITaskHandle;
 const osThreadAttr_t AITask_attributes = {
     .name = "AITask",
-    .priority = (osPriority_t) osPriorityNormal,
+    .priority = (osPriority_t) osPriorityNormal + 1,
     .stack_size = 2048 * 4
 };
 
@@ -95,6 +170,9 @@ void AI_Task(void *argument)
             }
         }
 
-        vTaskDelay(pdMS_TO_TICKS(100));
+        /* 9. Draw detection boxes + keypoints on LTDC layer 2 overlay */
+        draw_detections_on_display(&result);
+        vTaskDelay(pdMS_TO_TICKS(1));
+       // vTaskDelay(pdMS_TO_TICKS(100));
     }
 }

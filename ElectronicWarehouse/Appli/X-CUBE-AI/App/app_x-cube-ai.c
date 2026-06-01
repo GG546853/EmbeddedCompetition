@@ -258,9 +258,7 @@ static void ai_blazeface_postprocess(ai_result_t *result)
     static ai_detection_t candidates[896];
     uint32_t nb_candidates = 0;
 
-    /* NPU model outputs values already in normalized [0,1] coordinates.
-       Unlike TFLite which needs /128, the ONNX-converted model does not. */
-    float inv_img = 1.0f;
+    float inv_img = 1.0f / (float)AI_FD_IMG_SIZE;
 
     /* Decode two grids */
     for (int grid = 0; grid < 2; grid++) {

@@ -1,1 +1,5 @@
-../APP/AI_task.c:30:6:AI_Task	320	static,ignoring_inline_asm
+../APP/AI_task.c:30:13:fill_rect	40	static
+../APP/AI_task.c:49:13:draw_box	40	static
+../APP/AI_task.c:57:13:draw_kp	40	static
+../APP/AI_task.c:62:13:draw_detections_on_display	88	static,ignoring_inline_asm
+../APP/AI_task.c:105:6:AI_Task	320	static,ignoring_inline_asm

@@ -29,8 +29,8 @@ extern "C" {
 #define AI_FD_MAX_DETECTIONS   3
 #define AI_FD_NUM_KEYPOINTS    6
 #define AI_FD_IMG_SIZE         128
-#define AI_FD_CONF_THRESHOLD   0.5f
-#define AI_FD_IOU_THRESHOLD    0.5f
+#define AI_FD_CONF_THRESHOLD   0.55f
+#define AI_FD_IOU_THRESHOLD    0.3f
 #define AI_FD_GRID_0_NB_BOXES  512
 #define AI_FD_GRID_1_NB_BOXES  384
 

@@ -241,11 +241,26 @@ static void ai_blazeface_postprocess(ai_result_t *result)
     printf("[DBG-BUF] scnt: %lu %lu  bcnt: %lu %lu\r\n",
            score_count[0], score_count[1], box_count[0], box_count[1]);
 
+    /* DEBUG: print scale and offset for each output tensor */
+    for (int i = 0; i < 4; i++) {
+        const float *sc = ob[i].scale;
+        const int16_t *zp = ob[i].offset;
+        printf("[DBG-SCL] ob[%d] scale=%s zp=%s ",
+               i,
+               sc ? "SET" : "NULL",
+               zp ? "SET" : "NULL");
+        if (sc) printf("scale_v=%.6f ", *sc);
+        if (zp) printf("zp_v=%d", *zp);
+        printf("\r\n");
+    }
+
     /* Static: too large for task stack (896 × 68 = 60KB). */
     static ai_detection_t candidates[896];
     uint32_t nb_candidates = 0;
 
-    float inv_img = 1.0f / (float)AI_FD_IMG_SIZE;
+    /* NPU model outputs values already in normalized [0,1] coordinates.
+       Unlike TFLite which needs /128, the ONNX-converted model does not. */
+    float inv_img = 1.0f;
 
     /* Decode two grids */
     for (int grid = 0; grid < 2; grid++) {

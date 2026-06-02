@@ -1,6 +1,6 @@
 ST Edge AI Core v2.2.0-20266 2adc00962
-Created date          : 2026-06-01 21:21:13
-Parameters            : generate --target stm32n6 --name network_f -m C:/Users/96022/Desktop/STM32N6-GettingStarted-FaceDetection-PCtest/blazeface_front_128_quant_pc_ff_od_wider_face.tflite --st-neural-art n6-allmems-O3@C:/Users/96022/STM32Cube/Repository/Packs/STMicroelectronics/X-CUBE-AI/10.2.0/scripts/N6_scripts/user_neuralart.json --workspace C:/Users/96022/AppData/Local/Temp/mxAI_workspace3659850103480018372352222808906952 --output C:/Users/96022/.stm32cubemx/network_f_output
+Created date          : 2026-06-02 15:08:39
+Parameters            : generate --target stm32n6 --name network_f -m C:/Users/96022/Desktop/STM32N6-GettingStarted-FaceDetection-PCtest/blazeface_front_128_quant_pc_ff_od_wider_face.tflite --st-neural-art net_f_flash@C:/Users/96022/STM32Cube/Repository/Packs/STMicroelectronics/X-CUBE-AI/10.2.0/scripts/N6_scripts/user_neuralart.json --workspace C:/Users/96022/AppData/Local/Temp/mxAI_workspace58788522198006117245857491589397 --output C:/Users/96022/.stm32cubemx/network_f_output
 
 Model name - blazeface_front_128_quant_pc_ff_od_wider_face
 ------ ------------------------------- ----------------------- ------------- ----------- ------------------------ 
@@ -201,30 +201,27 @@ model: macc=32,092,044 weights=107,954 activations=-- io=--
 Compilation details
 ------------------------------------------------------------------------------------
 Compiler version: 1.1.1-14
-Compiler arguments:  -i C:\Users\96022\.stm32cubemx\network_f_output\blazeface_front_128_quant_pc_ff_od_wider_face_OE_3_3_0.onnx --json-quant-file C:\Users\96022\.stm32cubemx\network_f_output\blazeface_front_128_quant_pc_ff_od_wider_face_OE_3_3_0_Q.json -g network_f.c --load-mdesc C:\Users\96022\STM32Cube\Repository\Packs\STMicroelectronics\X-CUBE-AI\10.2.0\Utilities\configs\stm32n6.mdesc --load-mpool C:\Users\96022\STM32Cube\Repository\Packs\STMicroelectronics\X-CUBE-AI\10.2.0\scripts\N6_scripts\my_mpools\stm32n6.mpool --save-mpool-file C:\Users\96022\AppData\Local\Temp\mxAI_workspace3659850103480018372352222808906952\neural_art__network_f\stm32n6.mpool --out-dir-prefix C:\Users\96022\AppData\Local\Temp\mxAI_workspace3659850103480018372352222808906952\neural_art__network_f/ --Os --optimization 3 --all-buffers-info --mvei --cache-maintenance --Oauto-sched --native-float --enable-virtual-mem-pools --Omax-ca-pipe 4 --Ocache-opt --output-info-file c_info.json --network-name network_f
+Compiler arguments:  -i C:\Users\96022\.stm32cubemx\network_f_output\blazeface_front_128_quant_pc_ff_od_wider_face_OE_3_3_0.onnx --json-quant-file C:\Users\96022\.stm32cubemx\network_f_output\blazeface_front_128_quant_pc_ff_od_wider_face_OE_3_3_0_Q.json -g network_f.c --load-mdesc C:\Users\96022\STM32Cube\Repository\Packs\STMicroelectronics\X-CUBE-AI\10.2.0\Utilities\configs\stm32n6.mdesc --load-mpool C:\Users\96022\STM32Cube\Repository\Packs\STMicroelectronics\X-CUBE-AI\10.2.0\scripts\N6_scripts\my_mpools\stm32n6_net_f.mpool --save-mpool-file C:\Users\96022\AppData\Local\Temp\mxAI_workspace58788522198006117245857491589397\neural_art__network_f\stm32n6_net_f.mpool --out-dir-prefix C:\Users\96022\AppData\Local\Temp\mxAI_workspace58788522198006117245857491589397\neural_art__network_f/ --optimization 3 --all-buffers-info --mvei --cache-maintenance --Oauto-sched --native-float --enable-virtual-mem-pools --Omax-ca-pipe 4 --Ocache-opt --Os --output-info-file c_info.json --network-name network_f
 ====================================================================================
 
 Memory usage information  (input/output buffers are included in activations)
 ------------------------------------------------------------------------------------
-	flexMEM    [0x34000000 - 0x34000000]:          0  B /          0  B  (  0.00 % used) -- weights:          0  B (  0.00 % used)  activations:          0  B (  0.00 % used)
-	cpuRAM1    [0x34064000 - 0x34064000]:          0  B /          0  B  (  0.00 % used) -- weights:          0  B (  0.00 % used)  activations:          0  B (  0.00 % used)
-	cpuRAM2    [0x34100000 - 0x34200000]:          0  B /      1.000 MB  (  0.00 % used) -- weights:          0  B (  0.00 % used)  activations:          0  B (  0.00 % used)
-	npuRAM3    [0x34200000 - 0x34270000]:          0  B /    448.000 kB  (  0.00 % used) -- weights:          0  B (  0.00 % used)  activations:          0  B (  0.00 % used)
-	npuRAM4    [0x34270000 - 0x342E0000]:    112.000 kB /    448.000 kB  ( 25.00 % used) -- weights:          0  B (  0.00 % used)  activations:    112.000 kB ( 25.00 % used)
-	npuRAM5    [0x342E0000 - 0x34350000]:    416.000 kB /    448.000 kB  ( 92.86 % used) -- weights:          0  B (  0.00 % used)  activations:    416.000 kB ( 92.86 % used)
+	npuRAM3    [0x34200000 - 0x34270000]:    448.000 kB /    448.000 kB  (100.00 % used) -- weights:          0  B (  0.00 % used)  activations:    448.000 kB (100.00 % used)
+	npuRAM4    [0x34270000 - 0x342E0000]:          0  B /    448.000 kB  (  0.00 % used) -- weights:          0  B (  0.00 % used)  activations:          0  B (  0.00 % used)
+	npuRAM5    [0x342E0000 - 0x34350000]:          0  B /    448.000 kB  (  0.00 % used) -- weights:          0  B (  0.00 % used)  activations:          0  B (  0.00 % used)
 	npuRAM6    [0x34350000 - 0x343C0000]:          0  B /    448.000 kB  (  0.00 % used) -- weights:          0  B (  0.00 % used)  activations:          0  B (  0.00 % used)
-	octoFlash  [0x71000000 - 0x78000000]:    162.329 kB /    112.000 MB  (  0.14 % used) -- weights:    162.329 kB (  0.14 % used)  activations:          0  B (  0.00 % used)
+	octoFlash  [0x71000000 - 0x71E00000]:    162.329 kB /     14.000 MB  (  1.13 % used) -- weights:    162.329 kB (  1.13 % used)  activations:          0  B (  0.00 % used)
 	hyperRAM   [0x90000000 - 0x92000000]:          0  B /     32.000 MB  (  0.00 % used) -- weights:          0  B (  0.00 % used)  activations:          0  B (  0.00 % used)
 ---
-Total:                                           690.329 kB                                  -- weights:    162.329 kB                  activations:    528.000 kB                   
+Total:                                           610.329 kB                                  -- weights:    162.329 kB                  activations:    448.000 kB                   
 ====================================================================================
 
 
 Used memory ranges
 ------------------------------------------------------------------------------------
-	npuRAM4    [0x34270000 - 0x342E0000]: 0x34270000-0x3428C000
-	npuRAM5    [0x342E0000 - 0x34350000]: 0x342E0000-0x34348000
-	octoFlash  [0x71000000 - 0x78000000]: 0x71000000-0x71028960
+	npuRAM3    [0x34200000 - 0x34270000]: 0x34200000-0x34270000
+	npuRAM4    [0x34270000 - 0x342E0000]: 0x34270000-0x34270000
+	octoFlash  [0x71000000 - 0x71E00000]: 0x71000000-0x71028960
 ====================================================================================
 
 Epochs details
@@ -340,10 +337,10 @@ epoch 95      HW
  RT total**                        26,422   120,363     72     1,637 
  ------------------------------- -------- --------- ------ --------- 
  weights                                0   166,225      0         0 
- activations                            0         0      0   540,672 
+ activations                            0         0      0   458,752 
  io                                     0         0      0         0 
  ------------------------------- -------- --------- ------ --------- 
- TOTAL                             26,422   286,588     72   542,309 
+ TOTAL                             26,422   286,588     72   460,389 
  ------------------------------- -------- --------- ------ --------- 
  *  toolchain objects (libm/libgcc*)
  ** RT AI runtime objects (kernels+infrastructure)
@@ -352,9 +349,9 @@ epoch 95      HW
   --------------------------------------------------
                FLASH (ro)      %*   RAM (rw)      % 
   --------------------------------------------------
-  RT total        146,857   46.9%      1,709   0.3% 
+  RT total        146,857   46.9%      1,709   0.4% 
   --------------------------------------------------
-  TOTAL           313,082            542,381        
+  TOTAL           313,082            460,461        
   --------------------------------------------------
   *  rt/total
 

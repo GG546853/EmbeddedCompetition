@@ -6,15 +6,18 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
 ../X-CUBE-AI/App/app_x-cube-ai.c \
-../X-CUBE-AI/App/network_f.c 
+../X-CUBE-AI/App/network_f.c \
+../X-CUBE-AI/App/network_fc.c 
 
 OBJS += \
 ./X-CUBE-AI/App/app_x-cube-ai.o \
-./X-CUBE-AI/App/network_f.o 
+./X-CUBE-AI/App/network_f.o \
+./X-CUBE-AI/App/network_fc.o 
 
 C_DEPS += \
 ./X-CUBE-AI/App/app_x-cube-ai.d \
-./X-CUBE-AI/App/network_f.d 
+./X-CUBE-AI/App/network_f.d \
+./X-CUBE-AI/App/network_fc.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes
@@ -24,7 +27,7 @@ X-CUBE-AI/App/%.o X-CUBE-AI/App/%.su X-CUBE-AI/App/%.cyclo: ../X-CUBE-AI/App/%.c
 clean: clean-X-2d-CUBE-2d-AI-2f-App
 
 clean-X-2d-CUBE-2d-AI-2f-App:
-	-$(RM) ./X-CUBE-AI/App/app_x-cube-ai.cyclo ./X-CUBE-AI/App/app_x-cube-ai.d ./X-CUBE-AI/App/app_x-cube-ai.o ./X-CUBE-AI/App/app_x-cube-ai.su ./X-CUBE-AI/App/network_f.cyclo ./X-CUBE-AI/App/network_f.d ./X-CUBE-AI/App/network_f.o ./X-CUBE-AI/App/network_f.su
+	-$(RM) ./X-CUBE-AI/App/app_x-cube-ai.cyclo ./X-CUBE-AI/App/app_x-cube-ai.d ./X-CUBE-AI/App/app_x-cube-ai.o ./X-CUBE-AI/App/app_x-cube-ai.su ./X-CUBE-AI/App/network_f.cyclo ./X-CUBE-AI/App/network_f.d ./X-CUBE-AI/App/network_f.o ./X-CUBE-AI/App/network_f.su ./X-CUBE-AI/App/network_fc.cyclo ./X-CUBE-AI/App/network_fc.d ./X-CUBE-AI/App/network_fc.o ./X-CUBE-AI/App/network_fc.su
 
 .PHONY: clean-X-2d-CUBE-2d-AI-2f-App
 

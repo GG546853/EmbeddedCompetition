@@ -24,6 +24,7 @@
 
 /* USER CODE END 0 */
 
+RAMCFG_HandleTypeDef hramcfg_SRAM3;
 RAMCFG_HandleTypeDef hramcfg_SRAM4;
 RAMCFG_HandleTypeDef hramcfg_SRAM5;
 
@@ -38,6 +39,14 @@ void MX_RAMCFG_Init(void)
   /* USER CODE BEGIN RAMCFG_Init 1 */
 
   /* USER CODE END RAMCFG_Init 1 */
+
+  /** Initialize RAMCFG SRAM3
+  */
+  hramcfg_SRAM3.Instance = RAMCFG_SRAM3_AXI;
+  if (HAL_RAMCFG_Init(&hramcfg_SRAM3) != HAL_OK)
+  {
+    Error_Handler();
+  }
 
   /** Initialize RAMCFG SRAM4
   */

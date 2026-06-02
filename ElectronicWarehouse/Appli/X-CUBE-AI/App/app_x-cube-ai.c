@@ -49,11 +49,19 @@
 /* USER CODE BEGIN includes */
 
 #include "fd_blazeface_anchors.h"
+#include "network_fc.h"
 
  void MX_X_CUBE_AI_Init(void);
  void set_clk_sleep_mode(void);
 
  LL_ATON_DECLARE_NAMED_NN_INSTANCE_AND_INTERFACE(network_f)
+ LL_ATON_DECLARE_NAMED_NN_INSTANCE_AND_INTERFACE(network_fc)
+
+ uint8_t *buffer_in;
+ uint8_t *buffer_out;
+ uint8_t *buffer_in_fc;
+ uint8_t *buffer_out_fc;
+
  /* -------------------------------------------------------------------------- */
  /*                         Post-Processing Helpers                            */
  /* -------------------------------------------------------------------------- */
@@ -323,6 +331,208 @@
      }
  }
 
+ /* -------------------------------------------------------------------------- */
+ /*              Face Crop + Bilinear Resize to 128×128                        */
+ /* -------------------------------------------------------------------------- */
+
+ #define CROP_DISP_W  800
+ #define CROP_DISP_H  480
+ #define CROP_OUT_SZ  128
+ #define CROP_MARGIN  0.3f   /* 30% expansion beyond detection box */
+
+ /* Extract one RGB565 pixel's R/G/B as float [0,1] */
+ static inline float r565(uint16_t p) { return ((p >> 11) & 0x1F) / 31.0f; }
+ static inline float g565(uint16_t p) { return ((p >> 5)  & 0x3F) / 63.0f; }
+ static inline float b565(uint16_t p) { return (p & 0x1F) / 31.0f; }
+
+ void ai_crop_resize_face_128(uint16_t *src_fb, ai_detection_t *det, uint8_t *output)
+ {
+     /* Map detection from [0,1] normalised → display pixel coordinates */
+     float dx = det->x_center * (float)CROP_DISP_W;
+     float dy = det->y_center * (float)CROP_DISP_H;
+     float dw = det->width    * (float)CROP_DISP_W;
+     float dh = det->height   * (float)CROP_DISP_H;
+
+     /* Square crop region with margin */
+     float size = (dw > dh ? dw : dh) * (1.0f + CROP_MARGIN);
+     float crop_x0 = dx - size * 0.5f;
+     float crop_y0 = dy - size * 0.5f;
+
+     float inv_step = (float)(CROP_OUT_SZ - 1);  /* 127.0f */
+     if (inv_step < 1.0f) inv_step = 1.0f;
+
+     for (int oy = 0; oy < CROP_OUT_SZ; oy++) {
+         float sy = crop_y0 + ((float)oy / inv_step) * size;
+         int y0 = (int)sy;
+         int y1 = y0 + 1;
+         float fy = sy - (float)y0;
+         if (y0 < 0) y0 = 0;
+         if (y1 > CROP_DISP_H - 1) y1 = CROP_DISP_H - 1;
+
+         for (int ox = 0; ox < CROP_OUT_SZ; ox++) {
+             float sx = crop_x0 + ((float)ox / inv_step) * size;
+             int x0 = (int)sx;
+             int x1 = x0 + 1;
+             float fx = sx - (float)x0;
+             if (x0 < 0) x0 = 0;
+             if (x1 > CROP_DISP_W - 1) x1 = CROP_DISP_W - 1;
+
+             /* 4 neighbours, RGB565 → float */
+             uint16_t p00 = src_fb[y0 * CROP_DISP_W + x0];
+             uint16_t p10 = src_fb[y0 * CROP_DISP_W + x1];
+             uint16_t p01 = src_fb[y1 * CROP_DISP_W + x0];
+             uint16_t p11 = src_fb[y1 * CROP_DISP_W + x1];
+
+             float w00 = (1.0f - fx) * (1.0f - fy);
+             float w10 =        fx  * (1.0f - fy);
+             float w01 = (1.0f - fx) *        fy;
+             float w11 =        fx  *        fy;
+
+             float r = w00 * r565(p00) + w10 * r565(p10)
+                     + w01 * r565(p01) + w11 * r565(p11);
+             float g = w00 * g565(p00) + w10 * g565(p10)
+                     + w01 * g565(p01) + w11 * g565(p11);
+             float b = w00 * b565(p00) + w10 * b565(p10)
+                     + w01 * b565(p01) + w11 * b565(p11);
+
+             int idx = (oy * CROP_OUT_SZ + ox) * 3;
+             output[idx + 0] = (uint8_t)(r * 255.0f + 0.5f);
+             output[idx + 1] = (uint8_t)(g * 255.0f + 0.5f);
+             output[idx + 2] = (uint8_t)(b * 255.0f + 0.5f);
+         }
+     }
+ }
+
+ /* -------------------------------------------------------------------------- */
+ /*           uint8 → int8 Quantization (match network_fc input scale)          */
+ /* -------------------------------------------------------------------------- */
+
+ /* network_fc input: int8, scale = 0.00787401572, zp = 0
+    Camera pixel [0,255] → float [0,1] → int8:
+      s8 = round(u8 / 255.0 / 0.00787401572) = round(u8 * 0.498049...)  */
+ #define FC_INPUT_SCALE  0.00787401572f
+
+ static const int8_t quant_u8_to_s8_lut[256] = {
+       0,   0,   1,   1,   2,   2,   3,   3,   4,   4,   5,   5,   6,   6,   7,   7,
+       8,   8,   9,   9,  10,  10,  11,  11,  12,  12,  13,  13,  14,  14,  15,  15,
+      16,  16,  17,  17,  18,  18,  19,  19,  20,  20,  21,  21,  22,  22,  23,  23,
+      24,  24,  25,  25,  26,  26,  27,  27,  28,  28,  29,  29,  30,  30,  31,  31,
+      32,  32,  33,  33,  34,  34,  35,  35,  36,  36,  37,  37,  38,  38,  39,  39,
+      40,  40,  41,  41,  42,  42,  43,  43,  44,  44,  45,  45,  46,  46,  46,  47,
+      47,  48,  48,  49,  49,  50,  50,  51,  51,  52,  52,  53,  53,  54,  54,  55,
+      55,  56,  56,  57,  57,  58,  58,  59,  59,  60,  60,  61,  61,  62,  62,  63,
+      63,  64,  64,  65,  65,  66,  66,  67,  67,  68,  68,  69,  69,  70,  70,  71,
+      71,  72,  72,  73,  73,  74,  74,  75,  75,  76,  76,  77,  77,  78,  78,  79,
+      79,  80,  80,  81,  81,  82,  82,  83,  83,  84,  84,  85,  85,  86,  86,  87,
+      87,  88,  88,  89,  89,  90,  90,  91,  91,  92,  92,  93,  93,  94,  94,  95,
+      95,  96,  96,  97,  97,  97,  98,  98,  99,  99, 100, 100, 101, 101, 102, 102,
+     103, 103, 104, 104, 105, 105, 106, 106, 107, 107, 108, 108, 109, 109, 110, 110,
+     111, 111, 112, 112, 113, 113, 114, 114, 115, 115, 116, 116, 117, 117, 118, 118,
+     119, 119, 120, 120, 121, 121, 122, 122, 123, 123, 124, 124, 125, 125, 126, 127,
+ };
+
+ void quantize_u8_to_s8(const uint8_t *u8, int8_t *s8, uint32_t count)
+ {
+     for (uint32_t i = 0; i < count; i++) {
+         s8[i] = quant_u8_to_s8_lut[u8[i]];
+     }
+ }
+
+ /* -------------------------------------------------------------------------- */
+ /*                        Face Gallery (Module 4)                              */
+ /* -------------------------------------------------------------------------- */
+
+ static face_entry_t face_gallery[FACE_GALLERY_MAX];
+ static uint32_t     face_gallery_count;
+
+ int ai_face_enroll(const float *embedding, const char *name)
+ {
+     if (face_gallery_count >= FACE_GALLERY_MAX) return -1;
+     memcpy(face_gallery[face_gallery_count].embedding,
+            embedding, FACE_EMBEDDING_DIM * sizeof(float));
+     strncpy(face_gallery[face_gallery_count].name, name, FACE_NAME_MAX - 1);
+     face_gallery[face_gallery_count].name[FACE_NAME_MAX - 1] = '\0';
+     face_gallery_count++;
+     return 0;
+ }
+
+ int ai_face_identify(const float *embedding, char *name_out, float *dist_out)
+ {
+     if (face_gallery_count == 0) return -1;
+
+     float best_dist = 1e9f;
+     int   best_idx  = -1;
+
+     for (uint32_t i = 0; i < face_gallery_count; i++) {
+         float sum_sq = 0.0f;
+         for (int d = 0; d < FACE_EMBEDDING_DIM; d++) {
+             float diff = embedding[d] - face_gallery[i].embedding[d];
+             sum_sq += diff * diff;
+         }
+         float dist = sqrtf(sum_sq);
+         if (dist < best_dist) {
+             best_dist = dist;
+             best_idx  = (int)i;
+         }
+     }
+
+     if (best_idx >= 0 && best_dist < FACE_MATCH_THRESHOLD) {
+         if (name_out) strncpy(name_out, face_gallery[best_idx].name, FACE_NAME_MAX);
+         if (dist_out) *dist_out = best_dist;
+         return best_idx;
+     }
+     return -1;
+ }
+
+ void ai_face_gallery_print(void)
+ {
+     printf("[GALLERY] %lu faces registered:\r\n", face_gallery_count);
+     for (uint32_t i = 0; i < face_gallery_count; i++) {
+         printf("  [%lu] %s\r\n", i, face_gallery[i].name);
+     }
+ }
+
+ /* -------------------------------------------------------------------------- */
+ /*                    network_fc Inference Wrapper                             */
+ /* -------------------------------------------------------------------------- */
+
+ void ai_face_reid_run(float *embedding_out)
+ {
+     LL_ATON_RT_RetValues_t ret;
+
+     LL_ATON_RT_Init_Network(&NN_Instance_network_fc);
+     do {
+         ret = LL_ATON_RT_RunEpochBlock(&NN_Instance_network_fc);
+         if (ret == LL_ATON_RT_WFE) {
+             LL_ATON_OSAL_WFE();
+         }
+     } while (ret != LL_ATON_RT_DONE);
+
+     /* Invalidate output cache */
+     const LL_Buffer_InfoTypeDef *ob_fc = NN_Interface_network_fc.output_buffers_info();
+     SCB_InvalidateDCache_by_Addr(
+         (uint32_t *)LL_Buffer_addr_start(&ob_fc[0]),
+         LL_Buffer_len(&ob_fc[0]));
+
+     /* Decode output: handle both float32 and int8 */
+     if (ob_fc[0].type == DataType_FLOAT) {
+         float *src = (float *)LL_Buffer_addr_start(&ob_fc[0]);
+         uint32_t n = LL_Buffer_len(&ob_fc[0]) / sizeof(float);
+         for (uint32_t i = 0; i < FACE_EMBEDDING_DIM && i < n; i++)
+             embedding_out[i] = src[i];
+     } else {
+         /* int8 → dequantize */
+         int8_t *src = (int8_t *)LL_Buffer_addr_start(&ob_fc[0]);
+         float scale = ob_fc[0].scale ? *ob_fc[0].scale : 0.0106163137f;
+         int16_t zp  = ob_fc[0].offset ? *ob_fc[0].offset : 0;
+         uint32_t n = LL_Buffer_len(&ob_fc[0]);
+         for (uint32_t i = 0; i < FACE_EMBEDDING_DIM && i < n; i++)
+             embedding_out[i] = ((float)src[i] - (float)zp) * scale;
+     }
+
+     LL_ATON_RT_DeInit_Network(&NN_Instance_network_fc);
+ }
+
  void MX_X_CUBE_AI_Process_User(ai_result_t *result)
  {
 
@@ -350,8 +560,6 @@
 /* Entry points --------------------------------------------------------------*/
 
 
-uint8_t *buffer_in;
-uint8_t *buffer_out;
 
 void set_clk_sleep_mode(void)
 {
@@ -436,6 +644,16 @@ void MX_X_CUBE_AI_Init(void)
     /* Initialize input buffer pointer for external use (e.g. AI_task) */
     const LL_Buffer_InfoTypeDef *ib = NN_Interface_network_f.input_buffers_info();
     buffer_in = (uint8_t *)LL_Buffer_addr_start(&ib[0]);
+    LL_ATON_RT_DeInit_Network(&NN_Instance_network_f);
+
+    /* Initialize network_fc buffer pointers (brief init to discover addresses).
+       Must DeInit network_f first — the two models share npuRAM4. */
+    LL_ATON_RT_Init_Network(&NN_Instance_network_fc);
+    const LL_Buffer_InfoTypeDef *ib_fc = NN_Interface_network_fc.input_buffers_info();
+    const LL_Buffer_InfoTypeDef *ob_fc = NN_Interface_network_fc.output_buffers_info();
+    buffer_in_fc  = (uint8_t *)LL_Buffer_addr_start(&ib_fc[0]);
+    buffer_out_fc = (uint8_t *)LL_Buffer_addr_start(&ob_fc[0]);
+    LL_ATON_RT_DeInit_Network(&NN_Instance_network_fc);
     /* USER CODE END 5 */
 }
 

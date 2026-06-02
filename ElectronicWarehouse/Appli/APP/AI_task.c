@@ -4,19 +4,22 @@
 #include "imx335.h"
 #include "dcmipp.h"
 #include "network_f.h"
+#include "network_fc.h"
 #include "main.h"
 #include "rgblcd.h"
 
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-
+#include "usart.h"
 #define DISP_W 800
 #define DISP_H 480
 #define BOX_THICKNESS 3
 #define KP_SIZE 5
+#define CMD_BUF_SIZE  64
 
 extern uint8_t g_ltdc_layer2_framebuf[480 * 800 * 3];
+extern uint16_t g_ltdc_lcd_framebuf[480 * 800];
 
 static inline void set_pixel(int x, int y, uint8_t r, uint8_t g, uint8_t b)
 {
@@ -93,6 +96,7 @@ const osThreadAttr_t AITask_attributes = {
 
 extern DCMIPP_HandleTypeDef hdcmipp;
 extern uint8_t *buffer_in;
+extern uint8_t *buffer_in_fc;
 
 /* Intermediate buffer for DCMIPP PIPE2 uint8 RGB888 output.
    Must be in .noncacheable section and 32-byte aligned for DMA access. */
@@ -102,6 +106,147 @@ static const char *kp_names[6] = {
     "LEye", "REye", "Nose", "Mouth", "LEar", "REar"
 };
 extern osSemaphoreId_t cam_frame_sem;
+
+/* -------------------------------------------------------------------------- */
+/*                     Serial Command Parser                                   */
+/* -------------------------------------------------------------------------- */
+
+typedef enum {
+    REID_IDLE,
+    REID_REGISTER,
+    REID_IDENTIFY,
+} reid_action_t;
+
+static reid_action_t reid_pending;
+static char          reid_name[FACE_NAME_MAX];
+
+/* Non-blocking: read a line from UART into buf (max len), return 1 if complete */
+static int serial_readline(char *buf, int max_len)
+{
+    static char line[CMD_BUF_SIZE];
+    static int  pos;
+
+    while (1) {
+        /* Check if a byte is available on USART1 (blocking RX would stall the task) */
+        if (__HAL_UART_GET_FLAG(&huart1, UART_FLAG_RXFNE)) {
+            char c = (char)(huart1.Instance->RDR & 0xFF);
+            if (c == '\r' || c == '\n') {
+                if (pos > 0) {
+                    line[pos] = '\0';
+                    int cp = (pos < max_len) ? pos : max_len - 1;
+                    memcpy(buf, line, cp);
+                    buf[cp] = '\0';
+                    pos = 0;
+                    return 1;
+                }
+            } else if (pos < CMD_BUF_SIZE - 1) {
+                line[pos++] = c;
+            }
+        } else {
+            break;  /* no more data */
+        }
+    }
+    return 0;
+}
+
+static void process_serial_commands(void)
+{
+    char cmd[CMD_BUF_SIZE];
+    if (!serial_readline(cmd, sizeof(cmd))) return;
+
+    printf("[CMD] %s\r\n", cmd);
+
+    if (strncmp(cmd, "register ", 9) == 0) {
+        strncpy(reid_name, cmd + 9, FACE_NAME_MAX - 1);
+        reid_name[FACE_NAME_MAX - 1] = '\0';
+        reid_pending = REID_REGISTER;
+        printf("[REID] Will register face as '%s' on next frame\r\n", reid_name);
+    }
+    else if (strcmp(cmd, "identify") == 0) {
+        reid_pending = REID_IDENTIFY;
+        printf("[REID] Will identify face on next frame\r\n");
+    }
+    else if (strcmp(cmd, "gallery") == 0) {
+        ai_face_gallery_print();
+    }
+    else if (strcmp(cmd, "help") == 0) {
+        printf("[HELP] Commands:\r\n");
+        printf("  register <name>  -- enroll current face\r\n");
+        printf("  identify         -- identify current face\r\n");
+        printf("  gallery          -- list registered faces\r\n");
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+/*                     ReID Pipeline (triggered by serial cmd)                 */
+/* -------------------------------------------------------------------------- */
+
+/* Reuse nn_input_u8 as face crop buffer (48KB) — the original camera data
+   is no longer needed after float32 conversion. */
+#define FACE_CROP_BUF  nn_input_u8
+
+static void run_reid_pipeline(ai_result_t *result)
+{
+    if (reid_pending == REID_IDLE) return;
+    if (result->nb_detect == 0) {
+        printf("[REID] No face detected, skipping.\r\n");
+        reid_pending = REID_IDLE;
+        return;
+    }
+
+    /* Use the highest-confidence detection */
+    ai_detection_t *best = &result->detections[0];
+
+    /* Step 1: Crop + resize face from display buffer → 128×128 uint8 */
+    ai_crop_resize_face_128(g_ltdc_lcd_framebuf, best, FACE_CROP_BUF);
+
+    /* Step 2: uint8 → int8 quantization */
+    quantize_u8_to_s8(FACE_CROP_BUF, (int8_t *)buffer_in_fc,
+                      LL_ATON_NETWORK_FC_IN_1_SIZE_BYTES);
+
+    /* Step 3: Cache maintenance for network_fc input */
+    SCB_CleanInvalidateDCache_by_Addr(
+        (uint32_t *)buffer_in_fc, LL_ATON_NETWORK_FC_IN_1_SIZE_BYTES);
+
+    /* Step 4: Run network_fc inference */
+    float embedding[FACE_EMBEDDING_DIM];
+    ai_face_reid_run(embedding);
+
+    /* DEBUG: print first 8 embedding values */
+    printf("[REID-EMB] ");
+    for (int i = 0; i < 8; i++) printf("%.4f ", embedding[i]);
+    printf("\r\n");
+
+    /* Step 5: Enroll or identify */
+    if (reid_pending == REID_REGISTER) {
+        ai_face_enroll(embedding, reid_name);
+        printf("[REID] Enrolled '%s'\r\n", reid_name);
+        /* Draw name on display */
+        rgblcd_show_string(10, 10, 200, 16, 16, reid_name, 0x07E0);
+    }
+    else if (reid_pending == REID_IDENTIFY) {
+        char name[FACE_NAME_MAX];
+        float dist;
+        int idx = ai_face_identify(embedding, name, &dist);
+        if (idx >= 0) {
+            printf("[REID] Matched: '%s' (dist=%.3f)\r\n", name, dist);
+            rgblcd_show_string(10, 30, 200, 16, 16, name, 0x07E0);
+        } else if (idx == -1) {
+            printf("[REID] No match (gallery empty or below threshold)\r\n");
+            rgblcd_show_string(10, 30, 200, 16, 16, "Unknown", 0xF800);
+        } else {
+            printf("[REID] No match (dist too high, best=%.3f)\r\n", dist);
+            rgblcd_show_string(10, 30, 200, 16, 16, "Unknown", 0xF800);
+        }
+    }
+
+    reid_pending = REID_IDLE;
+}
+
+/* -------------------------------------------------------------------------- */
+/*                               AI Task                                       */
+/* -------------------------------------------------------------------------- */
+
 void AI_Task(void *argument)
 {
     ai_result_t result;
@@ -109,52 +254,31 @@ void AI_Task(void *argument)
     /* Wait for camera PIPE1 to be running (Sensor_Task starts it) */
     vTaskDelay(pdMS_TO_TICKS(1000));
 
+    printf("\r\n[REID] Face Re-ID ready. Commands: register <name>, identify, gallery, help\r\n");
+
     for (;;) {
-        /* 1. Start PIPE2 snapshot capture 128x128 → intermediate uint8 buffer */
-//        HAL_DCMIPP_CSI_PIPE_Start(&hdcmipp, DCMIPP_PIPE2, DCMIPP_VIRTUAL_CHANNEL0,
-//                                   (uint32_t)nn_input_u8, DCMIPP_MODE_SNAPSHOT);
-
-        /* 2. Wait for frame completion.
-             PIPE1 runs at ~30fps continuous, so the frame counter ticks
-             every ~33ms. PIPE2 snapshot completes in one frame cycle. */
-//        uint32_t last_count = imx335_get_capture_frame_count();
-//        uint32_t timeout = 100; /* 100ms max wait */
-//        while (imx335_get_capture_frame_count() == last_count && timeout > 0) {
-//            vTaskDelay(pdMS_TO_TICKS(1));
-//            timeout--;
-//        }
         if(osSemaphoreAcquire(cam_frame_sem, HAL_MAX_DELAY) != osOK)
-        	while(1);
-        /* 3. Stop PIPE2 (safe even if already auto-stopped by snapshot mode) */
-//        HAL_DCMIPP_CSI_PIPE_Stop(&hdcmipp, DCMIPP_PIPE2, DCMIPP_VIRTUAL_CHANNEL0);
+            while(1);
 
-        /* 4. Cache maintenance: DCMIPP wrote to nn_input_u8 via DMA */
+        /* Cache maintenance: DCMIPP wrote to nn_input_u8 via DMA */
         SCB_CleanInvalidateDCache_by_Addr(
             (uint32_t *)nn_input_u8, sizeof(nn_input_u8));
 
-        /* 5. Software uint8→float32 normalization: nn_input_u8 → buffer_in */
+        /* Software uint8→float32 normalization: nn_input_u8 → buffer_in */
         float *fin = (float *)buffer_in;
         for (uint32_t i = 0; i < 128 * 128 * 3; i++) {
             fin[i] = (float)nn_input_u8[i] / 255.0f;
         }
 
-        /* DEBUG: print first 20 raw pixels and normalized floats */
-        printf("[DBG-CAM] u8: ");
-        for (int i = 0; i < 20; i++) printf("%u ", nn_input_u8[i]);
-        printf("\r\n");
-        printf("[DBG-NRM] f32: ");
-        for (int i = 0; i < 10; i++) printf("%.4f ", fin[i]);
-        printf("\r\n");
-
-        /* 6. Cache maintenance: CPU wrote to buffer_in */
+        /* Cache maintenance: CPU wrote to buffer_in */
         SCB_CleanInvalidateDCache_by_Addr(
             (uint32_t *)buffer_in, LL_ATON_NETWORK_F_IN_1_SIZE_BYTES);
 
-        /* 7. Run NPU inference + post-processing */
+        /* Run NPU inference + post-processing */
         memset(&result, 0, sizeof(result));
         MX_X_CUBE_AI_Process_User(&result);
 
-        /* 8. Print results via serial */
+        /* Print results via serial */
         printf("--- Frame ---\r\n");
         printf("Detections: %lu\r\n", result.nb_detect);
         for (uint32_t i = 0; i < result.nb_detect; i++) {
@@ -170,9 +294,15 @@ void AI_Task(void *argument)
             }
         }
 
-        /* 9. Draw detection boxes + keypoints on LTDC layer 2 overlay */
+        /* Draw detection boxes + keypoints on LTDC layer 2 overlay */
         draw_detections_on_display(&result);
+
+        /* Check serial commands */
+        process_serial_commands();
+
+        /* Run ReID pipeline if triggered */
+        run_reid_pipeline(&result);
+
         vTaskDelay(pdMS_TO_TICKS(1));
-       // vTaskDelay(pdMS_TO_TICKS(100));
     }
 }

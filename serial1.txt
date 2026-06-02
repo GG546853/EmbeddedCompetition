@@ -1,0 +1,104 @@
+--- Frame ---
+Detections: 1
+  [0] conf=0.77 box=(0.381,0.609,0.423,0.423)
+      kp: LEye(0.287,0.506) REye(0.466,0.506) Nose(0.372,0.591) Mouth(0.362,0.694) LEar(0.212,0.562) REar(0.569,0.562)
+[DBG-BUF] nbits=32
+[DBG-BUF] ob[0] size=32768 type=1 nbits=32
+[DBG-BUF] ob[1] size=2048 type=1 nbits=32
+[DBG-BUF] ob[2] size=1536 type=1 nbits=32
+[DBG-BUF] ob[3] size=24576 type=1 nbits=32
+[DBG-BUF] sorted idx: 2 1 3 0
+[DBG-BUF] scnt: 384 512  bcnt: 384 512
+[DBG-SCL] ob[0] scale=NULL zp=NULL 
+[DBG-SCL] ob[1] scale=NULL zp=NULL 
+[DBG-SCL] ob[2] scale=NULL zp=NULL 
+[DBG-SCL] ob[3] scale=NULL zp=NULL 
+[DBG-SCO] grid=0 nb=384 score_i=2 box_i=3
+[DBG-SCO] raw: -8.573 -11.022 -22.045 -36.741 -51.437 -52.662 -6.123 -6.123 -11.022 -20.820 -29.393 -33.067 -7.348 -9.798 -20.820 -40.415 -56.336 -61.235 -7.348 -9.798 
+[DBG-SCO] sig: 0.000 0.000 0.000 0.000 0.000 0.000 0.002 0.002 0.000 0.000 0.000 0.000 0.001 0.000 0.000 0.000 0.000 0.000 0.001 0.000 
+[DBG-DET] 1st det grid=0 i=204 score=0.5000
+[DBG-DET] raw[0..3]: 9.6161 3.6060 51.6866 51.6866
+[DBG-DET] anchor: 0.3125 0.5625
+[DBG-DET] dec: cx=0.3876 cy=0.5907 w=0.4038 h=0.4038
+[DBG-SCO] grid=1 nb=512 score_i=1 box_i=0
+[DBG-SCO] raw: -4.950 -4.026 -5.023 -3.989 -5.541 -4.285 -5.762 -4.543 -5.504 -4.580 -5.762 -4.802 -5.577 -4.359 -5.282 -4.137 -4.876 -3.878 -4.691 -3.250 
+[DBG-SCO] sig: 0.007 0.018 0.007 0.018 0.004 0.014 0.003 0.011 0.004 0.010 0.003 0.008 0.004 0.013 0.005 0.016 0.008 0.020 0.009 0.037 
+[DBG-PP] total candidates before NMS: 9
+--- Frame ---
+Detections: 1
+  [0] conf=0.77 box=(0.381,0.600,0.404,0.404)
+      kp: LEye(0.297,0.506) REye(0.456,0.506) Nose(0.372,0.600) Mouth(0.372,0.694) LEar(0.222,0.553) REar(0.560,0.544)
+[DBG-BUF] nbits=32
+[DBG-BUF] ob[0] size=32768 type=1 nbits=32
+[DBG-BUF] ob[1] size=2048 type=1 nbits=32
+[DBG-BUF] ob[2] size=1536 type=1 nbits=32
+[DBG-BUF] ob[3] size=24576 type=1 nbits=32
+[DBG-BUF] sorted idx: 2 1 3 0
+[DBG-BUF] scnt: 384 512  bcnt: 384 512
+[DBG-SCL] ob[0] scale=NULL zp=NULL 
+[DBG-SCL] ob[1] scale=NULL zp=NULL 
+[DBG-SCL] ob[2] scale=NULL zp=NULL 
+[DBG-SCL] ob[3] scale=NULL zp=NULL 
+[DBG-SCO] grid=0 nb=384 score_i=2 box_i=3
+[DBG-SCO] raw: -7.348 -9.798 -19.595 -30.617 -42.864 -44.089 -6.123 -7.348 -15.921 -28.168 -37.966 -41.640 -7.348 -9.798 -20.820 -39.190 -55.111 -58.786 -7.348 -9.798 
+[DBG-SCO] sig: 0.001 0.000 0.000 0.000 0.000 0.000 0.002 0.001 0.000 0.000 0.000 0.000 0.001 0.000 0.000 0.000 0.000 0.000 0.001 0.000 
+[DBG-DET] 1st det grid=0 i=204 score=0.5000
+[DBG-DET] raw[0..3]: 9.6161 2.4040 50.4845 50.4845
+[DBG-DET] anchor: 0.3125 0.5625
+[DBG-DET] dec: cx=0.3876 cy=0.5813 w=0.3944 h=0.3944
+[DBG-SCO] grid=1 nb=512 score_i=1 box_i=0
+[DBG-SCO] raw: -4.950 -3.878 -5.097 -4.026 -5.356 -4.100 -5.651 -4.469 -5.725 -4.728 -5.651 -4.654 -5.541 -4.285 -5.430 -4.174 -4.691 -3.546 -4.728 -3.361 
+[DBG-SCO] sig: 0.007 0.020 0.006 0.018 0.005 0.016 0.004 0.011 0.003 0.009 0.004 0.009 0.004 0.014 0.004 0.015 0.009 0.028 0.009 0.034 
+[DBG-PP] total candidates before NMS: 9
+--- Frame ---
+Detections: 1
+  [0] conf=0.77 box=(0.381,0.609,0.413,0.413)
+      kp: LEye(0.297,0.506) REye(0.466,0.487) Nose(0.381,0.581) Mouth(0.381,0.685) LEar(0.203,0.572) REar(0.569,0.553)
+[DBG-BUF] nbits=32
+[DBG-BUF] ob[0] size=32768 type=1 nbits=32
+[DBG-BUF] ob[1] size=2048 type=1 nbits=32
+[DBG-BUF] ob[2] size=1536 type=1 nbits=32
+[DBG-BUF] ob[3] size=24576 type=1 nbits=32
+[DBG-BUF] sorted idx: 2 1 3 0
+[DBG-BUF] scnt: 384 512  bcnt: 384 512
+[DBG-SCL] ob[0] scale=NULL zp=NULL 
+[DBG-SCL] ob[1] scale=NULL zp=NULL 
+[DBG-SCL] ob[2] scale=NULL zp=NULL 
+[DBG-SCL] ob[3] scale=NULL zp=NULL 
+[DBG-SCO] grid=0 nb=384 score_i=2 box_i=3
+[DBG-SCO] raw: -6.123 -9.798 -22.045 -35.516 -48.988 -48.988 -6.123 -7.348 -14.696 -25.719 -36.741 -39.190 -7.348 -9.798 -22.045 -36.741 -50.213 -55.111 -6.123 -8.573 
+[DBG-SCO] sig: 0.002 0.000 0.000 0.000 0.000 0.000 0.002 0.001 0.000 0.000 0.000 0.000 0.001 0.000 0.000 0.000 0.000 0.000 0.002 0.000 
+[DBG-DET] 1st det grid=0 i=204 score=0.5000
+[DBG-DET] raw[0..3]: 9.6161 3.6060 52.8886 52.8886
+[DBG-DET] anchor: 0.3125 0.5625
+[DBG-DET] dec: cx=0.3876 cy=0.5907 w=0.4132 h=0.4132
+[DBG-SCO] grid=1 nb=512 score_i=1 box_i=0
+[DBG-SCO] raw: -4.986 -3.878 -5.171 -4.100 -5.282 -3.989 -5.836 -4.506 -5.725 -4.691 -5.910 -4.839 -5.762 -4.506 -5.393 -4.322 -4.986 -3.915 -4.950 -3.583 
+[DBG-SCO] sig: 0.007 0.020 0.006 0.016 0.005 0.018 0.003 0.011 0.003 0.009 0.003 0.008 0.003 0.011 0.005 0.013 0.007 0.020 0.007 0.027 
+[DBG-PP] total candidates before NMS: 10
+--- Frame ---
+Detections: 1
+  [0] conf=0.77 box=(0.381,0.619,0.423,0.423)
+      kp: LEye(0.297,0.506) REye(0.456,0.497) Nose(0.372,0.591) Mouth(0.372,0.694) LEar(0.212,0.562) REar(0.569,0.562)
+[DBG-BUF] nbits=32
+[DBG-BUF] ob[0] size=32768 type=1 nbits=32
+[DBG-BUF] ob[1] size=2048 type=1 nbits=32
+[DBG-BUF] ob[2] size=1536 type=1 nbits=32
+[DBG-BUF] ob[3] size=24576 type=1 nbits=32
+[DBG-BUF] sorted idx: 2 1 3 0
+[DBG-BUF] scnt: 384 512  bcnt: 384 512
+[DBG-SCL] ob[0] scale=NULL zp=NULL 
+[DBG-SCL] ob[1] scale=NULL zp=NULL 
+[DBG-SCL] ob[2] scale=NULL zp=NULL 
+[DBG-SCL] ob[3] scale=NULL zp=NULL 
+[DBG-SCO] grid=0 nb=384 score_i=2 box_i=3
+[DBG-SCO] raw: -8.573 -12.247 -22.045 -36.741 -53.887 -55.111 -6.123 -8.573 -18.370 -34.292 -48.988 -52.662 -6.123 -9.798 -20.820 -34.292 -47.763 -51.437 -7.348 -9.798 
+[DBG-SCO] sig: 0.000 0.000 0.000 0.000 0.000 0.000 0.002 0.000 0.000 0.000 0.000 0.000 0.002 0.000 0.000 0.000 0.000 0.000 0.001 0.000 
+[DBG-DET] 1st det grid=0 i=204 score=0.5000
+[DBG-DET] raw[0..3]: 8.4141 6.0101 56.4946 56.4946
+[DBG-DET] anchor: 0.3125 0.5625
+[DBG-DET] dec: cx=0.3782 cy=0.6095 w=0.4414 h=0.4414
+[DBG-SCO] grid=1 nb=512 score_i=1 box_i=0
+[DBG-SCO] raw: -5.134 -4.100 -5.171 -3.989 -5.651 -4.211 -5.762 -4.469 -5.541 -4.506 -5.799 -4.802 -5.393 -4.359 -5.356 -4.174 -4.876 -3.805 -4.728 -3.250 
+[DBG-SCO] sig: 0.006 0.016 0.006 0.018 0.004 0.015 0.003 0.011 0.004 0.011 0.003 0.008 0.005 0.013 0.005 0.015 0.008 0.022 0.009 0.037 
+[DBG-PP] total candidates before NMS: 12

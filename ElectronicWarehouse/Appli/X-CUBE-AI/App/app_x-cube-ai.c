@@ -118,6 +118,82 @@
  }
 
  /* -------------------------------------------------------------------------- */
+ /*               Temporal EMA Smoothing (de-jitter)                           */
+ /* -------------------------------------------------------------------------- */
+
+static ai_detection_t smoothed_dets[AI_FD_MAX_DETECTIONS];
+static uint32_t       smoothed_count;
+static uint8_t        smoothing_initialized;
+
+static void ai_detection_temporal_smooth(ai_result_t *result)
+{
+    if (!smoothing_initialized) {
+        for (uint32_t i = 0; i < result->nb_detect; i++)
+            smoothed_dets[i] = result->detections[i];
+        smoothed_count = result->nb_detect;
+        smoothing_initialized = 1;
+        return;
+    }
+
+    ai_detection_t new_smoothed[AI_FD_MAX_DETECTIONS];
+    uint32_t new_count = 0;
+    uint8_t cur_matched[AI_FD_MAX_DETECTIONS] = {0};
+    uint8_t prev_used[AI_FD_MAX_DETECTIONS] = {0};
+
+    float alpha = AI_FD_EMA_ALPHA;
+
+    /* Pass 1: match current detections to previous smoothed, apply EMA */
+    for (uint32_t i = 0; i < result->nb_detect && new_count < AI_FD_MAX_DETECTIONS; i++) {
+        int best_j = -1;
+        float best_iou = 0.0f;
+        for (uint32_t j = 0; j < smoothed_count; j++) {
+            if (prev_used[j]) continue;
+            float iou = box_iou(&result->detections[i], &smoothed_dets[j]);
+            if (iou > best_iou) { best_iou = iou; best_j = (int)j; }
+        }
+
+        if (best_j >= 0 && best_iou > AI_FD_TRACK_IOU_THRESH) {
+            ai_detection_t *cur  = &result->detections[i];
+            ai_detection_t *prev = &smoothed_dets[best_j];
+            ai_detection_t *out  = &new_smoothed[new_count];
+
+            out->x_center   = alpha * cur->x_center   + (1.0f - alpha) * prev->x_center;
+            out->y_center   = alpha * cur->y_center   + (1.0f - alpha) * prev->y_center;
+            out->width      = alpha * cur->width      + (1.0f - alpha) * prev->width;
+            out->height     = alpha * cur->height     + (1.0f - alpha) * prev->height;
+            out->confidence = cur->confidence;
+
+            for (int k = 0; k < 6; k++) {
+                out->keypoints[k][0] = alpha * cur->keypoints[k][0]
+                                     + (1.0f - alpha) * prev->keypoints[k][0];
+                out->keypoints[k][1] = alpha * cur->keypoints[k][1]
+                                     + (1.0f - alpha) * prev->keypoints[k][1];
+            }
+
+            prev_used[best_j] = 1;
+            cur_matched[i] = 1;
+            new_count++;
+        }
+    }
+
+    /* Pass 2: add unmatched new detections (new faces) */
+    for (uint32_t i = 0; i < result->nb_detect && new_count < AI_FD_MAX_DETECTIONS; i++) {
+        if (!cur_matched[i]) {
+            new_smoothed[new_count++] = result->detections[i];
+        }
+    }
+
+    /* Write back */
+    for (uint32_t i = 0; i < new_count; i++)
+        smoothed_dets[i] = new_smoothed[i];
+    smoothed_count = new_count;
+
+    for (uint32_t i = 0; i < new_count; i++)
+        result->detections[i] = smoothed_dets[i];
+    result->nb_detect = new_count;
+}
+
+ /* -------------------------------------------------------------------------- */
  /*                  BlazeFace Output Decoding + NMS                           */
  /* -------------------------------------------------------------------------- */
 
@@ -286,8 +362,8 @@
              ai_detection_t det;
              det.x_center   = raw[0] * inv_img + ax;
              det.y_center   = raw[1] * inv_img + ay;
-             det.width      = raw[2] * inv_img;
-             det.height     = raw[3] * inv_img;
+             det.width      = raw[2] * inv_img * AI_FD_BOX_SCALE_W;
+             det.height     = raw[3] * inv_img * AI_FD_BOX_SCALE_H;
              det.confidence = score;
 
              /* reject boxes smaller than 10% of image */
@@ -322,6 +398,7 @@
      /* NMS */
      if (nb_candidates == 0) {
          result->nb_detect = 0;
+         ai_detection_temporal_smooth(result);
          return;
      }
 
@@ -341,6 +418,8 @@
              }
          }
      }
+
+     ai_detection_temporal_smooth(result);
  }
 
  /* -------------------------------------------------------------------------- */

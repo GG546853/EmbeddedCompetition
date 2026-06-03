@@ -33,13 +33,17 @@ void MX_X_CUBE_AI_Process(void);
 
 
 /* Post-processing parameters -----------------------------------------------*/
-#define AI_FD_MAX_DETECTIONS   3
+#define AI_FD_MAX_DETECTIONS   1
 #define AI_FD_NUM_KEYPOINTS    6
 #define AI_FD_IMG_SIZE         128
-#define AI_FD_CONF_THRESHOLD   0.60f
+#define AI_FD_CONF_THRESHOLD   0.45f
 #define AI_FD_IOU_THRESHOLD    0.3f
 #define AI_FD_GRID_0_NB_BOXES  512
 #define AI_FD_GRID_1_NB_BOXES  384
+#define AI_FD_BOX_SCALE_W      1.20f
+#define AI_FD_BOX_SCALE_H      1.40f
+#define AI_FD_EMA_ALPHA        0.30f
+#define AI_FD_TRACK_IOU_THRESH 0.50f
 
 /* Detection result structures ----------------------------------------------*/
 typedef struct {

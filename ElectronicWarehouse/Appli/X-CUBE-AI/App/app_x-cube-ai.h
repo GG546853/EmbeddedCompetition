@@ -36,8 +36,8 @@ void MX_X_CUBE_AI_Process(void);
 #define AI_FD_MAX_DETECTIONS   3
 #define AI_FD_NUM_KEYPOINTS    6
 #define AI_FD_IMG_SIZE         128
-#define AI_FD_CONF_THRESHOLD   0.5f
-#define AI_FD_IOU_THRESHOLD    0.5f
+#define AI_FD_CONF_THRESHOLD   0.60f
+#define AI_FD_IOU_THRESHOLD    0.3f
 #define AI_FD_GRID_0_NB_BOXES  512
 #define AI_FD_GRID_1_NB_BOXES  384
 
@@ -68,7 +68,7 @@ void ai_crop_resize_face_128(uint16_t *src_fb, ai_detection_t *det, uint8_t *out
 /* --- Face Re-ID definitions ------------------------------------------------ */
 #define FACE_EMBEDDING_DIM     256
 #define FACE_GALLERY_MAX        10
-#define FACE_MATCH_THRESHOLD    0.6f
+#define FACE_MATCH_THRESHOLD    1.0f   /* L2-normalised distance in [0,2]; <1.0 ≈ cos_sim >0.5 */
 #define FACE_NAME_MAX           16
 
 typedef struct {

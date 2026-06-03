@@ -50,6 +50,7 @@
 
 #include "fd_blazeface_anchors.h"
 #include "network_fc.h"
+#include "dma2d.h"
 
  void MX_X_CUBE_AI_Init(void);
  void set_clk_sleep_mode(void);
@@ -168,6 +169,7 @@
          }
      }
 
+#if 0
      /* DEBUG: print buffer info */
      printf("[DBG-BUF] nbits=%u\r\n", ob[0].nbits);
      for (int i = 0; i < 4; i++) {
@@ -190,6 +192,7 @@
          if (zp) printf("zp_v=%d", *zp);
          printf("\r\n");
      }
+#endif
 
      /* Static: too large for task stack (896 × 68 = 60KB). */
      static ai_detection_t candidates[896];
@@ -220,6 +223,7 @@
          int box_is_s8      = (b_info->type == DataType_INT8);
          int score_is_s8    = (s_info->type == DataType_INT8);
 
+#if 0
          /* DEBUG: print first 20 raw scores for this grid */
          printf("[DBG-SCO] grid=%d nb=%lu score_i=%d box_i=%d\r\n",
                 grid, nb, score_i, box_i);
@@ -241,6 +245,7 @@
              printf("%.3f ", sigmoid_f(rs));
          }
          printf("\r\n");
+#endif
 
          for (uint32_t i = 0; i < nb; i++) {
              /* --- Decode score --- */
@@ -285,6 +290,10 @@
              det.height     = raw[3] * inv_img;
              det.confidence = score;
 
+             /* reject boxes smaller than 10% of image */
+             if (det.width < 0.10f || det.height < 0.10f) continue;
+
+#if 0
              /* DEBUG: print first detection above threshold */
              if (nb_candidates == 0) {
                  printf("[DBG-DET] 1st det grid=%d i=%lu score=%.4f\r\n",
@@ -295,6 +304,7 @@
                  printf("[DBG-DET] dec: cx=%.4f cy=%.4f w=%.4f h=%.4f\r\n",
                         det.x_center, det.y_center, det.width, det.height);
              }
+#endif
 
              for (int k = 0; k < 6; k++) {
                  det.keypoints[k][0] = raw[4 + k * 2]     * inv_img + ax;
@@ -305,7 +315,9 @@
          }
      }
 
+#if 0
      printf("[DBG-PP] total candidates before NMS: %lu\r\n", nb_candidates);
+#endif
 
      /* NMS */
      if (nb_candidates == 0) {
@@ -347,41 +359,89 @@
 
  void ai_crop_resize_face_128(uint16_t *src_fb, ai_detection_t *det, uint8_t *output)
  {
-     /* Map detection from [0,1] normalised → display pixel coordinates */
+     extern DMA2D_HandleTypeDef hdma2d;
+     extern uint8_t g_ltdc_layer2_framebuf[480 * 800 * 3];
+
+     /* Map detection from [0,1] → display pixel coordinates */
      float dx = det->x_center * (float)CROP_DISP_W;
      float dy = det->y_center * (float)CROP_DISP_H;
      float dw = det->width    * (float)CROP_DISP_W;
      float dh = det->height   * (float)CROP_DISP_H;
 
-     /* Square crop region with margin */
+     /* Square crop with margin, integer-clamped to image bounds */
      float size = (dw > dh ? dw : dh) * (1.0f + CROP_MARGIN);
-     float crop_x0 = dx - size * 0.5f;
-     float crop_y0 = dy - size * 0.5f;
+     int crop_x0 = (int)(dx - size * 0.5f);
+     int crop_y0 = (int)(dy - size * 0.5f);
+     int crop_w  = (int)size;
+     int crop_h  = (int)size;
 
+     if (crop_x0 < 0) { crop_w += crop_x0; crop_x0 = 0; }
+     if (crop_y0 < 0) { crop_h += crop_y0; crop_y0 = 0; }
+     if (crop_x0 + crop_w > CROP_DISP_W) crop_w = CROP_DISP_W - crop_x0;
+     if (crop_y0 + crop_h > CROP_DISP_H) crop_h = CROP_DISP_H - crop_y0;
+     if (crop_w <= 0 || crop_h <= 0) return;
+
+     printf("[CROP] dx=%.1f dy=%.1f size=%.1f x0=%d y0=%d w=%d h=%d\r\n",
+            dx, dy, size, crop_x0, crop_y0, crop_w, crop_h);
+
+     /* Borrow tail of layer2 framebuf (internal SRAM) for DMA2D temp buffer.
+        CPU cannot read XSPI1 HyperRAM directly, but DMA2D can via its own bus master. */
+     uint32_t temp_bytes = (uint32_t)crop_w * crop_h * 2;  /* RGB565 */
+     uint16_t *temp_buf = (uint16_t *)(g_ltdc_layer2_framebuf
+                         + sizeof(g_ltdc_layer2_framebuf) - temp_bytes);
+
+     /* Step 1: DMA2D M2M_PFC copies crop region HyperRAM → internal SRAM.
+        Source (HyperRAM) has line stride = CROP_DISP_W, destination is tightly packed. */
+     hdma2d.Init.Mode          = DMA2D_M2M_PFC;
+     hdma2d.Init.ColorMode     = DMA2D_OUTPUT_RGB565;
+     hdma2d.Init.OutputOffset  = 0;
+     hdma2d.Init.AlphaInverted = DMA2D_REGULAR_ALPHA;
+     hdma2d.Init.RedBlueSwap   = DMA2D_RB_REGULAR;
+     hdma2d.Init.BytesSwap     = DMA2D_BYTES_REGULAR;
+     hdma2d.Init.LineOffsetMode = DMA2D_LOM_PIXELS;
+     HAL_DMA2D_Init(&hdma2d);
+
+     hdma2d.LayerCfg[0].InputOffset    = CROP_DISP_W - crop_w;
+     hdma2d.LayerCfg[0].InputColorMode = DMA2D_INPUT_RGB565;
+     hdma2d.LayerCfg[0].AlphaMode      = DMA2D_NO_MODIF_ALPHA;
+     hdma2d.LayerCfg[0].InputAlpha     = 0xFF;
+     hdma2d.LayerCfg[0].AlphaInverted  = DMA2D_REGULAR_ALPHA;
+     hdma2d.LayerCfg[0].RedBlueSwap    = DMA2D_RB_REGULAR;
+     HAL_DMA2D_ConfigLayer(&hdma2d, 0);
+
+     HAL_DMA2D_Start(&hdma2d,
+         (uint32_t)&src_fb[crop_y0 * CROP_DISP_W + crop_x0],
+         (uint32_t)temp_buf,
+         crop_w, crop_h);
+     HAL_DMA2D_PollForTransfer(&hdma2d, 100);
+
+     /* Invalidate D-Cache: DMA2D wrote to temp_buf, CPU will read it next */
+     SCB_InvalidateDCache_by_Addr((uint32_t *)temp_buf, temp_bytes);
+
+     printf("[CROP] DMA2D copy done, resizing %dx%d → 128×128\r\n", crop_w, crop_h);
+
+     /* Step 2: Software bilinear resize from internal SRAM → 128×128 RGB888 */
      float inv_step = (float)(CROP_OUT_SZ - 1);  /* 127.0f */
      if (inv_step < 1.0f) inv_step = 1.0f;
 
      for (int oy = 0; oy < CROP_OUT_SZ; oy++) {
-         float sy = crop_y0 + ((float)oy / inv_step) * size;
+         float sy = ((float)oy / inv_step) * (float)(crop_h - 1);
          int y0 = (int)sy;
          int y1 = y0 + 1;
          float fy = sy - (float)y0;
-         if (y0 < 0) y0 = 0;
-         if (y1 > CROP_DISP_H - 1) y1 = CROP_DISP_H - 1;
+         if (y1 >= crop_h) y1 = crop_h - 1;
 
          for (int ox = 0; ox < CROP_OUT_SZ; ox++) {
-             float sx = crop_x0 + ((float)ox / inv_step) * size;
+             float sx = ((float)ox / inv_step) * (float)(crop_w - 1);
              int x0 = (int)sx;
              int x1 = x0 + 1;
              float fx = sx - (float)x0;
-             if (x0 < 0) x0 = 0;
-             if (x1 > CROP_DISP_W - 1) x1 = CROP_DISP_W - 1;
+             if (x1 >= crop_w) x1 = crop_w - 1;
 
-             /* 4 neighbours, RGB565 → float */
-             uint16_t p00 = src_fb[y0 * CROP_DISP_W + x0];
-             uint16_t p10 = src_fb[y0 * CROP_DISP_W + x1];
-             uint16_t p01 = src_fb[y1 * CROP_DISP_W + x0];
-             uint16_t p11 = src_fb[y1 * CROP_DISP_W + x1];
+             uint16_t p00 = temp_buf[y0 * crop_w + x0];
+             uint16_t p10 = temp_buf[y0 * crop_w + x1];
+             uint16_t p01 = temp_buf[y1 * crop_w + x0];
+             uint16_t p11 = temp_buf[y1 * crop_w + x1];
 
              float w00 = (1.0f - fx) * (1.0f - fy);
              float w10 =        fx  * (1.0f - fy);
@@ -445,11 +505,27 @@
  static face_entry_t face_gallery[FACE_GALLERY_MAX];
  static uint32_t     face_gallery_count;
 
+ /* L2-normalize a vector in-place */
+ static void l2_normalize(float *v, int dim)
+ {
+     float sum_sq = 0.0f;
+     for (int i = 0; i < dim; i++) {
+         sum_sq += v[i] * v[i];
+     }
+     if (sum_sq < 1e-30f) return;
+     float inv_norm = 1.0f / sqrtf(sum_sq);
+     for (int i = 0; i < dim; i++) {
+         v[i] *= inv_norm;
+     }
+ }
+
  int ai_face_enroll(const float *embedding, const char *name)
  {
      if (face_gallery_count >= FACE_GALLERY_MAX) return -1;
+     /* Store L2-normalised embedding */
      memcpy(face_gallery[face_gallery_count].embedding,
             embedding, FACE_EMBEDDING_DIM * sizeof(float));
+     l2_normalize(face_gallery[face_gallery_count].embedding, FACE_EMBEDDING_DIM);
      strncpy(face_gallery[face_gallery_count].name, name, FACE_NAME_MAX - 1);
      face_gallery[face_gallery_count].name[FACE_NAME_MAX - 1] = '\0';
      face_gallery_count++;
@@ -458,7 +534,12 @@
 
  int ai_face_identify(const float *embedding, char *name_out, float *dist_out)
  {
-     if (face_gallery_count == 0) return -1;
+     if (face_gallery_count == 0) { if (dist_out) *dist_out = 0.0f; return -1; }
+
+     /* L2-normalise the query embedding */
+     float query[FACE_EMBEDDING_DIM];
+     memcpy(query, embedding, sizeof(query));
+     l2_normalize(query, FACE_EMBEDDING_DIM);
 
      float best_dist = 1e9f;
      int   best_idx  = -1;
@@ -466,7 +547,7 @@
      for (uint32_t i = 0; i < face_gallery_count; i++) {
          float sum_sq = 0.0f;
          for (int d = 0; d < FACE_EMBEDDING_DIM; d++) {
-             float diff = embedding[d] - face_gallery[i].embedding[d];
+             float diff = query[d] - face_gallery[i].embedding[d];
              sum_sq += diff * diff;
          }
          float dist = sqrtf(sum_sq);
@@ -481,6 +562,7 @@
          if (dist_out) *dist_out = best_dist;
          return best_idx;
      }
+     if (dist_out) *dist_out = best_dist;
      return -1;
  }
 
@@ -500,13 +582,19 @@
  {
      LL_ATON_RT_RetValues_t ret;
 
+     printf("[FC] Init start...\r\n");
      LL_ATON_RT_Init_Network(&NN_Instance_network_fc);
+     printf("[FC] Init done, running epochs...\r\n");
+
+     int epoch_cnt = 0;
      do {
          ret = LL_ATON_RT_RunEpochBlock(&NN_Instance_network_fc);
          if (ret == LL_ATON_RT_WFE) {
              LL_ATON_OSAL_WFE();
          }
+         epoch_cnt++;
      } while (ret != LL_ATON_RT_DONE);
+     printf("[FC] Epochs done (%d), decoding output...\r\n", epoch_cnt);
 
      /* Invalidate output cache */
      const LL_Buffer_InfoTypeDef *ob_fc = NN_Interface_network_fc.output_buffers_info();
@@ -531,6 +619,7 @@
      }
 
      LL_ATON_RT_DeInit_Network(&NN_Instance_network_fc);
+     printf("[FC] DeInit done\r\n");
  }
 
  void MX_X_CUBE_AI_Process_User(ai_result_t *result)

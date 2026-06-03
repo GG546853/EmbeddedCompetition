@@ -11,7 +11,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include "usart.h"
+#include "uart.h"
 #define DISP_W 800
 #define DISP_H 480
 #define BOX_THICKNESS 3
@@ -108,7 +108,7 @@ static const char *kp_names[6] = {
 extern osSemaphoreId_t cam_frame_sem;
 
 /* -------------------------------------------------------------------------- */
-/*                     Serial Command Parser                                   */
+/*                     Serial Command Parser (uses BSP RX buffer)               */
 /* -------------------------------------------------------------------------- */
 
 typedef enum {
@@ -120,39 +120,21 @@ typedef enum {
 static reid_action_t reid_pending;
 static char          reid_name[FACE_NAME_MAX];
 
-/* Non-blocking: read a line from UART into buf (max len), return 1 if complete */
-static int serial_readline(char *buf, int max_len)
-{
-    static char line[CMD_BUF_SIZE];
-    static int  pos;
-
-    while (1) {
-        /* Check if a byte is available on USART1 (blocking RX would stall the task) */
-        if (__HAL_UART_GET_FLAG(&huart1, UART_FLAG_RXFNE)) {
-            char c = (char)(huart1.Instance->RDR & 0xFF);
-            if (c == '\r' || c == '\n') {
-                if (pos > 0) {
-                    line[pos] = '\0';
-                    int cp = (pos < max_len) ? pos : max_len - 1;
-                    memcpy(buf, line, cp);
-                    buf[cp] = '\0';
-                    pos = 0;
-                    return 1;
-                }
-            } else if (pos < CMD_BUF_SIZE - 1) {
-                line[pos++] = c;
-            }
-        } else {
-            break;  /* no more data */
-        }
-    }
-    return 0;
-}
+/* BSP interrupt-driven RX accumulates into g_uart_rx_buf[].
+   g_uart_rx_sta bit15 = line ready (received \r\n). */
 
 static void process_serial_commands(void)
 {
+    if (!(g_uart_rx_sta & 0x8000)) return;
+
+    uint16_t len = g_uart_rx_sta & 0x3FFF;
+    if (len >= CMD_BUF_SIZE) len = CMD_BUF_SIZE - 1;
+
     char cmd[CMD_BUF_SIZE];
-    if (!serial_readline(cmd, sizeof(cmd))) return;
+    memcpy(cmd, g_uart_rx_buf, len);
+    cmd[len] = '\0';
+
+    g_uart_rx_sta = 0;  /* reset for next line */
 
     printf("[CMD] %s\r\n", cmd);
 
@@ -197,20 +179,31 @@ static void run_reid_pipeline(ai_result_t *result)
     /* Use the highest-confidence detection */
     ai_detection_t *best = &result->detections[0];
 
+    printf("[REID] DBG1: crop start, box=(%.2f,%.2f,%.2f,%.2f)\r\n",
+           best->x_center, best->y_center, best->width, best->height);
+
     /* Step 1: Crop + resize face from display buffer → 128×128 uint8 */
     ai_crop_resize_face_128(g_ltdc_lcd_framebuf, best, FACE_CROP_BUF);
+
+    printf("[REID] DBG2: crop done, quantize start, fc_in=%p\r\n", buffer_in_fc);
 
     /* Step 2: uint8 → int8 quantization */
     quantize_u8_to_s8(FACE_CROP_BUF, (int8_t *)buffer_in_fc,
                       LL_ATON_NETWORK_FC_IN_1_SIZE_BYTES);
 
+    printf("[REID] DBG3: quantize done, cache flush\r\n");
+
     /* Step 3: Cache maintenance for network_fc input */
     SCB_CleanInvalidateDCache_by_Addr(
         (uint32_t *)buffer_in_fc, LL_ATON_NETWORK_FC_IN_1_SIZE_BYTES);
 
+    printf("[REID] DBG4: starting fc inference...\r\n");
+
     /* Step 4: Run network_fc inference */
     float embedding[FACE_EMBEDDING_DIM];
     ai_face_reid_run(embedding);
+
+    printf("[REID] DBG5: fc inference done\r\n");
 
     /* DEBUG: print first 8 embedding values */
     printf("[REID-EMB] ");
@@ -231,11 +224,9 @@ static void run_reid_pipeline(ai_result_t *result)
         if (idx >= 0) {
             printf("[REID] Matched: '%s' (dist=%.3f)\r\n", name, dist);
             rgblcd_show_string(10, 30, 200, 16, 16, name, 0x07E0);
-        } else if (idx == -1) {
-            printf("[REID] No match (gallery empty or below threshold)\r\n");
-            rgblcd_show_string(10, 30, 200, 16, 16, "Unknown", 0xF800);
         } else {
-            printf("[REID] No match (dist too high, best=%.3f)\r\n", dist);
+            printf("[REID] No match (best_dist=%.3f, threshold=%.1f)\r\n",
+                   dist, (double)FACE_MATCH_THRESHOLD);
             rgblcd_show_string(10, 30, 200, 16, 16, "Unknown", 0xF800);
         }
     }
@@ -278,6 +269,7 @@ void AI_Task(void *argument)
         memset(&result, 0, sizeof(result));
         MX_X_CUBE_AI_Process_User(&result);
 
+#if 0
         /* Print results via serial */
         printf("--- Frame ---\r\n");
         printf("Detections: %lu\r\n", result.nb_detect);
@@ -293,6 +285,7 @@ void AI_Task(void *argument)
                        (k < 5) ? " " : "\r\n");
             }
         }
+#endif
 
         /* Draw detection boxes + keypoints on LTDC layer 2 overlay */
         draw_detections_on_display(&result);

@@ -39,6 +39,7 @@
 #include "norflash.h"
 #include "imx335.h"
 #include "rgblcd.h"
+#include "uart.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -138,6 +139,11 @@ int main(void)
   MX_X_CUBE_AI_Init();
   SystemIsolation_Config();
   /* USER CODE BEGIN 2 */
+
+//  setvbuf(stdin, NULL, _IONBF, 0);
+//  setvbuf(stdout, NULL, _IONBF, 0);
+  uart_init(115200);
+
 #ifdef DEBUG
   //MX_XSPI1_Init();
   if (HyperRAM_Init(&HyperRAMObject, &hxspi1) != HyperRAM_OK)
@@ -355,10 +361,39 @@ void PeriphCommonClock_Config(void)
   int _fstat(int file, void *st) { return 0; }
   int _isatty(int file) { return 1; }
   int _lseek(int file, int ptr, int dir) { return 0; }
-  int _read(int file, char *ptr, int len) {
+  int _read(int file, char *ptr, int len)
+  {
+      int i;
+      for (i = 0; i < len; i++)
+      {
+          // 1. 每次接收前清除可能存在的溢出错误标志，防止 UART 卡死
+          __HAL_UART_CLEAR_OREFLAG(&huart1);
 
-	  HAL_UART_Receive(&huart1, (uint8_t *)ptr, len, 0xFFFF);
-      return len;
+          // 2. 逐字节接收数据（阻塞等待）
+          if (HAL_UART_Receive(&huart1, (uint8_t *)&ptr[i], 1, HAL_MAX_DELAY) != HAL_OK)
+          {
+              break; // 接收出错或超时则退出
+          }
+
+          // 3. 终端回显：将接收到的字符原样发送回电脑（让用户能在串口助手看到自己输入的内容）
+          HAL_UART_Transmit(&huart1, (uint8_t *)&ptr[i], 1, 0xFFFF);
+
+          // 4. 处理回车换行逻辑
+          if (ptr[i] == '\r' || ptr[i] == '\n')
+          {
+              ptr[i] = '\n'; // C 标准库解析通常以 '\n' 结束输入
+
+              // 在回显时补发一个 '\r' 换行符，以便终端工具正确换行到行首
+              char extra_r = '\r';
+              HAL_UART_Transmit(&huart1, (uint8_t *)&extra_r, 1, 0xFFFF);
+
+              i++;
+              break; // 读取到换行，结束当前读取
+          }
+      }
+
+      // 5. 必须返回实际接收到的字节数，而不是写死 len
+      return i;
   }
   int _write(int file, char *ptr, int len)
   {

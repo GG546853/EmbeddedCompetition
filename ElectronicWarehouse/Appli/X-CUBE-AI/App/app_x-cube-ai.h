@@ -74,6 +74,7 @@ void ai_crop_resize_face_128(uint16_t *src_fb, ai_detection_t *det, uint8_t *out
 #define FACE_GALLERY_MAX        10
 #define FACE_MATCH_THRESHOLD    1.0f   /* L2-normalised distance in [0,2]; <1.0 ≈ cos_sim >0.5 */
 #define FACE_RATIO_THRESHOLD    0.75f  /* best_dist / second_dist; <0.75 means confident match */
+#define FACE_CONFIDENT_DIST     0.3f   /* below this distance, skip ratio check entirely */
 #define FACE_NAME_MAX           16
 
 typedef struct {

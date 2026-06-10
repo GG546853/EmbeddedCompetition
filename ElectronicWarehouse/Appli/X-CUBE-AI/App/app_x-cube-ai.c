@@ -642,9 +642,9 @@ static void ai_detection_temporal_smooth(ai_result_t *result)
 
      if (best_idx < 0) { if (dist_out) *dist_out = 0.0f; return -1; }
 
-     /* Distance ratio check: if gallery has ≥2 people and the ratio
-        (best / second) is too high, the face is ambiguous -> unknown */
-     if (face_gallery_count >= 2) {
+     /* Distance ratio check: only when it's not already an obvious match.
+        If best_dist is very small, skip ratio check — we're confident. */
+     if (best_dist > FACE_CONFIDENT_DIST && face_gallery_count >= 2) {
          float ratio = best_dist / second_dist;
          if (ratio > FACE_RATIO_THRESHOLD) {
              if (dist_out) *dist_out = best_dist;

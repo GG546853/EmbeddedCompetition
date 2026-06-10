@@ -620,8 +620,9 @@ static void ai_detection_temporal_smooth(ai_result_t *result)
      memcpy(query, embedding, sizeof(query));
      l2_normalize(query, FACE_EMBEDDING_DIM);
 
-     float best_dist = 1e9f;
-     int   best_idx  = -1;
+     float best_dist   = 1e9f;
+     float second_dist = 1e9f;
+     int   best_idx    = -1;
 
      for (uint32_t i = 0; i < face_gallery_count; i++) {
          float sum_sq = 0.0f;
@@ -631,12 +632,29 @@ static void ai_detection_temporal_smooth(ai_result_t *result)
          }
          float dist = sqrtf(sum_sq);
          if (dist < best_dist) {
-             best_dist = dist;
-             best_idx  = (int)i;
+             second_dist = best_dist;
+             best_dist   = dist;
+             best_idx    = (int)i;
+         } else if (dist < second_dist) {
+             second_dist = dist;
          }
      }
 
-     if (best_idx >= 0 && best_dist < FACE_MATCH_THRESHOLD) {
+     if (best_idx < 0) { if (dist_out) *dist_out = 0.0f; return -1; }
+
+     /* Distance ratio check: if gallery has ≥2 people and the ratio
+        (best / second) is too high, the face is ambiguous -> unknown */
+     if (face_gallery_count >= 2) {
+         float ratio = best_dist / second_dist;
+         if (ratio > FACE_RATIO_THRESHOLD) {
+             if (dist_out) *dist_out = best_dist;
+             printf("[REID] Rejected: ratio=%.3f (best=%.3f, second=%.3f, threshold=%.2f)\r\n",
+                    ratio, best_dist, second_dist, (double)FACE_RATIO_THRESHOLD);
+             return -1;
+         }
+     }
+
+     if (best_dist < FACE_MATCH_THRESHOLD) {
          if (name_out) strncpy(name_out, face_gallery[best_idx].name, FACE_NAME_MAX);
          if (dist_out) *dist_out = best_dist;
          return best_idx;

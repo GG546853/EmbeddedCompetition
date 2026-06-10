@@ -39,7 +39,7 @@
  * --Ocache-opt = true
  * --output-info-file = "c_info"
  * --onnx-input = "C:/Users/96022/.stm32cubemx/network_fc_output/face-reidentification-retail-0095_int8_OE_3_3_0.onnx"
- * --out-dir-prefix = "C:/Users/96022/AppData/Local/Temp/mxAI_workspace115592252380013169508626167167780/neural_art__network_fc/"
+ * --out-dir-prefix = "C:/Users/96022/AppData/Local/Temp/mxAI_workspace2591437545010017920527548146434631/neural_art__network_fc/"
  * --network-name = "network_fc"
  * --all-buffers-info = true
  * --mvei = true

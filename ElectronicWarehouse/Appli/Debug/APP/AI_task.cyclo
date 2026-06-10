@@ -4,4 +4,4 @@
 ../APP/AI_task.c:65:13:draw_detections_on_display	5
 ../APP/AI_task.c:126:13:process_serial_commands	7
 ../APP/AI_task.c:170:13:run_reid_pipeline	9
-../APP/AI_task.c:241:6:AI_Task	7
+../APP/AI_task.c:240:6:AI_Task	7

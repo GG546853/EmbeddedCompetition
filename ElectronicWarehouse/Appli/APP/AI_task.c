@@ -225,8 +225,7 @@ static void run_reid_pipeline(ai_result_t *result)
             printf("[REID] Matched: '%s' (dist=%.3f)\r\n", name, dist);
             rgblcd_show_string(10, 30, 200, 16, 16, name, 0x07E0);
         } else {
-            printf("[REID] No match (best_dist=%.3f, threshold=%.1f)\r\n",
-                   dist, (double)FACE_MATCH_THRESHOLD);
+            printf("[REID] No match (dist=%.3f)\r\n", dist);
             rgblcd_show_string(10, 30, 200, 16, 16, "Unknown", 0xF800);
         }
     }

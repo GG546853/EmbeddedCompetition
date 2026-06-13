@@ -20,7 +20,7 @@
 ../X-CUBE-AI/App/app_x-cube-ai.c:435:22:r565	1
 ../X-CUBE-AI/App/app_x-cube-ai.c:436:22:g565	1
 ../X-CUBE-AI/App/app_x-cube-ai.c:437:22:b565	1
-../X-CUBE-AI/App/app_x-cube-ai.c:439:7:ai_crop_resize_face_128	15
+../X-CUBE-AI/App/app_x-cube-ai.c:439:7:ai_crop_resize_face_112	15
 ../X-CUBE-AI/App/app_x-cube-ai.c:573:7:quantize_u8_to_s8	2
 ../X-CUBE-AI/App/app_x-cube-ai.c:588:14:l2_normalize	4
 ../X-CUBE-AI/App/app_x-cube-ai.c:601:6:ai_face_enroll	2
@@ -30,4 +30,4 @@
 ../X-CUBE-AI/App/app_x-cube-ai.c:722:7:MX_X_CUBE_AI_Process_User	3
 ../X-CUBE-AI/App/app_x-cube-ai.c:750:6:set_clk_sleep_mode	1
 ../X-CUBE-AI/App/app_x-cube-ai.c:789:6:MX_X_CUBE_AI_Init	1
-../X-CUBE-AI/App/app_x-cube-ai.c:846:6:MX_X_CUBE_AI_Process	3
+../X-CUBE-AI/App/app_x-cube-ai.c:848:6:MX_X_CUBE_AI_Process	3

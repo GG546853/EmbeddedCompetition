@@ -2,7 +2,7 @@
   ******************************************************************************
   * @file    network_fc.h
   * @author  STEdgeAI
-  * @date    2026-06-10 17:38:16
+  * @date    2026-06-13 16:13:04
   * @brief   Minimal description of the generated c-implemention of the network
   ******************************************************************************
   * @attention
@@ -20,7 +20,7 @@
 
 /******************************************************************************/
 #define LL_ATON_NETWORK_FC_C_MODEL_NAME        "network_fc"
-#define LL_ATON_NETWORK_FC_ORIGIN_MODEL_NAME   "facereidentificationretail0095_int8"
+#define LL_ATON_NETWORK_FC_ORIGIN_MODEL_NAME   "mobilefacenet_int8_faces"
 
 /************************** USER ALLOCATED IOs ********************************/
 // No user allocated inputs
@@ -28,14 +28,14 @@
 
 /************************** INPUTS ********************************************/
 #define LL_ATON_NETWORK_FC_IN_NUM        (1)    // Total number of input buffers
-// Input buffer 1 -- Input_2_out_0
+// Input buffer 1 -- Input_0_out_0
 #define LL_ATON_NETWORK_FC_IN_1_ALIGNMENT   (32)
-#define LL_ATON_NETWORK_FC_IN_1_SIZE_BYTES  (49152)
+#define LL_ATON_NETWORK_FC_IN_1_SIZE_BYTES  (37632)
 
 /************************** OUTPUTS *******************************************/
 #define LL_ATON_NETWORK_FC_OUT_NUM        (1)    // Total number of output buffers
-// Output buffer 1 -- Quantize_428_out_0
+// Output buffer 1 -- BatchNormalization_290_out_0
 #define LL_ATON_NETWORK_FC_OUT_1_ALIGNMENT   (32)
-#define LL_ATON_NETWORK_FC_OUT_1_SIZE_BYTES  (256)
+#define LL_ATON_NETWORK_FC_OUT_1_SIZE_BYTES  (512)
 
 #endif /* LL_ATON_NETWORK_FC_H */

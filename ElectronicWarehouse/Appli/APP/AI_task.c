@@ -183,7 +183,7 @@ static void run_reid_pipeline(ai_result_t *result)
            best->x_center, best->y_center, best->width, best->height);
 
     /* Step 1: Crop + resize face from display buffer → 128×128 uint8 */
-    ai_crop_resize_face_128(g_ltdc_lcd_framebuf, best, FACE_CROP_BUF);
+    ai_crop_resize_face_112(g_ltdc_lcd_framebuf, best, FACE_CROP_BUF);
 
     printf("[REID] DBG2: crop done, quantize start, fc_in=%p\r\n", buffer_in_fc);
 

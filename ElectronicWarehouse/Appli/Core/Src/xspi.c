@@ -145,7 +145,7 @@ void HAL_XSPI_MspInit(XSPI_HandleTypeDef* xspiHandle)
     PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_XSPI1;
     PeriphClkInitStruct.Xspi1ClockSelection = RCC_XSPI1CLKSOURCE_IC4;
     PeriphClkInitStruct.ICSelection[RCC_IC4].ClockSelection = RCC_ICCLKSOURCE_PLL1;
-    PeriphClkInitStruct.ICSelection[RCC_IC4].ClockDivider = 7;
+    PeriphClkInitStruct.ICSelection[RCC_IC4].ClockDivider = 14;
     if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
     {
       Error_Handler();

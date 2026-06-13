@@ -110,6 +110,49 @@ int main(void)
   /* Enable D-Cache---------------------------------------------------------*/
   SCB_EnableDCache();
 
+
+  MPU_Region_InitTypeDef MPU_InitStruct = {0};
+    MPU_Attributes_InitTypeDef MPU_AttributesInit = {0};
+
+    /* 1. 禁用 MPU */
+    HAL_MPU_Disable();
+
+    /* 2. 配置内存属性集 0 (配置为：Normal Memory, Non-Cacheable 非缓存)
+       用以替代旧版的 TypeExtField、IsCacheable、IsBufferable 组合 */
+    MPU_AttributesInit.Number = MPU_ATTRIBUTES_NUMBER0;
+    MPU_AttributesInit.Attributes = INNER_OUTER(MPU_NOT_CACHEABLE);
+    HAL_MPU_ConfigMemoryAttributes(&MPU_AttributesInit);
+
+    /* 3. 配置 MPU 保护区域 0 */
+    MPU_InitStruct.Enable = MPU_REGION_ENABLE;
+    MPU_InitStruct.Number = MPU_REGION_NUMBER0;
+
+    /* 区域起始地址 */
+    MPU_InitStruct.BaseAddress = 0x90000000;
+
+    /* 区域结束地址（LimitAddress）
+       32MB 空间大小在 16 进制下为 0x02000000 字节。
+       LimitAddress = BaseAddress + Size - 1 = 0x90000000 + 0x02000000 - 1 = 0x91FFFFFF */
+    MPU_InitStruct.LimitAddress = 0x91FFFFFF;
+
+    /* 绑定前面配置的内存属性集 0 */
+    MPU_InitStruct.AttributesIndex = MPU_ATTRIBUTES_NUMBER0;
+
+    /* 读写访问权限 (对应旧版 MPU_REGION_FULL_ACCESS) */
+    MPU_InitStruct.AccessPermission = MPU_REGION_ALL_RW;
+
+    /* 允许非特权级与特权级软件在该区域执行指令 */
+    MPU_InitStruct.DisableExec = MPU_INSTRUCTION_ACCESS_ENABLE;
+    MPU_InitStruct.DisablePrivExec = MPU_PRIV_INSTRUCTION_ACCESS_ENABLE;
+
+    /* 非共享属性 */
+    MPU_InitStruct.IsShareable = MPU_ACCESS_NOT_SHAREABLE;
+
+    /* 应用 MPU 区域配置 */
+    HAL_MPU_ConfigRegion(&MPU_InitStruct);
+
+    /* 4. 启用 MPU */
+    HAL_MPU_Enable(MPU_PRIVILEGED_DEFAULT);
   /* MCU Configuration--------------------------------------------------------*/
   HAL_Init();
 

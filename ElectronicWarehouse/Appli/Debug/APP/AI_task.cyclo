@@ -1,7 +1,8 @@
-../APP/AI_task.c:33:13:fill_rect	9
-../APP/AI_task.c:52:13:draw_box	1
-../APP/AI_task.c:60:13:draw_kp	1
-../APP/AI_task.c:65:13:draw_detections_on_display	5
-../APP/AI_task.c:126:13:process_serial_commands	7
-../APP/AI_task.c:170:13:run_reid_pipeline	9
-../APP/AI_task.c:240:6:AI_Task	7
+../APP/AI_task.c:32:13:fill_rect	9
+../APP/AI_task.c:51:13:draw_box	1
+../APP/AI_task.c:59:13:draw_kp	1
+../APP/AI_task.c:65:13:draw_one_detection	2
+../APP/AI_task.c:81:13:draw_detections_on_display	2
+../APP/AI_task.c:124:13:process_serial_commands	7
+../APP/AI_task.c:168:13:run_reid_pipeline	9
+../APP/AI_task.c:238:6:AI_Task	7

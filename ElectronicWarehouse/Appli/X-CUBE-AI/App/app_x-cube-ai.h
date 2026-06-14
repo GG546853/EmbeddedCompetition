@@ -66,8 +66,8 @@ extern uint8_t *buffer_out_fc;
 
 void MX_X_CUBE_AI_Process_User(ai_result_t *result);
 
-/* Face crop + resize: 800x480 RGB565 display buffer -> 112x112 RGB888 */
-void ai_crop_resize_face_112(uint16_t *src_fb, ai_detection_t *det, uint8_t *output);
+/* Face crop + resize: 800x480 RGB888 display buffer -> 112x112 RGB888 */
+void ai_crop_resize_face_112(uint8_t *src_fb, ai_detection_t *det, uint8_t *output);
 
 /* --- Face Re-ID definitions ------------------------------------------------ */
 #define FACE_EMBEDDING_DIM     128

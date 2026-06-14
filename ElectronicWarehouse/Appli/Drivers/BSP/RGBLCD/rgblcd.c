@@ -27,15 +27,14 @@ extern LTDC_HandleTypeDef hltdc;
 /* DMA2D句柄 */
 extern DMA2D_HandleTypeDef hdma2d;
 
-/* 绘制LCD时的背景色 */
-uint32_t g_back_color = 0xFFFF;
+/* 绘制LCD时的背景色 (RGB888) */
+uint32_t g_back_color = 0xFFFFFF;
 
 /* RGB LCD重要参数 */
 _rgblcd_dev rgblcddev;
 
-/* LTDC帧缓冲区 */
-uint16_t g_ltdc_lcd_framebuf[480 * 800] __attribute__((section(".EXTRAM")));
-uint8_t g_ltdc_layer2_framebuf[480* 800 *3] __attribute__((section(".EXTRAM"), aligned(32)));
+/* LTDC single RGB888 framebuffer in HyperRAM */
+uint8_t g_ltdc_framebuf[480 * 800 * 3] __attribute__((section(".EXTRAM"), aligned(32)));
 /* 函数声明 */
 static uint16_t rgblcd_panelid_read(void);
 static uint8_t rgblcd_ltdc_clk_set(uint32_t clock);
@@ -150,61 +149,28 @@ void rgblcd_init(void)
         rgblcd_ltdc_clk_set(45000000);  /* LTDC_CLK = 45MHz */
     }
 
+    /* Single Layer 0: RGB888, full screen, no blending needed */
     ltdc_layer_cfg_struct.WindowX0 = 0;
     ltdc_layer_cfg_struct.WindowX1 = rgblcddev.pwidth;
     ltdc_layer_cfg_struct.WindowY0 = 0;
     ltdc_layer_cfg_struct.WindowY1 = rgblcddev.pheight;
-    ltdc_layer_cfg_struct.PixelFormat = LTDC_PIXEL_FORMAT_RGB565;
+    ltdc_layer_cfg_struct.PixelFormat = LTDC_PIXEL_FORMAT_RGB888;
     ltdc_layer_cfg_struct.Alpha = 255;
     ltdc_layer_cfg_struct.Alpha0 = 0;
     ltdc_layer_cfg_struct.BlendingFactor1 = LTDC_BLENDING_FACTOR1_CA;
     ltdc_layer_cfg_struct.BlendingFactor2 = LTDC_BLENDING_FACTOR2_CA;
-    ltdc_layer_cfg_struct.FBStartAdress = 0;
+    ltdc_layer_cfg_struct.FBStartAdress = (uint32_t)g_ltdc_framebuf;
     ltdc_layer_cfg_struct.ImageWidth = rgblcddev.pwidth;
     ltdc_layer_cfg_struct.ImageHeight = rgblcddev.pheight;
     ltdc_layer_cfg_struct.Backcolor.Blue = 0;
     ltdc_layer_cfg_struct.Backcolor.Green = 0;
     ltdc_layer_cfg_struct.Backcolor.Red = 0;
     HAL_LTDC_ConfigLayer(&hltdc, &ltdc_layer_cfg_struct, 0);
-    HAL_LTDC_SetAddress(&hltdc, (uint32_t)g_ltdc_lcd_framebuf, 0);
-
-    LTDC_LayerCfgTypeDef layer2_cfg = {0};
-    layer2_cfg.WindowX0 = 0;
-    layer2_cfg.WindowX1 = rgblcddev.pwidth;
-    //layer2_cfg.WindowX1 = 128;
-    layer2_cfg.WindowY0 = 0;
-
-    layer2_cfg.WindowY1 = rgblcddev.pheight;
-    //layer2_cfg.WindowY1 = 128;
-//    layer2_cfg.PixelFormat = LTDC_PIXEL_FORMAT_RGB565; // 格式保持一致
-    layer2_cfg.PixelFormat = LTDC_PIXEL_FORMAT_RGB888;
-    layer2_cfg.Alpha = 255;
-    layer2_cfg.Alpha0 = 0;
-    layer2_cfg.BlendingFactor1 = LTDC_BLENDING_FACTOR1_PAxCA;
-    layer2_cfg.BlendingFactor2 = LTDC_BLENDING_FACTOR2_PAxCA;
-    layer2_cfg.FBStartAdress = (uint32_t)g_ltdc_layer2_framebuf;
-    //layer2_cfg.FBStartAdress = (uint32_t)buffer_in;
-//    layer2_cfg.FBStartAdress = (uint32_t)g_ai_cam_buf;
-    layer2_cfg.ImageWidth = rgblcddev.pwidth;
-    layer2_cfg.ImageHeight = rgblcddev.pheight;
-    //layer2_cfg.ImageWidth = 128;
-    //layer2_cfg.ImageHeight = 128;
-    layer2_cfg.Backcolor.Blue = 0;
-    layer2_cfg.Backcolor.Green = 0;
-    layer2_cfg.Backcolor.Red = 0;
-    HAL_LTDC_ConfigLayer(&hltdc, &layer2_cfg, 1);
-
-    HAL_LTDC_ConfigColorKeying(&hltdc, 0x000000, 1);
-    HAL_LTDC_EnableColorKeying(&hltdc, 1);
-
-    //HAL_LTDC_DisableColorKeying(&hltdc, 1);
-    /* 清空图层2（全涂黑，即全透明） */
-    memset(g_ltdc_layer2_framebuf, 0, sizeof(g_ltdc_layer2_framebuf));
     HAL_LTDC_Reload(&hltdc, LTDC_RELOAD_IMMEDIATE);
 
     rgblcd_display_dir(0);
     //rgblcd_clear(0xFFFF);
-    rgblcd_clear(0x001F);
+    rgblcd_clear(BLUE);
     RGBLCD_BL(1);
 }
 
@@ -239,13 +205,8 @@ void rgblcd_display_dir(uint8_t dir)
  * @param   color: 要填充的颜色
  * @retval  无
  */
-void rgblcd_fill(uint16_t sx, uint16_t sy, uint16_t ex, uint16_t ey, uint16_t color)
+void rgblcd_fill(uint16_t sx, uint16_t sy, uint16_t ex, uint16_t ey, uint32_t color)
 {
-#define CONVERTRGB5652ARGB8888(Color)                                               \
-            ((((((((Color) >> (11U)) & 0x1FU) * 527U) + 23U) >> (6U)) << (16U)) |   \
-            (((((((Color) >> (5U)) & 0x3FU) * 259U) + 33U) >> (6U)) << (8U)) |      \
-            (((((Color) & 0x1FU) * 527U) + 23U) >> (6U)) | (0xFF000000U))
-
     uint16_t psx;
     uint16_t psy;
     uint16_t pex;
@@ -267,9 +228,10 @@ void rgblcd_fill(uint16_t sx, uint16_t sy, uint16_t ex, uint16_t ey, uint16_t co
     }
 
     hdma2d.Init.Mode = DMA2D_R2M;
+    hdma2d.Init.ColorMode = DMA2D_OUTPUT_RGB888;
     hdma2d.Init.OutputOffset = rgblcddev.pwidth - (pex - psx + 1);
     HAL_DMA2D_Init(&hdma2d);
-    HAL_DMA2D_Start(&hdma2d, CONVERTRGB5652ARGB8888(color), (uint32_t)&g_ltdc_lcd_framebuf[psy * rgblcddev.pwidth + psx], pex - psx + 1, pey - psy + 1);
+    HAL_DMA2D_Start(&hdma2d, color, (uint32_t)&g_ltdc_framebuf[(psy * rgblcddev.pwidth + psx) * 3], pex - psx + 1, pey - psy + 1);
     HAL_DMA2D_PollForTransfer(&hdma2d, 50);
 }
 
@@ -282,7 +244,7 @@ void rgblcd_fill(uint16_t sx, uint16_t sy, uint16_t ex, uint16_t ey, uint16_t co
  * @param   color: 指定颜色数组的首地址
  * @retval  无
  */
-void rgblcd_color_fill(uint16_t sx, uint16_t sy, uint16_t ex, uint16_t ey, uint16_t *color)
+void rgblcd_color_fill(uint16_t sx, uint16_t sy, uint16_t ex, uint16_t ey, uint32_t *color)
 {
     uint16_t psx;
     uint16_t psy;
@@ -304,10 +266,16 @@ void rgblcd_color_fill(uint16_t sx, uint16_t sy, uint16_t ex, uint16_t ey, uint1
         pey = ey;
     }
 
-    hdma2d.Init.Mode = DMA2D_M2M;
+    hdma2d.Init.Mode = DMA2D_M2M_PFC;
+    hdma2d.Init.ColorMode = DMA2D_OUTPUT_RGB888;
     hdma2d.Init.OutputOffset = rgblcddev.pwidth - (pex - psx + 1);
     HAL_DMA2D_Init(&hdma2d);
-    HAL_DMA2D_Start(&hdma2d, (uint32_t)color, (uint32_t)&g_ltdc_lcd_framebuf[psy * rgblcddev.pwidth + psx], pex - psx + 1, pey - psy + 1);
+    hdma2d.LayerCfg[0].InputOffset = 0;
+    hdma2d.LayerCfg[0].InputColorMode = DMA2D_INPUT_ARGB8888;
+    hdma2d.LayerCfg[0].AlphaMode = DMA2D_NO_MODIF_ALPHA;
+    hdma2d.LayerCfg[0].InputAlpha = 0xFF;
+    HAL_DMA2D_ConfigLayer(&hdma2d, 0);
+    HAL_DMA2D_Start(&hdma2d, (uint32_t)color, (uint32_t)&g_ltdc_framebuf[(psy * rgblcddev.pwidth + psx) * 3], pex - psx + 1, pey - psy + 1);
     HAL_DMA2D_PollForTransfer(&hdma2d, 50);
 }
 
@@ -318,7 +286,7 @@ void rgblcd_color_fill(uint16_t sx, uint16_t sy, uint16_t ex, uint16_t ey, uint1
  * @param   color: 点的颜色
  * @retval  无
  */
-void rgblcd_draw_point(uint16_t x, uint16_t y, uint16_t color)
+void rgblcd_draw_point(uint16_t x, uint16_t y, uint32_t color)
 {
     uint16_t px;
     uint16_t py;
@@ -334,7 +302,10 @@ void rgblcd_draw_point(uint16_t x, uint16_t y, uint16_t color)
         py = y;
     }
 
-    g_ltdc_lcd_framebuf[rgblcddev.pwidth * py + px] = color;
+    uint32_t off = (rgblcddev.pwidth * py + px) * 3;
+    g_ltdc_framebuf[off + 0] = (uint8_t)(color >> 16);  /* R */
+    g_ltdc_framebuf[off + 1] = (uint8_t)(color >> 8);   /* G */
+    g_ltdc_framebuf[off + 2] = (uint8_t)(color);         /* B */
 }
 
 /**
@@ -343,7 +314,7 @@ void rgblcd_draw_point(uint16_t x, uint16_t y, uint16_t color)
  * @param   y: 点的Y坐标
  * @retval  点的颜色
  */
-uint16_t rgblcd_read_point(uint16_t x, uint16_t y)
+uint32_t rgblcd_read_point(uint16_t x, uint16_t y)
 {
     uint16_t px;
     uint16_t py;
@@ -359,9 +330,10 @@ uint16_t rgblcd_read_point(uint16_t x, uint16_t y)
         py = y;
     }
 
-    g_ltdc_lcd_framebuf[rgblcddev.pwidth * py + px] = g_ltdc_lcd_framebuf[rgblcddev.pwidth * py + px];
-
-    return g_ltdc_lcd_framebuf[rgblcddev.pwidth * py + px];
+    uint32_t off = (rgblcddev.pwidth * py + px) * 3;
+    return ((uint32_t)g_ltdc_framebuf[off + 0] << 16)
+         | ((uint32_t)g_ltdc_framebuf[off + 1] << 8)
+         |  (uint32_t)g_ltdc_framebuf[off + 2];
 }
 
 /**
@@ -369,7 +341,7 @@ uint16_t rgblcd_read_point(uint16_t x, uint16_t y)
  * @param   color: 清屏的颜色
  * @retval  无
  */
-void rgblcd_clear(uint16_t color)
+void rgblcd_clear(uint32_t color)
 {
     rgblcd_fill(0, 0, rgblcddev.width - 1, rgblcddev.height - 1, color);
 }
@@ -383,7 +355,7 @@ void rgblcd_clear(uint16_t color)
  * @param   color: 线的颜色
  * @retval  无
  */
-void rgblcd_draw_line(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t color)
+void rgblcd_draw_line(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint32_t color)
 {
     uint16_t t;
     int xerr = 0;
@@ -469,7 +441,7 @@ void rgblcd_draw_line(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16
  * @param   color: 线的颜色
  * @retval  无
  */
-void rgblcd_draw_hline(uint16_t x, uint16_t y, uint16_t len, uint16_t color)
+void rgblcd_draw_hline(uint16_t x, uint16_t y, uint16_t len, uint32_t color)
 {
     if ((len == 0) || (x > rgblcddev.width) || (y > rgblcddev.height))
     {
@@ -488,7 +460,7 @@ void rgblcd_draw_hline(uint16_t x, uint16_t y, uint16_t len, uint16_t color)
  * @param   color: 矩形的颜色
  * @retval  无
  */
-void rgblcd_draw_rectangle(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t color)
+void rgblcd_draw_rectangle(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint32_t color)
 {
     rgblcd_draw_line(x1, y1, x2, y1, color);
     rgblcd_draw_line(x1, y1, x1, y2, color);
@@ -504,7 +476,7 @@ void rgblcd_draw_rectangle(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, u
  * @param   color: 圆的颜色
  * @retval  无
  */
-void rgblcd_draw_circle(uint16_t x0, uint16_t y0, uint8_t r, uint16_t color)
+void rgblcd_draw_circle(uint16_t x0, uint16_t y0, uint8_t r, uint32_t color)
 {
     int a;
     int b;
@@ -545,7 +517,7 @@ void rgblcd_draw_circle(uint16_t x0, uint16_t y0, uint8_t r, uint16_t color)
  * @param   color: 圆的颜色
  * @retval  无
  */
-void rgblcd_fill_circle(uint16_t x, uint16_t y, uint16_t r, uint16_t color)
+void rgblcd_fill_circle(uint16_t x, uint16_t y, uint16_t r, uint32_t color)
 {
     uint32_t i;
     uint32_t imax;
@@ -589,7 +561,7 @@ void rgblcd_fill_circle(uint16_t x, uint16_t y, uint16_t r, uint16_t color)
  * @param   color: 字符的颜色
  * @retval  无
  */
-void rgblcd_show_char(uint16_t x, uint16_t y, char chr, uint8_t size, uint8_t mode, uint16_t color)
+void rgblcd_show_char(uint16_t x, uint16_t y, char chr, uint8_t size, uint8_t mode, uint32_t color)
 {
     uint8_t csize;
     uint8_t *pfont;
@@ -678,7 +650,7 @@ void rgblcd_show_char(uint16_t x, uint16_t y, char chr, uint8_t size, uint8_t mo
  * @param   color: 数字的颜色
  * @retval  无
  */
-void rgblcd_show_num(uint16_t x, uint16_t y, uint32_t num, uint8_t len, uint8_t size, uint16_t color)
+void rgblcd_show_num(uint16_t x, uint16_t y, uint32_t num, uint8_t len, uint8_t size, uint32_t color)
 {
     uint8_t t;
     uint8_t temp;
@@ -721,7 +693,7 @@ void rgblcd_show_num(uint16_t x, uint16_t y, uint32_t num, uint8_t len, uint8_t 
  * @param   color: 数字的颜色
  * @retval  无
  */
-void rgblcd_show_xnum(uint16_t x, uint16_t y, uint32_t num, uint8_t len, uint8_t size, uint8_t mode, uint16_t color)
+void rgblcd_show_xnum(uint16_t x, uint16_t y, uint32_t num, uint8_t len, uint8_t size, uint8_t mode, uint32_t color)
 {
     uint8_t t;
     uint8_t temp;
@@ -769,7 +741,7 @@ void rgblcd_show_xnum(uint16_t x, uint16_t y, uint32_t num, uint8_t len, uint8_t
  * @param   color : 字符串的颜色
  * @retval  无
  */
-void rgblcd_show_string(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint8_t size, char *p, uint16_t color)
+void rgblcd_show_string(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint8_t size, char *p, uint32_t color)
 {
     uint8_t x0;
 

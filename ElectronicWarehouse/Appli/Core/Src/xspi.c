@@ -50,7 +50,7 @@ void MX_XSPI1_Init(void)
   hxspi1.Init.FreeRunningClock = HAL_XSPI_FREERUNCLK_DISABLE;
   hxspi1.Init.ClockMode = HAL_XSPI_CLOCK_MODE_0;
   hxspi1.Init.WrapSize = HAL_XSPI_WRAP_32_BYTES;
-  hxspi1.Init.ClockPrescaler = 1;
+  hxspi1.Init.ClockPrescaler = 0;
   hxspi1.Init.SampleShifting = HAL_XSPI_SAMPLE_SHIFT_NONE;
   hxspi1.Init.DelayHoldQuarterCycle = HAL_XSPI_DHQC_DISABLE;
   hxspi1.Init.ChipSelectBoundary = HAL_XSPI_BONDARYOF_NONE;
@@ -145,7 +145,7 @@ void HAL_XSPI_MspInit(XSPI_HandleTypeDef* xspiHandle)
     PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_XSPI1;
     PeriphClkInitStruct.Xspi1ClockSelection = RCC_XSPI1CLKSOURCE_IC4;
     PeriphClkInitStruct.ICSelection[RCC_IC4].ClockSelection = RCC_ICCLKSOURCE_PLL1;
-    PeriphClkInitStruct.ICSelection[RCC_IC4].ClockDivider = 14;
+    PeriphClkInitStruct.ICSelection[RCC_IC4].ClockDivider = 13;
     if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
     {
       Error_Handler();
@@ -204,7 +204,7 @@ void HAL_XSPI_MspInit(XSPI_HandleTypeDef* xspiHandle)
     PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_XSPI2;
     PeriphClkInitStruct.Xspi2ClockSelection = RCC_XSPI2CLKSOURCE_IC3;
     PeriphClkInitStruct.ICSelection[RCC_IC3].ClockSelection = RCC_ICCLKSOURCE_PLL1;
-    PeriphClkInitStruct.ICSelection[RCC_IC3].ClockDivider = 12;
+    PeriphClkInitStruct.ICSelection[RCC_IC3].ClockDivider = 7;
     if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
     {
       Error_Handler();

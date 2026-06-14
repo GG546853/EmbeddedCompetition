@@ -431,15 +431,15 @@ static void ai_detection_temporal_smooth(ai_result_t *result)
  #define CROP_OUT_SZ  112
  #define CROP_MARGIN  0.3f   /* 30% expansion beyond detection box */
 
- /* Extract one RGB565 pixel's R/G/B as float [0,1] */
- static inline float r565(uint16_t p) { return ((p >> 11) & 0x1F) / 31.0f; }
- static inline float g565(uint16_t p) { return ((p >> 5)  & 0x3F) / 63.0f; }
- static inline float b565(uint16_t p) { return (p & 0x1F) / 31.0f; }
+#define CROP_TEMP_MAX_PX 480
+#define CROP_TEMP_SIZE  (CROP_TEMP_MAX_PX * CROP_TEMP_MAX_PX * 3)
 
- void ai_crop_resize_face_112(uint16_t *src_fb, ai_detection_t *det, uint8_t *output)
+static uint8_t crop_temp_buf[CROP_TEMP_SIZE]
+    __attribute__((section(".EXTRAM"), aligned(32)));
+
+ void ai_crop_resize_face_112(uint8_t *src_fb, ai_detection_t *det, uint8_t *output)
  {
      extern DMA2D_HandleTypeDef hdma2d;
-     extern uint8_t g_ltdc_layer2_framebuf[480 * 800 * 3];
 
      /* Map detection from [0,1] → display pixel coordinates */
      float dx = det->x_center * (float)CROP_DISP_W;
@@ -463,16 +463,16 @@ static void ai_detection_temporal_smooth(ai_result_t *result)
      printf("[CROP] dx=%.1f dy=%.1f size=%.1f x0=%d y0=%d w=%d h=%d\r\n",
             dx, dy, size, crop_x0, crop_y0, crop_w, crop_h);
 
-     /* Borrow tail of layer2 framebuf (internal SRAM) for DMA2D temp buffer.
-        CPU cannot read XSPI1 HyperRAM directly, but DMA2D can via its own bus master. */
-     uint32_t temp_bytes = (uint32_t)crop_w * crop_h * 2;  /* RGB565 */
-     uint16_t *temp_buf = (uint16_t *)(g_ltdc_layer2_framebuf
-                         + sizeof(g_ltdc_layer2_framebuf) - temp_bytes);
+     /* Clamp crop to temp buffer capacity */
+     if (crop_w > CROP_TEMP_MAX_PX) crop_w = CROP_TEMP_MAX_PX;
+     if (crop_h > CROP_TEMP_MAX_PX) crop_h = CROP_TEMP_MAX_PX;
 
-     /* Step 1: DMA2D M2M_PFC copies crop region HyperRAM → internal SRAM.
-        Source (HyperRAM) has line stride = CROP_DISP_W, destination is tightly packed. */
+     /* Step 1: DMA2D M2M_PFC copies crop region (RGB888) HyperRAM → crop_temp_buf.
+        Source has line stride = CROP_DISP_W * 3 bytes. Dest is tightly packed. */
+     uint32_t temp_bytes = (uint32_t)crop_w * crop_h * 3;
+
      hdma2d.Init.Mode          = DMA2D_M2M_PFC;
-     hdma2d.Init.ColorMode     = DMA2D_OUTPUT_RGB565;
+     hdma2d.Init.ColorMode     = DMA2D_OUTPUT_RGB888;
      hdma2d.Init.OutputOffset  = 0;
      hdma2d.Init.AlphaInverted = DMA2D_REGULAR_ALPHA;
      hdma2d.Init.RedBlueSwap   = DMA2D_RB_REGULAR;
@@ -481,7 +481,7 @@ static void ai_detection_temporal_smooth(ai_result_t *result)
      HAL_DMA2D_Init(&hdma2d);
 
      hdma2d.LayerCfg[0].InputOffset    = CROP_DISP_W - crop_w;
-     hdma2d.LayerCfg[0].InputColorMode = DMA2D_INPUT_RGB565;
+     hdma2d.LayerCfg[0].InputColorMode = DMA2D_INPUT_RGB888;
      hdma2d.LayerCfg[0].AlphaMode      = DMA2D_NO_MODIF_ALPHA;
      hdma2d.LayerCfg[0].InputAlpha     = 0xFF;
      hdma2d.LayerCfg[0].AlphaInverted  = DMA2D_REGULAR_ALPHA;
@@ -489,18 +489,17 @@ static void ai_detection_temporal_smooth(ai_result_t *result)
      HAL_DMA2D_ConfigLayer(&hdma2d, 0);
 
      HAL_DMA2D_Start(&hdma2d,
-         (uint32_t)&src_fb[crop_y0 * CROP_DISP_W + crop_x0],
-         (uint32_t)temp_buf,
+         (uint32_t)(src_fb + (crop_y0 * CROP_DISP_W + crop_x0) * 3),
+         (uint32_t)crop_temp_buf,
          crop_w, crop_h);
      HAL_DMA2D_PollForTransfer(&hdma2d, 100);
 
-     /* Invalidate D-Cache: DMA2D wrote to temp_buf, CPU will read it next */
-     SCB_InvalidateDCache_by_Addr((uint32_t *)temp_buf, temp_bytes);
+     SCB_InvalidateDCache_by_Addr((uint32_t *)crop_temp_buf, temp_bytes);
 
      printf("[CROP] DMA2D copy done, resizing %dx%d → 112×112\r\n", crop_w, crop_h);
 
-     /* Step 2: Software bilinear resize from internal SRAM → 112×112 RGB888 */
-     float inv_step = (float)(CROP_OUT_SZ - 1);  /* 127.0f */
+     /* Step 2: Software bilinear resize crop_temp_buf (RGB888) → 112×112 RGB888 */
+     float inv_step = (float)(CROP_OUT_SZ - 1);
      if (inv_step < 1.0f) inv_step = 1.0f;
 
      for (int oy = 0; oy < CROP_OUT_SZ; oy++) {
@@ -517,27 +516,27 @@ static void ai_detection_temporal_smooth(ai_result_t *result)
              float fx = sx - (float)x0;
              if (x1 >= crop_w) x1 = crop_w - 1;
 
-             uint16_t p00 = temp_buf[y0 * crop_w + x0];
-             uint16_t p10 = temp_buf[y0 * crop_w + x1];
-             uint16_t p01 = temp_buf[y1 * crop_w + x0];
-             uint16_t p11 = temp_buf[y1 * crop_w + x1];
+             uint8_t *p00 = &crop_temp_buf[(y0 * crop_w + x0) * 3];
+             uint8_t *p10 = &crop_temp_buf[(y0 * crop_w + x1) * 3];
+             uint8_t *p01 = &crop_temp_buf[(y1 * crop_w + x0) * 3];
+             uint8_t *p11 = &crop_temp_buf[(y1 * crop_w + x1) * 3];
 
              float w00 = (1.0f - fx) * (1.0f - fy);
              float w10 =        fx  * (1.0f - fy);
              float w01 = (1.0f - fx) *        fy;
              float w11 =        fx  *        fy;
 
-             float r = w00 * r565(p00) + w10 * r565(p10)
-                     + w01 * r565(p01) + w11 * r565(p11);
-             float g = w00 * g565(p00) + w10 * g565(p10)
-                     + w01 * g565(p01) + w11 * g565(p11);
-             float b = w00 * b565(p00) + w10 * b565(p10)
-                     + w01 * b565(p01) + w11 * b565(p11);
+             float r = w00 * p00[0] + w10 * p10[0]
+                     + w01 * p01[0] + w11 * p11[0];
+             float g = w00 * p00[1] + w10 * p10[1]
+                     + w01 * p01[1] + w11 * p11[1];
+             float b = w00 * p00[2] + w10 * p10[2]
+                     + w01 * p01[2] + w11 * p11[2];
 
              int idx = (oy * CROP_OUT_SZ + ox) * 3;
-             output[idx + 0] = (uint8_t)(r * 255.0f + 0.5f);
-             output[idx + 1] = (uint8_t)(g * 255.0f + 0.5f);
-             output[idx + 2] = (uint8_t)(b * 255.0f + 0.5f);
+             output[idx + 0] = (uint8_t)(r + 0.5f);
+             output[idx + 1] = (uint8_t)(g + 0.5f);
+             output[idx + 2] = (uint8_t)(b + 0.5f);
          }
      }
  }

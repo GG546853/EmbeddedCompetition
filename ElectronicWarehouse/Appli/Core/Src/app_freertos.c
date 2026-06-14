@@ -135,7 +135,7 @@ void MX_FREERTOS_Init(void) {
   /* add threads, ... */
   RGBLED_TaskHandle = osThreadNew(RGBLED_Task, NULL, &RGBLEDTask_attributes);
   Sensor_TaskHandle = osThreadNew(Sensor_Task, NULL, &SensorTask_attributes);
-  AITaskHandle = osThreadNew(AI_Task, NULL, &AITask_attributes);
+//  AITaskHandle = osThreadNew(AI_Task, NULL, &AITask_attributes);
   /* USER CODE END RTOS_THREADS */
 
   /* USER CODE BEGIN RTOS_EVENTS */

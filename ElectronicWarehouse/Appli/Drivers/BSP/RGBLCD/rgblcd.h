@@ -62,47 +62,47 @@ typedef struct
     uint16_t height;                /* LCD高度 */
 } _rgblcd_dev;
 
-/* 颜色定义 */
-#define WHITE               0xFFFF  /* 白色 */
-#define BLACK               0x0000  /* 黑色 */
-#define RED                 0xF800  /* 红色 */
-#define GREEN               0x07E0  /* 绿色 */
-#define BLUE                0x001F  /* 蓝色 */
-#define MAGENTA             0xF81F  /* 品红色 */
-#define YELLOW              0xFFE0  /* 黄色 */
-#define CYAN                0x07FF  /* 青色 */
-#define BROWN               0xBC40  /* 棕色 */
-#define BRRED               0xFC07  /* 棕红色 */
-#define GRAY                0x8430  /* 灰色 */
-#define DARKBLUE            0x01CF  /* 深蓝色 */
-#define LIGHTBLUE           0x7D7C  /* 浅蓝色 */
-#define GRAYBLUE            0x5458  /* 灰蓝色 */
-#define LIGHTGREEN          0x841F  /* 浅绿色 */
-#define LGRAY               0xC618  /* 浅灰色 */
-#define LGRAYBLUE           0xA651  /* 浅灰蓝色 */
-#define LBBLUE              0x2B12  /* 浅棕蓝色 */
+/* 颜色定义 (RGB888: 0x00RRGGBB) */
+#define WHITE               0xFFFFFF  /* 白色 */
+#define BLACK               0x000000  /* 黑色 */
+#define RED                 0xFF0000  /* 红色 */
+#define GREEN               0x00FF00  /* 绿色 */
+#define BLUE                0x0000FF  /* 蓝色 */
+#define MAGENTA             0xFF00FF  /* 品红色 */
+#define YELLOW              0xFFFF00  /* 黄色 */
+#define CYAN                0x00FFFF  /* 青色 */
+#define BROWN               0xBE8A00  /* 棕色 */
+#define BRRED               0xFF823A  /* 棕红色 */
+#define GRAY                0x848684  /* 灰色 */
+#define DARKBLUE            0x0066CC  /* 深蓝色 */
+#define LIGHTBLUE           0x99D9EA  /* 浅蓝色 */
+#define GRAYBLUE            0x6E8EB5  /* 灰蓝色 */
+#define LIGHTGREEN          0x99FF66  /* 浅绿色 */
+#define LGRAY               0xC3C3C3  /* 浅灰色 */
+#define LGRAYBLUE           0xB3C6D8  /* 浅灰蓝色 */
+#define LBBLUE              0x4D8EE6  /* 浅棕蓝色 */
 
 /* RGB LCD参数导出 */
 extern _rgblcd_dev rgblcddev;
 extern uint32_t g_back_color;
-extern uint16_t g_ltdc_lcd_framebuf[480 * 800] __attribute__((section(".EXTRAM")));
-extern uint16_t internal_test_buf[480][800] __attribute__((section(".noncacheable"), aligned(32)));
+extern uint8_t g_ltdc_framebuf[480 * 800 * 3];
+
 /* 函数声明 */
 void rgblcd_init(void);                                                                                                     /* 初始化RGB LED */
 void rgblcd_display_dir(uint8_t dir);                                                                                       /* 设置RGB LCD显示方向 */
-void rgblcd_fill(uint16_t sx, uint16_t sy, uint16_t ex, uint16_t ey, uint16_t color);                                       /* 在RGB LCD指定区域内填充单个颜色 */
-void rgblcd_color_fill(uint16_t sx, uint16_t sy, uint16_t ex, uint16_t ey, uint16_t *color);                                /* 在RGB LCD指定区域内填充指定颜色块 */
-void rgblcd_draw_point(uint16_t x, uint16_t y, uint16_t color);                                                             /* RGB LCD画点 */
-uint16_t rgblcd_read_point(uint16_t x, uint16_t y);                                                                         /* RGB LCD读点 */
-void rgblcd_clear(uint16_t color);                                                                                          /* RGB LCD清屏 */
-void rgblcd_draw_line(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t color);                                  /* RGB LCD画线 */
-void rgblcd_draw_hline(uint16_t x, uint16_t y, uint16_t len, uint16_t color);                                               /* RGB LCD画水平线 */
-void rgblcd_draw_rectangle(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t color);                             /* RGB LCD画矩形 */
-void rgblcd_draw_circle(uint16_t x0, uint16_t y0, uint8_t r, uint16_t color);                                               /* RGB LCD画圆 */
-void rgblcd_fill_circle(uint16_t x, uint16_t y, uint16_t r, uint16_t color);                                                /* RGB LCD画实心圆 */
-void rgblcd_show_char(uint16_t x, uint16_t y, char chr, uint8_t size, uint8_t mode, uint16_t color);                        /* RGB LCD在指定位置显示一个字符 */
-void rgblcd_show_num(uint16_t x, uint16_t y, uint32_t num, uint8_t len, uint8_t size, uint16_t color);                      /* RGB LCD显示len个数字 */
-void rgblcd_show_xnum(uint16_t x, uint16_t y, uint32_t num, uint8_t len, uint8_t size, uint8_t mode, uint16_t color);       /* RGB LCD扩展显示len个数字（显示高位0） */
-void rgblcd_show_string(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint8_t size, char *p, uint16_t color);    /* RGB LCD显示字符串 */
+void rgblcd_fill(uint16_t sx, uint16_t sy, uint16_t ex, uint16_t ey, uint32_t color);                                       /* 在RGB LCD指定区域内填充单个颜色 */
+void rgblcd_color_fill(uint16_t sx, uint16_t sy, uint16_t ex, uint16_t ey, uint32_t *color);                                /* 在RGB LCD指定区域内填充指定颜色块 */
+void rgblcd_draw_point(uint16_t x, uint16_t y, uint32_t color);                                                             /* RGB LCD画点 */
+uint32_t rgblcd_read_point(uint16_t x, uint16_t y);                                                                         /* RGB LCD读点 */
+void rgblcd_clear(uint32_t color);                                                                                          /* RGB LCD清屏 */
+void rgblcd_draw_line(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint32_t color);                                  /* RGB LCD画线 */
+void rgblcd_draw_hline(uint16_t x, uint16_t y, uint16_t len, uint32_t color);                                               /* RGB LCD画水平线 */
+void rgblcd_draw_rectangle(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint32_t color);                             /* RGB LCD画矩形 */
+void rgblcd_draw_circle(uint16_t x0, uint16_t y0, uint8_t r, uint32_t color);                                               /* RGB LCD画圆 */
+void rgblcd_fill_circle(uint16_t x, uint16_t y, uint16_t r, uint32_t color);                                                /* RGB LCD画实心圆 */
+void rgblcd_show_char(uint16_t x, uint16_t y, char chr, uint8_t size, uint8_t mode, uint32_t color);                        /* RGB LCD在指定位置显示一个字符 */
+void rgblcd_show_num(uint16_t x, uint16_t y, uint32_t num, uint8_t len, uint8_t size, uint32_t color);                      /* RGB LCD显示len个数字 */
+void rgblcd_show_xnum(uint16_t x, uint16_t y, uint32_t num, uint8_t len, uint8_t size, uint8_t mode, uint32_t color);       /* RGB LCD扩展显示len个数字（显示高位0） */
+void rgblcd_show_string(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint8_t size, char *p, uint32_t color);    /* RGB LCD显示字符串 */
 
 #endif

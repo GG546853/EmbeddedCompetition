@@ -141,7 +141,6 @@ uint8_t imx335_get_capture(uint32_t address)
  * @arg     1: 启动失败
  */
 extern uint8_t nn_input_u8[128 * 128 * 3];
-extern uint8_t g_ltdc_layer2_framebuf[480* 800 *3];
 uint8_t imx335_start_capture(uint32_t address)
 {
     imx335_capture_frame_count = 0;
@@ -287,8 +286,8 @@ static uint8_t imx335_dcmipp_init(void)
     }
 
     dcmipp_pipe_conf_struct.FrameRate  = DCMIPP_FRAME_RATE_ALL;
-    dcmipp_pipe_conf_struct.PixelPipePitch = 1600;
-    dcmipp_pipe_conf_struct.PixelPackerFormat = DCMIPP_PIXEL_PACKER_FORMAT_RGB565_1;
+    dcmipp_pipe_conf_struct.PixelPipePitch = 2400;
+    dcmipp_pipe_conf_struct.PixelPackerFormat = DCMIPP_PIXEL_PACKER_FORMAT_RGB888_YUV444_1;
     if (HAL_DCMIPP_PIPE_SetConfig(&hdcmipp, DCMIPP_PIPE1, &dcmipp_pipe_conf_struct) != HAL_OK)
     {
         return 1;

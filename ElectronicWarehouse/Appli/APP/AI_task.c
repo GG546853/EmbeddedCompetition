@@ -18,16 +18,15 @@
 #define KP_SIZE 5
 #define CMD_BUF_SIZE  64
 
-extern uint8_t g_ltdc_layer2_framebuf[480 * 800 * 3];
-extern uint16_t g_ltdc_lcd_framebuf[480 * 800];
+extern uint8_t g_ltdc_framebuf[480 * 800 * 3];
 
 static inline void set_pixel(int x, int y, uint8_t r, uint8_t g, uint8_t b)
 {
     if (x < 0 || x >= DISP_W || y < 0 || y >= DISP_H) return;
     uint32_t off = (y * DISP_W + x) * 3;
-    g_ltdc_layer2_framebuf[off + 0] = r;
-    g_ltdc_layer2_framebuf[off + 1] = g;
-    g_ltdc_layer2_framebuf[off + 2] = b;
+    g_ltdc_framebuf[off + 0] = r;
+    g_ltdc_framebuf[off + 1] = g;
+    g_ltdc_framebuf[off + 2] = b;
 }
 
 static void fill_rect(int x, int y, int w, int h, uint8_t r, uint8_t g, uint8_t b)
@@ -41,9 +40,9 @@ static void fill_rect(int x, int y, int w, int h, uint8_t r, uint8_t g, uint8_t 
     for (int row = 0; row < h; row++) {
         uint32_t off = ((y + row) * DISP_W + x) * 3;
         for (int col = 0; col < w; col++) {
-            g_ltdc_layer2_framebuf[off + 0] = r;
-            g_ltdc_layer2_framebuf[off + 1] = g;
-            g_ltdc_layer2_framebuf[off + 2] = b;
+            g_ltdc_framebuf[off + 0] = r;
+            g_ltdc_framebuf[off + 1] = g;
+            g_ltdc_framebuf[off + 2] = b;
             off += 3;
         }
     }
@@ -62,29 +61,28 @@ static void draw_kp(int x, int y, uint8_t r, uint8_t g, uint8_t b)
     fill_rect(x - KP_SIZE/2, y - KP_SIZE/2, KP_SIZE, KP_SIZE, r, g, b);
 }
 
+/* DCMIPP 每帧覆盖整个缓冲区，旧检测框自然被擦除 */
+static void draw_one_detection(ai_detection_t *d, uint8_t r, uint8_t g, uint8_t b)
+{
+    int bx = (int)(d->x_center * DISP_W - d->width  * DISP_W * 0.5f);
+    int by = (int)(d->y_center * DISP_H - d->height * DISP_H * 0.5f);
+    int bw = (int)(d->width  * DISP_W);
+    int bh = (int)(d->height * DISP_H);
+
+    draw_box(bx, by, bw, bh, r, g, b);
+
+    for (int k = 0; k < 6; k++) {
+        int kx = (int)(d->keypoints[k][0] * DISP_W);
+        int ky = (int)(d->keypoints[k][1] * DISP_H);
+        draw_kp(kx, ky, r, g, b);
+    }
+}
+
 static void draw_detections_on_display(ai_result_t *result)
 {
-    memset(g_ltdc_layer2_framebuf, 0, sizeof(g_ltdc_layer2_framebuf));
-
     for (uint32_t i = 0; i < result->nb_detect; i++) {
-        ai_detection_t *d = &result->detections[i];
-
-        int bx = (int)(d->x_center * DISP_W - d->width  * DISP_W * 0.5f);
-        int by = (int)(d->y_center * DISP_H - d->height * DISP_H * 0.5f);
-        int bw = (int)(d->width  * DISP_W);
-        int bh = (int)(d->height * DISP_H);
-
-        draw_box(bx, by, bw, bh, 0, 255, 0);
-
-        for (int k = 0; k < 6; k++) {
-            int kx = (int)(d->keypoints[k][0] * DISP_W);
-            int ky = (int)(d->keypoints[k][1] * DISP_H);
-            draw_kp(kx, ky, 255, 0, 0);
-        }
+        draw_one_detection(&result->detections[i], 0, 255, 0);
     }
-
-    SCB_CleanInvalidateDCache_by_Addr(
-        (uint32_t *)g_ltdc_layer2_framebuf, sizeof(g_ltdc_layer2_framebuf));
 }
 
 osThreadId_t AITaskHandle;
@@ -183,7 +181,7 @@ static void run_reid_pipeline(ai_result_t *result)
            best->x_center, best->y_center, best->width, best->height);
 
     /* Step 1: Crop + resize face from display buffer → 128×128 uint8 */
-    ai_crop_resize_face_112(g_ltdc_lcd_framebuf, best, FACE_CROP_BUF);
+    ai_crop_resize_face_112(g_ltdc_framebuf, best, FACE_CROP_BUF);
 
     printf("[REID] DBG2: crop done, quantize start, fc_in=%p\r\n", buffer_in_fc);
 
@@ -215,7 +213,7 @@ static void run_reid_pipeline(ai_result_t *result)
         ai_face_enroll(embedding, reid_name);
         printf("[REID] Enrolled '%s'\r\n", reid_name);
         /* Draw name on display */
-        rgblcd_show_string(10, 10, 200, 16, 16, reid_name, 0x07E0);
+        rgblcd_show_string(10, 10, 200, 16, 16, reid_name, GREEN);
     }
     else if (reid_pending == REID_IDENTIFY) {
         char name[FACE_NAME_MAX];
@@ -223,10 +221,10 @@ static void run_reid_pipeline(ai_result_t *result)
         int idx = ai_face_identify(embedding, name, &dist);
         if (idx >= 0) {
             printf("[REID] Matched: '%s' (dist=%.3f)\r\n", name, dist);
-            rgblcd_show_string(10, 30, 200, 16, 16, name, 0x07E0);
+            rgblcd_show_string(10, 30, 200, 16, 16, name, GREEN);
         } else {
             printf("[REID] No match (dist=%.3f)\r\n", dist);
-            rgblcd_show_string(10, 30, 200, 16, 16, "Unknown", 0xF800);
+            rgblcd_show_string(10, 30, 200, 16, 16, "Unknown", RED);
         }
     }
 

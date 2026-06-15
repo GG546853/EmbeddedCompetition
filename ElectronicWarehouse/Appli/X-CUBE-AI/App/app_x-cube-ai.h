@@ -76,6 +76,7 @@ void ai_crop_resize_face_112(uint8_t *src_fb, ai_detection_t *det, uint8_t *outp
 #define FACE_RATIO_THRESHOLD    0.75f  /* best_dist / second_dist; <0.75 means confident match */
 #define FACE_CONFIDENT_DIST     0.3f   /* below this distance, skip ratio check entirely */
 #define FACE_NAME_MAX           16
+#define FACE_ENROLL_SAMPLES      5     /* multi-shot enrollment: average N captures */
 
 typedef struct {
     float embedding[FACE_EMBEDDING_DIM];
@@ -90,6 +91,7 @@ void ai_face_reid_run(float *embedding_out);
 
 /* Gallery management */
 int  ai_face_enroll(const float *embedding, const char *name);
+int  ai_face_enroll_multi(const float *embedding, const char *name);
 int  ai_face_identify(const float *embedding, char *name_out, float *dist_out);
 void ai_face_gallery_print(void);
 /* USER CODE END includes */

@@ -12,6 +12,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "uart.h"
+#include "dma2d.h"
 #define DISP_W 800
 #define DISP_H 480
 #define BOX_THICKNESS 3
@@ -20,14 +21,7 @@
 
 extern uint8_t g_ltdc_framebuf[480 * 800 * 3];
 
-static inline void set_pixel(int x, int y, uint8_t r, uint8_t g, uint8_t b)
-{
-    if (x < 0 || x >= DISP_W || y < 0 || y >= DISP_H) return;
-    uint32_t off = (y * DISP_W + x) * 3;
-    g_ltdc_framebuf[off + 0] = r;
-    g_ltdc_framebuf[off + 1] = g;
-    g_ltdc_framebuf[off + 2] = b;
-}
+#define RGB888(r, g, b)  (((uint32_t)(r) << 16) | ((uint32_t)(g) << 8) | (uint32_t)(b))
 
 static void fill_rect(int x, int y, int w, int h, uint8_t r, uint8_t g, uint8_t b)
 {
@@ -37,15 +31,13 @@ static void fill_rect(int x, int y, int w, int h, uint8_t r, uint8_t g, uint8_t 
     if (y + h > DISP_H) h = DISP_H - y;
     if (w <= 0 || h <= 0) return;
 
-    for (int row = 0; row < h; row++) {
-        uint32_t off = ((y + row) * DISP_W + x) * 3;
-        for (int col = 0; col < w; col++) {
-            g_ltdc_framebuf[off + 0] = r;
-            g_ltdc_framebuf[off + 1] = g;
-            g_ltdc_framebuf[off + 2] = b;
-            off += 3;
-        }
-    }
+    hdma2d.Init.Mode = DMA2D_R2M;
+    hdma2d.Init.ColorMode = DMA2D_OUTPUT_RGB888;
+    hdma2d.Init.OutputOffset = DISP_W - w;
+    HAL_DMA2D_Init(&hdma2d);
+    HAL_DMA2D_Start(&hdma2d, RGB888(r, g, b),
+                    (uint32_t)&g_ltdc_framebuf[(y * DISP_W + x) * 3], w, h);
+    HAL_DMA2D_PollForTransfer(&hdma2d, 50);
 }
 
 static void draw_box(int x, int y, int w, int h, uint8_t r, uint8_t g, uint8_t b)
@@ -80,9 +72,17 @@ static void draw_one_detection(ai_detection_t *d, uint8_t r, uint8_t g, uint8_t 
 
 static void draw_detections_on_display(ai_result_t *result)
 {
+    if (result->nb_detect == 0) return;
+
+    /* 暂停 PIPE1 连续写入，防止 DCMIPP 新帧覆盖正在绘制的框 */
+    HAL_DCMIPP_CSI_PIPE_Stop(&hdcmipp, DCMIPP_PIPE1, DCMIPP_VIRTUAL_CHANNEL0);
+
     for (uint32_t i = 0; i < result->nb_detect; i++) {
         draw_one_detection(&result->detections[i], 0, 255, 0);
     }
+
+    HAL_DCMIPP_CSI_PIPE_Start(&hdcmipp, DCMIPP_PIPE1, DCMIPP_VIRTUAL_CHANNEL0,
+                              (uint32_t)g_ltdc_framebuf, DCMIPP_MODE_CONTINUOUS);
 }
 
 osThreadId_t AITaskHandle;
@@ -117,6 +117,7 @@ typedef enum {
 
 static reid_action_t reid_pending;
 static char          reid_name[FACE_NAME_MAX];
+static int           g_capture_pending = 0; /* set by 'register' or 's' cmd, consumed by pipeline */
 
 /* BSP interrupt-driven RX accumulates into g_uart_rx_buf[].
    g_uart_rx_sta bit15 = line ready (received \r\n). */
@@ -140,7 +141,15 @@ static void process_serial_commands(void)
         strncpy(reid_name, cmd + 9, FACE_NAME_MAX - 1);
         reid_name[FACE_NAME_MAX - 1] = '\0';
         reid_pending = REID_REGISTER;
-        printf("[REID] Will register face as '%s' on next frame\r\n", reid_name);
+        g_capture_pending = 1;  /* first capture at current angle */
+        printf("[REID] Enrolling '%s' — send 's' for next sample\r\n", reid_name);
+    }
+    else if (strcmp(cmd, "s") == 0) {
+        if (reid_pending == REID_REGISTER) {
+            g_capture_pending = 1;
+        } else {
+            printf("[REID] Not enrolling — use 'register <name>' first\r\n");
+        }
     }
     else if (strcmp(cmd, "identify") == 0) {
         reid_pending = REID_IDENTIFY;
@@ -151,7 +160,8 @@ static void process_serial_commands(void)
     }
     else if (strcmp(cmd, "help") == 0) {
         printf("[HELP] Commands:\r\n");
-        printf("  register <name>  -- enroll current face\r\n");
+        printf("  register <name>  -- start enrolling current face\r\n");
+        printf("  s                -- capture one sample (during enrollment)\r\n");
         printf("  identify         -- identify current face\r\n");
         printf("  gallery          -- list registered faces\r\n");
     }
@@ -169,10 +179,14 @@ static void run_reid_pipeline(ai_result_t *result)
 {
     if (reid_pending == REID_IDLE) return;
     if (result->nb_detect == 0) {
-        printf("[REID] No face detected, skipping.\r\n");
-        reid_pending = REID_IDLE;
+        /* In multi-enroll mode keep waiting for a face; otherwise skip. */
+        if (reid_pending != REID_REGISTER)
+            reid_pending = REID_IDLE;
         return;
     }
+    /* Waiting for 's' trigger — don't run inference until then */
+    if (reid_pending == REID_REGISTER && !g_capture_pending)
+        return;
 
     /* Use the highest-confidence detection */
     ai_detection_t *best = &result->detections[0];
@@ -210,10 +224,16 @@ static void run_reid_pipeline(ai_result_t *result)
 
     /* Step 5: Enroll or identify */
     if (reid_pending == REID_REGISTER) {
-        ai_face_enroll(embedding, reid_name);
-        printf("[REID] Enrolled '%s'\r\n", reid_name);
-        /* Draw name on display */
-        rgblcd_show_string(10, 10, 200, 16, 16, reid_name, GREEN);
+        if (g_capture_pending) {
+            g_capture_pending = 0;
+            int remaining = ai_face_enroll_multi(embedding, reid_name);
+            if (remaining == 0) {
+                reid_pending = REID_IDLE;
+                printf("[REID] Enrolled '%s'\r\n", reid_name);
+                rgblcd_show_string(10, 10, 200, 16, 16, reid_name, GREEN);
+            }
+            /* else: keep REID_REGISTER; wait for next 's' */
+        }
     }
     else if (reid_pending == REID_IDENTIFY) {
         char name[FACE_NAME_MAX];
@@ -228,7 +248,8 @@ static void run_reid_pipeline(ai_result_t *result)
         }
     }
 
-    reid_pending = REID_IDLE;
+    if (reid_pending == REID_IDENTIFY)
+        reid_pending = REID_IDLE;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -266,7 +287,7 @@ void AI_Task(void *argument)
         memset(&result, 0, sizeof(result));
         MX_X_CUBE_AI_Process_User(&result);
 
-#if 1
+#if 0
         /* Print results via serial */
         printf("--- Frame ---\r\n");
         printf("Detections: %lu\r\n", result.nb_detect);

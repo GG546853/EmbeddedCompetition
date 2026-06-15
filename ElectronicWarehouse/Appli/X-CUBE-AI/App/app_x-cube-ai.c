@@ -245,7 +245,7 @@ static void ai_detection_temporal_smooth(ai_result_t *result)
          }
      }
 
-#if 1
+#if 0
      /* DEBUG: print buffer info */
      printf("[DBG-BUF] nbits=%u\r\n", ob[0].nbits);
      for (int i = 0; i < 4; i++) {
@@ -299,7 +299,7 @@ static void ai_detection_temporal_smooth(ai_result_t *result)
          int box_is_s8      = (b_info->type == DataType_INT8);
          int score_is_s8    = (s_info->type == DataType_INT8);
 
-#if 1
+#if 0
          /* DEBUG: print first 20 raw scores for this grid */
          printf("[DBG-SCO] grid=%d nb=%lu score_i=%d box_i=%d\r\n",
                 grid, nb, score_i, box_i);
@@ -369,7 +369,7 @@ static void ai_detection_temporal_smooth(ai_result_t *result)
              /* reject boxes smaller than 10% of image */
              if (det.width < 0.10f || det.height < 0.10f) continue;
 
-#if 1
+#if 0
              /* DEBUG: print first detection above threshold */
              if (nb_candidates == 0) {
                  printf("[DBG-DET] 1st det grid=%d i=%lu score=%.4f\r\n",
@@ -391,7 +391,7 @@ static void ai_detection_temporal_smooth(ai_result_t *result)
          }
      }
 
-#if 1
+#if 0
      printf("[DBG-PP] total candidates before NMS: %lu\r\n", nb_candidates);
 #endif
 
@@ -429,7 +429,7 @@ static void ai_detection_temporal_smooth(ai_result_t *result)
  #define CROP_DISP_W  800
  #define CROP_DISP_H  480
  #define CROP_OUT_SZ  112
- #define CROP_MARGIN  0.3f   /* 30% expansion beyond detection box */
+ #define CROP_MARGIN  0.0f   /* 30% expansion beyond detection box */
 
 #define CROP_TEMP_MAX_PX 480
 #define CROP_TEMP_SIZE  (CROP_TEMP_MAX_PX * CROP_TEMP_MAX_PX * 3)
@@ -545,34 +545,19 @@ static uint8_t crop_temp_buf[CROP_TEMP_SIZE]
  /*           uint8 → int8 Quantization (match network_fc input scale)          */
  /* -------------------------------------------------------------------------- */
 
- /* network_fc input: int8, scale = 0.00784313772, zp = 0
-    Camera pixel [0,255] → int8:
-      s8 = round(u8 / 255.0 / 0.00784313772)  */
- #define FC_INPUT_SCALE  0.00784313772f
-
- static const int8_t quant_u8_to_s8_lut[256] = {
-       0,   0,   1,   1,   2,   2,   3,   3,   4,   4,   5,   5,   6,   6,   7,   7,
-       8,   8,   9,   9,  10,  10,  11,  11,  12,  12,  13,  13,  14,  14,  15,  15,
-      16,  16,  17,  17,  18,  18,  19,  19,  20,  20,  21,  21,  22,  22,  23,  23,
-      24,  24,  25,  25,  26,  26,  27,  27,  28,  28,  29,  29,  30,  30,  31,  31,
-      32,  32,  33,  33,  34,  34,  35,  35,  36,  36,  37,  37,  38,  38,  39,  39,
-      40,  40,  41,  41,  42,  42,  43,  43,  44,  44,  45,  45,  46,  46,  47,  47,
-      48,  48,  49,  49,  50,  50,  51,  51,  52,  52,  53,  53,  54,  54,  55,  55,
-      56,  56,  57,  57,  58,  58,  59,  59,  60,  60,  61,  61,  62,  62,  63,  63,
-      64,  64,  65,  65,  66,  66,  67,  67,  68,  68,  69,  69,  70,  70,  71,  71,
-      72,  72,  73,  73,  74,  74,  75,  75,  76,  76,  77,  77,  78,  78,  79,  79,
-      80,  80,  81,  81,  82,  82,  83,  83,  84,  84,  85,  85,  86,  86,  87,  87,
-      88,  88,  89,  89,  90,  90,  91,  91,  92,  92,  93,  93,  94,  94,  95,  95,
-      96,  96,  97,  97,  98,  98,  99,  99, 100, 100, 101, 101, 102, 102, 103, 103,
-     104, 104, 105, 105, 106, 106, 107, 107, 108, 108, 109, 109, 110, 110, 111, 111,
-     112, 112, 113, 113, 114, 114, 115, 115, 116, 116, 117, 117, 118, 118, 119, 119,
-     120, 120, 121, 121, 122, 122, 123, 123, 124, 124, 125, 125, 126, 126, 127, 127,
- };
+ /* network_fc input: int8, scale = 0.007843138, zp = 0
+    Model was trained with [-1, 1] normalization (MobileFaceNet standard):
+      float_norm = u8 / 127.5 - 1.0        → [-1, 1]
+      s8 = round(float_norm / 0.007843138) → int8 [-128, 127]
+    Combined:
+      s8 = round((u8/127.5 - 1.0) / 0.007843138)
+         = round(u8 - 127.5)
+         ≈ (int8_t)((int16_t)u8 - 128)                              */
 
  void quantize_u8_to_s8(const uint8_t *u8, int8_t *s8, uint32_t count)
  {
      for (uint32_t i = 0; i < count; i++) {
-         s8[i] = quant_u8_to_s8_lut[u8[i]];
+         s8[i] = (int8_t)((int16_t)u8[i] - 128);
      }
  }
 
@@ -582,6 +567,13 @@ static uint8_t crop_temp_buf[CROP_TEMP_SIZE]
 
  static face_entry_t face_gallery[FACE_GALLERY_MAX];
  static uint32_t     face_gallery_count;
+
+ /* ---------- Multi-shot enrollment state ---------- */
+
+ static int      enroll_active;
+ static char     enroll_name[FACE_NAME_MAX];
+ static float    enroll_accum[FACE_EMBEDDING_DIM];
+ static int      enroll_count;
 
  /* L2-normalize a vector in-place */
  static void l2_normalize(float *v, int dim)
@@ -599,6 +591,16 @@ static uint8_t crop_temp_buf[CROP_TEMP_SIZE]
 
  int ai_face_enroll(const float *embedding, const char *name)
  {
+     /* Check for duplicate: update existing entry with same name */
+     for (uint32_t i = 0; i < face_gallery_count; i++) {
+         if (strncmp(face_gallery[i].name, name, FACE_NAME_MAX) == 0) {
+             memcpy(face_gallery[i].embedding,
+                    embedding, FACE_EMBEDDING_DIM * sizeof(float));
+             l2_normalize(face_gallery[i].embedding, FACE_EMBEDDING_DIM);
+             printf("[REID] Updated '%s' (slot %lu)\r\n", name, i);
+             return (int)i;
+         }
+     }
      if (face_gallery_count >= FACE_GALLERY_MAX) return -1;
      /* Store L2-normalised embedding */
      memcpy(face_gallery[face_gallery_count].embedding,
@@ -608,6 +610,77 @@ static uint8_t crop_temp_buf[CROP_TEMP_SIZE]
      face_gallery[face_gallery_count].name[FACE_NAME_MAX - 1] = '\0';
      face_gallery_count++;
      return 0;
+ }
+
+ /*
+  * Multi-shot enrollment: accumulate N normalized embeddings, then
+  * store the averaged (and re-normalised) result.  Call once per frame
+  * while reid_pending == REID_REGISTER; the caller keeps the state
+  * alive until remaining == 0.
+  *
+  * Returns remaining samples needed (0 = done and stored).
+  */
+ int ai_face_enroll_multi(const float *embedding, const char *name)
+ {
+     /* Reset on first call or name change */
+     if (!enroll_active || strncmp(enroll_name, name, FACE_NAME_MAX) != 0) {
+         enroll_active = 1;
+         strncpy(enroll_name, name, FACE_NAME_MAX - 1);
+         enroll_name[FACE_NAME_MAX - 1] = '\0';
+         memset(enroll_accum, 0, sizeof(enroll_accum));
+         enroll_count  = 0;
+     }
+
+     /* Normalise this embedding and accumulate */
+     float norm_emb[FACE_EMBEDDING_DIM];
+     memcpy(norm_emb, embedding, sizeof(norm_emb));
+     l2_normalize(norm_emb, FACE_EMBEDDING_DIM);
+     for (int i = 0; i < FACE_EMBEDDING_DIM; i++) {
+         enroll_accum[i] += norm_emb[i];
+     }
+     enroll_count++;
+
+     printf("[REID] Enroll sample %d/%d for '%s'\r\n",
+            enroll_count, FACE_ENROLL_SAMPLES, enroll_name);
+
+     if (enroll_count >= FACE_ENROLL_SAMPLES) {
+         /* Average and re-normalise */
+         for (int i = 0; i < FACE_EMBEDDING_DIM; i++) {
+             enroll_accum[i] /= (float)enroll_count;
+         }
+         l2_normalize(enroll_accum, FACE_EMBEDDING_DIM);
+
+         /* Store in gallery (reuse single-shot logic) */
+         int duplicate = 0;
+         for (uint32_t i = 0; i < face_gallery_count; i++) {
+             if (strncmp(face_gallery[i].name, enroll_name, FACE_NAME_MAX) == 0) {
+                 memcpy(face_gallery[i].embedding, enroll_accum,
+                        FACE_EMBEDDING_DIM * sizeof(float));
+                 printf("[REID] Updated '%s' (slot %lu)\r\n", enroll_name, i);
+                 duplicate = 1;
+                 break;
+             }
+         }
+         if (!duplicate) {
+             if (face_gallery_count >= FACE_GALLERY_MAX) {
+                 printf("[REID] Gallery full, cannot enroll '%s'\r\n", enroll_name);
+             } else {
+                 memcpy(face_gallery[face_gallery_count].embedding, enroll_accum,
+                        FACE_EMBEDDING_DIM * sizeof(float));
+                 strncpy(face_gallery[face_gallery_count].name, enroll_name,
+                         FACE_NAME_MAX - 1);
+                 face_gallery[face_gallery_count].name[FACE_NAME_MAX - 1] = '\0';
+                 face_gallery_count++;
+                 printf("[REID] Enrolled '%s' into slot %lu\r\n",
+                        enroll_name, face_gallery_count - 1);
+             }
+         }
+
+         enroll_active = 0;
+         return 0;
+     }
+
+     return FACE_ENROLL_SAMPLES - enroll_count;
  }
 
  int ai_face_identify(const float *embedding, char *name_out, float *dist_out)
@@ -622,6 +695,7 @@ static uint8_t crop_temp_buf[CROP_TEMP_SIZE]
      float best_dist   = 1e9f;
      float second_dist = 1e9f;
      int   best_idx    = -1;
+     int   second_idx  = -1;
 
      for (uint32_t i = 0; i < face_gallery_count; i++) {
          float sum_sq = 0.0f;
@@ -632,22 +706,27 @@ static uint8_t crop_temp_buf[CROP_TEMP_SIZE]
          float dist = sqrtf(sum_sq);
          if (dist < best_dist) {
              second_dist = best_dist;
+             second_idx  = best_idx;
              best_dist   = dist;
              best_idx    = (int)i;
          } else if (dist < second_dist) {
              second_dist = dist;
+             second_idx  = (int)i;
          }
      }
 
      if (best_idx < 0) { if (dist_out) *dist_out = 0.0f; return -1; }
 
-     /* Distance ratio check: only when it's not already an obvious match.
-        If best_dist is very small, skip ratio check — we're confident. */
-     if (best_dist > FACE_CONFIDENT_DIST && face_gallery_count >= 2) {
+     /* Distance ratio check: only when there are 2+ different people,
+        and it's not already an obvious match. */
+     if (best_dist > FACE_CONFIDENT_DIST && face_gallery_count >= 2
+         && second_idx >= 0
+         && strncmp(face_gallery[best_idx].name,
+                    face_gallery[second_idx].name, FACE_NAME_MAX) != 0) {
          float ratio = best_dist / second_dist;
          if (ratio > FACE_RATIO_THRESHOLD) {
              if (dist_out) *dist_out = best_dist;
-             printf("[REID] Rejected: ratio=%.3f (best=%.3f, second=%.3f, threshold=%.2f)\r\n",
+             printf("[REID] Rejected: ratio=%.3f (best=%.3f second=%.3f threshold=%.2f)\r\n",
                     ratio, best_dist, second_dist, (double)FACE_RATIO_THRESHOLD);
              return -1;
          }

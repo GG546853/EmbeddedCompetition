@@ -181,3 +181,103 @@ HyperRAM 时钟修复：ClockPrescaler 配置错误导致总线频率减半
   ├──────┼──────────────────┼────────────────────────┼───────────────────┤
   │ 写入 │ CPU 画检测框     │ 几条线/几个点          │ 可忽略            │
   └──────┴──────────────────┴────────────────────────┴───────────────────┘
+
+ MobileFaceNet INT8 量化输入修正：uint8→int8 映射范围错误导致人脸全认成陌生人
+
+ Context
+
+ PC 端（face_recog.py）预处理将 uint8 [0,255] 归一化到 [-1, 1] 再送入 ONNX Runtime。ONNX Runtime
+ 内部 QuantizeLinear(scale=0.007843138, zp=0) 将其转为 int8：
+
+ 	q = round(f / 0.007843138)
+ 	f = u8 / 127.5 - 1.0
+ 	→ q = round(u8 - 127.5) ≈ u8 - 128        int8 范围 [-128, 127]
+
+ 嵌入式端 quantize_u8_to_s8() 错误地假设输入归一化到 [0, 1]：
+
+ 	q = round(u8 / 255.0 / 0.007843138)
+ 	  = round(u8 * 0.5)                          int8 范围 [0, 127]
+
+ 同一像素在 PC 和嵌入式端产生完全不同的 int8 值：
+
+ ┌───────────┬──────────────┬─────────────────┐
+ │ 像素 u8   │ PC 端 int8   │ 嵌入式端 int8    │
+ ├───────────┼──────────────┼─────────────────┤
+ │ 0 (黑)    │ -128         │ 0               │
+ │ 128 (灰)  │ 0            │ 64              │
+ │ 255 (白)  │ 127          │ 127             │
+ └───────────┴──────────────┴─────────────────┘
+
+ 嵌入式端只用了一半动态范围 [0, 127] 且整体偏正 128，与模型训练时的 [-128, 127] 均值为 0
+ 分布完全不同。模型收到扭曲的"图像"，产出无意义 embedding → 全认陌生人。
+
+ 根因：MobileFaceNet 训练时使用 [-1, 1] 归一化（除以 127.5 减 1.0），量化公式应以此为准。
+ 原代码误用 [0, 1] 归一化（除以 255.0）推导量化 LUT。
+
+ 修复
+
+ 文件：Appli/X-CUBE-AI/App/app_x-cube-ai.c
+
+ 删除 256 项 LUT 表和 FC_INPUT_SCALE 宏，quantize_u8_to_s8() 改为一行：
+
+     s8[i] = (int8_t)((int16_t)u8[i] - 128);
+
+ u8 [0, 255] → int8 [-128, 127]，与 PC 端 ONNX Runtime 内部量化完全等价。
+
+
+ 多次采样注册：从单次采集到 5 次手动采集均值
+
+ Context
+
+ PC 端 face_recog.py 注册时从 5 个不同角度采集 embedding 后取均值，嵌入端原来只采 1 次。
+ 单次注册对角度/光线过拟合，真人稍变角度即被判为陌生人。
+
+ 交互设计
+
+ 发送 register <name> 进入注册模式并自动采集第 1 次，之后每发 s 命令采集 1 次，
+ 满 5 次自动求均值存入 gallery：
+
+     [CMD] register zkw
+     [REID] Enroll sample 1/5 for 'zkw'       ← 自动第 1 次
+     [CMD] s
+     [REID] Enroll sample 2/5 for 'zkw'       ← 手动第 2 次
+     ...
+     [CMD] s
+     [REID] Enroll sample 5/5 for 'zkw'
+     [REID] Enrolled 'zkw'                     ← 自动完成
+
+ 实现
+
+ ai_face_enroll_multi() 新增于 app_x-cube-ai.c：
+ - 每次调用归一化 1 个 embedding 并累加到 accum
+ - 满 FACE_ENROLL_SAMPLES（5）次后：accum / N → L2 归一化 → 写入 face_gallery
+ - 返回剩余次数给调用方（0 = 完成）
+
+ g_capture_pending 标志控制采集触发：
+ - register <name> 和 s 命令置 1
+ - run_reid_pipeline 中 if (g_capture_pending) 才调用 ai_face_enroll_multi，调用后清零
+ - 等待 s 时 pipeline 提前 return，不跑 NPU 推理（省算力）
+
+ ai_face_enroll 改为同名覆盖：重新注册已存在的人名时更新 embedding 而非追加新条目。
+
+ ai_face_identify ratio 检查增加同名排除：best 和 second 同名时跳过 ratio 检查，
+ 避免同一人多条目导致的误拒绝。
+
+ 修改文件：
+   Appli/X-CUBE-AI/App/app_x-cube-ai.h — FACE_ENROLL_SAMPLES 5 + 函数声明
+   Appli/X-CUBE-AI/App/app_x-cube-ai.c — ai_face_enroll_multi 状态机 + 同名覆盖 + ratio 同名排除
+   Appli/APP/AI_task.c — s 命令 + g_capture_pending 门控 + 提前 return
+
+ Bug 修复：g_capture_pending 未显式初始化为 0 导致自动连续采集
+
+ Context
+
+ static int g_capture_pending 声明未加 = 0。STM32 启动代码理应清零 BSS，但若因链接脚本
+ 或其他原因未清零，变量持有随机非零值，导致每帧进入 if (g_capture_pending) 触发采集。
+
+ 加上 ai_face_enroll_multi 满 5 次后 enroll_active = 0，下次调用检测到 !enroll_active
+ 即重置计数器 → 无限循环 1-5 重新开始。
+
+ 修复：Appli/APP/AI_task.c — 加 = 0 显式初始化
+
+ 	static int g_capture_pending = 0;

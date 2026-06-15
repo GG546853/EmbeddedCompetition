@@ -32,14 +32,14 @@
  * --cache-maintenance = true
  * --enable-virtual-mem-pools = true
  * --native-float = true
- * --json-quant-file = "C:/Users/96022/.stm32cubemx/network_fc_output/mobilefacenet_int8_faces_OE_3_3_0_Q.json"
+ * --json-quant-file = "C:/Users/96022/.stm32cubemx/network_output/mobilefacenet_int8_faces_OE_3_3_0_Q.json"
  * --optimization = 3
  * --Os = true
  * --Omax-ca-pipe = 4
  * --Ocache-opt = true
  * --output-info-file = "c_info"
- * --onnx-input = "C:/Users/96022/.stm32cubemx/network_fc_output/mobilefacenet_int8_faces_OE_3_3_0.onnx"
- * --out-dir-prefix = "C:/Users/96022/AppData/Local/Temp/mxAI_workspace41280520488004503320758062917970/neural_art__network_fc/"
+ * --onnx-input = "C:/Users/96022/.stm32cubemx/network_output/mobilefacenet_int8_faces_OE_3_3_0.onnx"
+ * --out-dir-prefix = "C:/Users/96022/AppData/Local/Temp/mxAI_workspace37637666625003453876243369349770/neural_art__network_fc/"
  * --network-name = "network_fc"
  * --all-buffers-info = true
  * --mvei = true

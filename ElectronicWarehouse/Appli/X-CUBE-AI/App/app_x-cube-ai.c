@@ -245,7 +245,7 @@ static void ai_detection_temporal_smooth(ai_result_t *result)
          }
      }
 
-#if 0
+#if 1
      /* DEBUG: print buffer info */
      printf("[DBG-BUF] nbits=%u\r\n", ob[0].nbits);
      for (int i = 0; i < 4; i++) {
@@ -299,7 +299,7 @@ static void ai_detection_temporal_smooth(ai_result_t *result)
          int box_is_s8      = (b_info->type == DataType_INT8);
          int score_is_s8    = (s_info->type == DataType_INT8);
 
-#if 0
+#if 1
          /* DEBUG: print first 20 raw scores for this grid */
          printf("[DBG-SCO] grid=%d nb=%lu score_i=%d box_i=%d\r\n",
                 grid, nb, score_i, box_i);
@@ -369,7 +369,7 @@ static void ai_detection_temporal_smooth(ai_result_t *result)
              /* reject boxes smaller than 10% of image */
              if (det.width < 0.10f || det.height < 0.10f) continue;
 
-#if 0
+#if 1
              /* DEBUG: print first detection above threshold */
              if (nb_candidates == 0) {
                  printf("[DBG-DET] 1st det grid=%d i=%lu score=%.4f\r\n",
@@ -391,7 +391,7 @@ static void ai_detection_temporal_smooth(ai_result_t *result)
          }
      }
 
-#if 0
+#if 1
      printf("[DBG-PP] total candidates before NMS: %lu\r\n", nb_candidates);
 #endif
 

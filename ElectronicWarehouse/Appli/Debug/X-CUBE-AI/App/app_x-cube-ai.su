@@ -16,7 +16,7 @@
 ../X-CUBE-AI/App/app_x-cube-ai.c:76:15:box_iou	88	static
 ../X-CUBE-AI/App/app_x-cube-ai.c:107:14:sort_by_confidence	96	static
 ../X-CUBE-AI/App/app_x-cube-ai.c:128:13:ai_detection_temporal_smooth	152	static
-../X-CUBE-AI/App/app_x-cube-ai.c:200:14:ai_blazeface_postprocess	384	static,ignoring_inline_asm
+../X-CUBE-AI/App/app_x-cube-ai.c:200:14:ai_blazeface_postprocess	440	static,ignoring_inline_asm
 ../X-CUBE-AI/App/app_x-cube-ai.c:440:7:ai_crop_resize_face_112	208	static,ignoring_inline_asm
 ../X-CUBE-AI/App/app_x-cube-ai.c:572:7:quantize_u8_to_s8	32	static
 ../X-CUBE-AI/App/app_x-cube-ai.c:587:14:l2_normalize	32	static

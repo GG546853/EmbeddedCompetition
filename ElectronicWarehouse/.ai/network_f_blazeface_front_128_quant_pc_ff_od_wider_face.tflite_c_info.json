@@ -15598,7 +15598,7 @@
   "ec_blobs_info": [],
   "environment": {
     "generated_model": {
-      "generated_time": "2026-06-03T04:28:40.154429300+0000",
+      "generated_time": "2026-06-15T11:41:58.069231000+0000",
       "model_files": [
         {
           "name": "network_f.c",
@@ -15634,12 +15634,12 @@
       "size": 0,
       "type": ""
     },
-    "network_signature": "0x64d1e9e38b8b3e7a",
+    "network_signature": "0x487d2394fdd65ab4",
     "target": "",
     "test_name": "",
     "tools": [
       {
-        "arguments": "generate --target stm32n6 --name network_f -m C:/Users/96022/Desktop/STM32N6-GettingStarted-FaceDetection-PCtest/blazeface_front_128_quant_pc_ff_od_wider_face.tflite --st-neural-art net_f_flash@C:/Users/96022/STM32Cube/Repository/Packs/STMicroelectronics/X-CUBE-AI/10.2.0/scripts/N6_scripts/user_neuralart.json --workspace C:/Users/96022/AppData/Local/Temp/mxAI_workspace108132312270012027002308566579008 --output C:/Users/96022/.stm32cubemx/network_f_output",
+        "arguments": "generate --target stm32n6 --name network_f -m C:/Users/96022/Desktop/STM32N6-GettingStarted-FaceDetection-PCtest/blazeface_front_128_quant_pc_ff_od_wider_face.tflite --st-neural-art net_f_flash@C:/Users/96022/STM32Cube/Repository/Packs/STMicroelectronics/X-CUBE-AI/10.2.0/scripts/N6_scripts/user_neuralart.json --workspace C:/Users/96022/AppData/Local/Temp/mxAI_workspace37353591465002727298410088435988 --output C:/Users/96022/.stm32cubemx/network_f_output",
         "environment": [
           "STATS_TYPE=X-CUBE-AI"
         ],
@@ -15660,10 +15660,10 @@
         "version": "2.2.0-20266 2adc00962"
       },
       {
-        "arguments": " -i C:\\Users\\96022\\.stm32cubemx\\network_f_output\\blazeface_front_128_quant_pc_ff_od_wider_face_OE_3_3_0.onnx --json-quant-file C:\\Users\\96022\\.stm32cubemx\\network_f_output\\blazeface_front_128_quant_pc_ff_od_wider_face_OE_3_3_0_Q.json -g network_f.c --load-mdesc C:\\Users\\96022\\STM32Cube\\Repository\\Packs\\STMicroelectronics\\X-CUBE-AI\\10.2.0\\Utilities\\configs\\stm32n6.mdesc --load-mpool C:\\Users\\96022\\STM32Cube\\Repository\\Packs\\STMicroelectronics\\X-CUBE-AI\\10.2.0\\scripts\\N6_scripts\\my_mpools\\stm32n6_net_f.mpool --save-mpool-file C:\\Users\\96022\\AppData\\Local\\Temp\\mxAI_workspace108132312270012027002308566579008\\neural_art__network_f\\stm32n6_net_f.mpool --out-dir-prefix C:\\Users\\96022\\AppData\\Local\\Temp\\mxAI_workspace108132312270012027002308566579008\\neural_art__network_f/ --optimization 3 --all-buffers-info --mvei --cache-maintenance --Oauto-sched --native-float --enable-virtual-mem-pools --Omax-ca-pipe 4 --Ocache-opt --Os --output-info-file c_info.json --network-name network_f",
+        "arguments": " -i C:\\Users\\96022\\.stm32cubemx\\network_f_output\\blazeface_front_128_quant_pc_ff_od_wider_face_OE_3_3_0.onnx --json-quant-file C:\\Users\\96022\\.stm32cubemx\\network_f_output\\blazeface_front_128_quant_pc_ff_od_wider_face_OE_3_3_0_Q.json -g network_f.c --load-mdesc C:\\Users\\96022\\STM32Cube\\Repository\\Packs\\STMicroelectronics\\X-CUBE-AI\\10.2.0\\Utilities\\configs\\stm32n6.mdesc --load-mpool C:\\Users\\96022\\STM32Cube\\Repository\\Packs\\STMicroelectronics\\X-CUBE-AI\\10.2.0\\scripts\\N6_scripts\\my_mpools\\stm32n6_net_f.mpool --save-mpool-file C:\\Users\\96022\\AppData\\Local\\Temp\\mxAI_workspace37353591465002727298410088435988\\neural_art__network_f\\stm32n6_net_f.mpool --out-dir-prefix C:\\Users\\96022\\AppData\\Local\\Temp\\mxAI_workspace37353591465002727298410088435988\\neural_art__network_f/ --optimization 3 --all-buffers-info --mvei --cache-maintenance --Oauto-sched --native-float --enable-virtual-mem-pools --Omax-ca-pipe 4 --Ocache-opt --Os --output-info-file c_info.json --network-name network_f",
         "environment": [],
         "input_model": {
-          "generated_time": "2026-06-03T12:28:40+0800",
+          "generated_time": "2026-06-15T19:41:57+0800",
           "model_files": [
             {
               "name": "blazeface_front_128_quant_pc_ff_od_wider_face_OE_3_3_0.onnx",

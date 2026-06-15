@@ -266,7 +266,7 @@ void AI_Task(void *argument)
         memset(&result, 0, sizeof(result));
         MX_X_CUBE_AI_Process_User(&result);
 
-#if 0
+#if 1
         /* Print results via serial */
         printf("--- Frame ---\r\n");
         printf("Detections: %lu\r\n", result.nb_detect);

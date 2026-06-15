@@ -5,4 +5,4 @@
 ../APP/AI_task.c:81:13:draw_detections_on_display	24	static
 ../APP/AI_task.c:124:13:process_serial_commands	80	static
 ../APP/AI_task.c:168:13:run_reid_pipeline	600	static,ignoring_inline_asm
-../APP/AI_task.c:238:6:AI_Task	128	static,ignoring_inline_asm
+../APP/AI_task.c:238:6:AI_Task	176	static,ignoring_inline_asm

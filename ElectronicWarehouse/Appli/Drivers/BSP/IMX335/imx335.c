@@ -22,10 +22,12 @@
 #include "STM32_IMX335/imx335.h"
 #include "isp_api.h"
 #include "isp_param_conf.h"
+#include "cmsis_os.h"
 
 extern I2C_HandleTypeDef hi2c2; /* I2C句柄 */
 
 extern DCMIPP_HandleTypeDef hdcmipp;
+extern osSemaphoreId_t cam_frame_sem;
 static __IO uint32_t imx335_capture_frame_count = 0;
 static IMX335_Object_t imx335_object = {0};
 static ISP_HandleTypeDef imx335_hisp = {0};
@@ -60,8 +62,10 @@ uint8_t imx335_init(void)
 
     if (imx335_dcmipp_init() != 0)
     {
+    	printf("[IMX335] dcmipp_init FAILED\r\n");
         return 1;
     }
+    printf("[IMX335] dcmipp_init OK\r\n");
 
     imx335_io_struct.Init = imx335_io_init;
     imx335_io_struct.DeInit = imx335_io_deinit;
@@ -75,22 +79,26 @@ uint8_t imx335_init(void)
     }
     else if (IMX335_ReadID(&imx335_object, &id) != IMX335_OK)
     {
+    	printf("[IMX335] ReadID FAILED\r\n");
         return 1;
     }
     else
     {
         if (id != (uint32_t)IMX335_ID)
         {
+        	 printf("[IMX335] ID mismatch: got 0x%04lX, expected 0x%04X\r\n", id, IMX335_ID);
             return 1;
         }
         else
         {
             if (IMX335_Init(&imx335_object, IMX335_R2592_1944, IMX335_RAW_RGGB10) != IMX335_OK)
             {
+            	printf("1\r\n");
                 return 1;
             }
-            else if (IMX335_SetFrequency(&imx335_object, IMX335_INCK_37MHZ) != IMX335_OK)
+            else if (IMX335_SetFrequency(&imx335_object, IMX335_INCK_24MHZ) != IMX335_OK)
             {
+            	printf("2\r\n");
                 return 1;
             }
         }
@@ -109,6 +117,7 @@ uint8_t imx335_init(void)
 
     if (ISP_Start(&imx335_hisp) != ISP_OK)
     {
+    	printf("3\r\n");
         return 1;
     }
 
@@ -146,10 +155,12 @@ uint8_t imx335_start_capture(uint32_t address)
     imx335_capture_frame_count = 0;
     if (HAL_DCMIPP_CSI_PIPE_Start(&hdcmipp, DCMIPP_PIPE1, DCMIPP_VIRTUAL_CHANNEL0, address, DCMIPP_MODE_CONTINUOUS) != HAL_OK)
     {
+        printf("[IMX335] CSI_PIPE_Start PIPE1 FAILED\r\n");
         return 1;
     }
     if (HAL_DCMIPP_CSI_PIPE_Start(&hdcmipp, DCMIPP_PIPE2, DCMIPP_VIRTUAL_CHANNEL0, (uint32_t)nn_input_u8, DCMIPP_MODE_CONTINUOUS) != HAL_OK)
     {
+        printf("[IMX335] CSI_PIPE_Start PIPE2 FAILED\r\n");
         return 1;
     }
     return 0;
@@ -163,7 +174,10 @@ uint8_t imx335_start_capture(uint32_t address)
 void imx335_stop_capture(void)
 {
     HAL_DCMIPP_CSI_PIPE_Stop(&hdcmipp, DCMIPP_PIPE1, DCMIPP_VIRTUAL_CHANNEL0);
+    HAL_DCMIPP_CSI_PIPE_Stop(&hdcmipp, DCMIPP_PIPE2, DCMIPP_VIRTUAL_CHANNEL0);
 }
+
+
 
 /**
  * @brief   获取IMX335采集帧数
@@ -201,9 +215,11 @@ uint8_t imx335_isp_background_process(void)
 void imx335_dcmipp_pipe_frame_cb(DCMIPP_HandleTypeDef *hdcmipp, uint32_t pipe)
 {
     UNUSED(hdcmipp);
-    UNUSED(pipe);
 
     imx335_capture_frame_count++;
+    if (pipe == DCMIPP_PIPE1) {
+        osSemaphoreRelease(cam_frame_sem);
+    }
 }
 
 /**
@@ -393,14 +409,35 @@ static int32_t imx335_io_deinit(void)
  * @param   length: 数据长度
  * @retval  执行结果
  */
+/* PD14 与触摸的软件 I2C 共享冲突 → I2C 通信前切到 AF4，通信后还给 GPIO 模式 */
+static void pd14_to_i2c2(void)
+{
+    GPIO_InitTypeDef gpio = {0};
+    gpio.Pin = GPIO_PIN_14;
+    gpio.Mode = GPIO_MODE_AF_OD;
+    gpio.Pull = GPIO_NOPULL;
+    gpio.Speed = GPIO_SPEED_FREQ_LOW;
+    gpio.Alternate = GPIO_AF4_I2C2;
+    HAL_GPIO_Init(GPIOD, &gpio);
+}
+
+static void pd14_to_gpio(void)
+{
+    GPIO_InitTypeDef gpio = {0};
+    gpio.Pin = GPIO_PIN_14;
+    gpio.Mode = GPIO_MODE_OUTPUT_PP;
+    gpio.Pull = GPIO_PULLUP;
+    gpio.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+    HAL_GPIO_Init(GPIOD, &gpio);
+    HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_SET);
+}
+
 static int32_t imx335_io_writereg(uint16_t dev_addr, uint16_t reg, uint8_t *data, uint16_t length)
 {
-    if (HAL_I2C_Mem_Write(&hi2c2, dev_addr, reg, I2C_MEMADD_SIZE_16BIT, data, length, 1000) != HAL_OK)
-    {
-        return 1;
-    }
-
-    return 0;
+    pd14_to_i2c2();
+    HAL_StatusTypeDef status = HAL_I2C_Mem_Write(&hi2c2, dev_addr, reg, I2C_MEMADD_SIZE_16BIT, data, length, 1000);
+    pd14_to_gpio();
+    return (status == HAL_OK) ? 0 : 1;
 }
 
 /**
@@ -413,16 +450,14 @@ static int32_t imx335_io_writereg(uint16_t dev_addr, uint16_t reg, uint8_t *data
  */
 static int32_t imx335_io_readreg(uint16_t dev_addr, uint16_t reg, uint8_t *data, uint16_t length)
 {
-    HAL_StatusTypeDef status;
-    uint32_t i2c_error;
+    pd14_to_i2c2();
+    HAL_StatusTypeDef status = HAL_I2C_Mem_Read(&hi2c2, dev_addr, reg, I2C_MEMADD_SIZE_16BIT, data, length, 1000);
+    pd14_to_gpio();
 
-    // 1. 先执行并获取返回值
-    status = HAL_I2C_Mem_Read(&hi2c2, dev_addr, reg, I2C_MEMADD_SIZE_16BIT, data, length, 1000);
-
-    // 2. 如果失败，抓取底层的具体硬件错误码
     if (status != HAL_OK)
     {
-        i2c_error = hi2c2.ErrorCode;  // <--- 在这里打个断点 🔴
+        uint32_t i2c_error = hi2c2.ErrorCode;
+        (void)i2c_error;
         return 1;
     }
     return 0;

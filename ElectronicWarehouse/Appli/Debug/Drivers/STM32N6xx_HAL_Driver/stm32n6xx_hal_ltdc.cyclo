@@ -1,7 +1,9 @@
-C:/Users/96022/Desktop/EmbeddedCompetition/ElectronicWarehouse/Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_hal_ltdc.c:236:19:HAL_LTDC_Init	3
-C:/Users/96022/Desktop/EmbeddedCompetition/ElectronicWarehouse/Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_hal_ltdc.c:346:19:HAL_LTDC_DeInit	4
+C:/Users/96022/Desktop/EmbeddedCompetition/ElectronicWarehouse/Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_hal_ltdc.c:236:19:HAL_LTDC_Init	4
+C:/Users/96022/Desktop/EmbeddedCompetition/ElectronicWarehouse/Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_hal_ltdc.c:346:19:HAL_LTDC_DeInit	5
 C:/Users/96022/Desktop/EmbeddedCompetition/ElectronicWarehouse/Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_hal_ltdc.c:416:13:HAL_LTDC_MspInit	1
 C:/Users/96022/Desktop/EmbeddedCompetition/ElectronicWarehouse/Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_hal_ltdc.c:432:13:HAL_LTDC_MspDeInit	1
+C:/Users/96022/Desktop/EmbeddedCompetition/ElectronicWarehouse/Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_hal_ltdc.c:458:19:HAL_LTDC_RegisterCallback	13
+C:/Users/96022/Desktop/EmbeddedCompetition/ElectronicWarehouse/Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_hal_ltdc.c:557:19:HAL_LTDC_UnRegisterCallback	12
 C:/Users/96022/Desktop/EmbeddedCompetition/ElectronicWarehouse/Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_hal_ltdc.c:646:19:HAL_LTDC_ConfigBurstLength	2
 C:/Users/96022/Desktop/EmbeddedCompetition/ElectronicWarehouse/Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_hal_ltdc.c:681:19:HAL_LTDC_ConfigUnderrunThreshold	2
 C:/Users/96022/Desktop/EmbeddedCompetition/ElectronicWarehouse/Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_hal_ltdc.c:725:6:HAL_LTDC_IRQHandler	15

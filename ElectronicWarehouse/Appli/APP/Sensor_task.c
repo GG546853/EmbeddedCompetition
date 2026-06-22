@@ -8,18 +8,25 @@ const osThreadAttr_t SensorTask_attributes = {
   .stack_size = 512 * 4
 };
 
-extern DMA2D_HandleTypeDef hdma2d;
-
 void Sensor_Task(void *argument)
 {
-	  rgblcd_show_string(30, 110, 200, 16, 16, "IMX335 OK!   ", RED);
-	  imx335_start_capture((uint32_t)g_ltdc_framebuf);
-	  //imx335_stop_capture();
-	while(1)
-	{
+	  HAL_GPIO_WritePin(GPIOG, GPIO_PIN_4, 1);
+	  HAL_GPIO_WritePin(GPIOG, GPIO_PIN_6, 1);
 
-		imx335_isp_background_process();
+	  while (imx335_init())
+	  {
+		  vTaskDelay(pdMS_TO_TICKS(100));
+		  __NOP();
+	  }
+	  vTaskDelay(pdMS_TO_TICKS(100));
 
-		vTaskDelay(pdMS_TO_TICKS(1));
-	}
+	  if (imx335_start_capture((uint32_t)g_ltdc_framebuf) != 0) {
+	      printf("[Sensor] start_capture FAILED\r\n");
+	  }
+
+	  while(1)
+	  {
+		  imx335_isp_background_process();
+		  vTaskDelay(pdMS_TO_TICKS(10));
+	  }
 }

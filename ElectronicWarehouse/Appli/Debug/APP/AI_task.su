@@ -3,6 +3,6 @@
 ../APP/AI_task.c:51:13:draw_kp	40	static
 ../APP/AI_task.c:57:13:draw_one_detection	64	static
 ../APP/AI_task.c:73:13:draw_detections_on_display	32	static
-../APP/AI_task.c:125:13:process_serial_commands	80	static
-../APP/AI_task.c:178:13:run_reid_pipeline	608	static,ignoring_inline_asm
-../APP/AI_task.c:259:6:AI_Task	128	static,ignoring_inline_asm
+../APP/AI_task.c:122:13:process_serial_commands	80	static
+../APP/AI_task.c:175:13:run_reid_pipeline	608	static,ignoring_inline_asm
+../APP/AI_task.c:253:6:AI_Task	128	static,ignoring_inline_asm

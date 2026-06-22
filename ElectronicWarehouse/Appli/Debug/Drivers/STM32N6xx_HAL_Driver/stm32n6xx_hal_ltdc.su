@@ -2,6 +2,8 @@ C:/Users/96022/Desktop/EmbeddedCompetition/ElectronicWarehouse/Drivers/STM32N6xx
 C:/Users/96022/Desktop/EmbeddedCompetition/ElectronicWarehouse/Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_hal_ltdc.c:346:19:HAL_LTDC_DeInit	24	static
 C:/Users/96022/Desktop/EmbeddedCompetition/ElectronicWarehouse/Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_hal_ltdc.c:416:13:HAL_LTDC_MspInit	16	static
 C:/Users/96022/Desktop/EmbeddedCompetition/ElectronicWarehouse/Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_hal_ltdc.c:432:13:HAL_LTDC_MspDeInit	16	static
+C:/Users/96022/Desktop/EmbeddedCompetition/ElectronicWarehouse/Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_hal_ltdc.c:458:19:HAL_LTDC_RegisterCallback	32	static
+C:/Users/96022/Desktop/EmbeddedCompetition/ElectronicWarehouse/Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_hal_ltdc.c:557:19:HAL_LTDC_UnRegisterCallback	24	static
 C:/Users/96022/Desktop/EmbeddedCompetition/ElectronicWarehouse/Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_hal_ltdc.c:646:19:HAL_LTDC_ConfigBurstLength	24	static
 C:/Users/96022/Desktop/EmbeddedCompetition/ElectronicWarehouse/Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_hal_ltdc.c:681:19:HAL_LTDC_ConfigUnderrunThreshold	16	static
 C:/Users/96022/Desktop/EmbeddedCompetition/ElectronicWarehouse/Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_hal_ltdc.c:725:6:HAL_LTDC_IRQHandler	24	static

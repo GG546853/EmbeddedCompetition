@@ -1,0 +1,6 @@
+../Middlewares/lvgl-release-v9.4/src/themes/simple/lv_theme_simple.c:210:13:theme_apply	35
+../Middlewares/lvgl-release-v9.4/src/themes/simple/lv_theme_simple.c:174:6:lv_theme_simple_is_inited	2
+../Middlewares/lvgl-release-v9.4/src/themes/simple/lv_theme_simple.c:430:13:style_init_reset	2
+../Middlewares/lvgl-release-v9.4/src/themes/simple/lv_theme_simple.c:145:14:lv_theme_simple_init	5
+../Middlewares/lvgl-release-v9.4/src/themes/simple/lv_theme_simple.c:181:14:lv_theme_simple_get	2
+../Middlewares/lvgl-release-v9.4/src/themes/simple/lv_theme_simple.c:190:6:lv_theme_simple_deinit	4

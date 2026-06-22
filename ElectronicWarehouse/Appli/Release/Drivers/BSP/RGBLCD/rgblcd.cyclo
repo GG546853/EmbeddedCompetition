@@ -1,0 +1,17 @@
+../Drivers/BSP/RGBLCD/rgblcd.c:835:16:rgblcd_ltdc_clk_set.isra	1
+../Drivers/BSP/RGBLCD/rgblcd.c:184:6:rgblcd_display_dir	2
+../Drivers/BSP/RGBLCD/rgblcd.c:208:6:rgblcd_fill	2
+../Drivers/BSP/RGBLCD/rgblcd.c:247:6:rgblcd_color_fill	2
+../Drivers/BSP/RGBLCD/rgblcd.c:289:6:rgblcd_draw_point	2
+../Drivers/BSP/RGBLCD/rgblcd.c:317:10:rgblcd_read_point	2
+../Drivers/BSP/RGBLCD/rgblcd.c:344:6:rgblcd_clear	1
+../Drivers/BSP/RGBLCD/rgblcd.c:48:6:rgblcd_init	15
+../Drivers/BSP/RGBLCD/rgblcd.c:358:6:rgblcd_draw_line	8
+../Drivers/BSP/RGBLCD/rgblcd.c:444:6:rgblcd_draw_hline	4
+../Drivers/BSP/RGBLCD/rgblcd.c:463:6:rgblcd_draw_rectangle	1
+../Drivers/BSP/RGBLCD/rgblcd.c:479:6:rgblcd_draw_circle	3
+../Drivers/BSP/RGBLCD/rgblcd.c:520:6:rgblcd_fill_circle	4
+../Drivers/BSP/RGBLCD/rgblcd.c:564:6:rgblcd_show_char	13
+../Drivers/BSP/RGBLCD/rgblcd.c:653:6:rgblcd_show_num	6
+../Drivers/BSP/RGBLCD/rgblcd.c:696:6:rgblcd_show_xnum	7
+../Drivers/BSP/RGBLCD/rgblcd.c:744:6:rgblcd_show_string	4

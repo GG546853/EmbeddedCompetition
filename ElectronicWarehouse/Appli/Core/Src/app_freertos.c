@@ -24,7 +24,10 @@
 /* USER CODE BEGIN Includes */
 #include "RGBLED_task.h"
 #include "Sensor_task.h"
+#include "Electromagnet.h"
 #include "AI_task.h"
+#include "LV_task.h"
+
 #include "imx335.h"
 #include "rgblcd.h"
 /* USER CODE END Includes */
@@ -133,9 +136,13 @@ void MX_FREERTOS_Init(void) {
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
+
   RGBLED_TaskHandle = osThreadNew(RGBLED_Task, NULL, &RGBLEDTask_attributes);
   Sensor_TaskHandle = osThreadNew(Sensor_Task, NULL, &SensorTask_attributes);
-  AITaskHandle = osThreadNew(AI_Task, NULL, &AITask_attributes);
+  LV_TaskHandle = osThreadNew(LVGL_Task, NULL, &LVTask_attributes);
+  //AITaskHandle = osThreadNew(AI_Task, NULL, &AITask_attributes);
+  //Electromagnet_TaskHandle = osThreadNew(Electromagnet_Task, NULL, &ElectromagnetTask_attributes);
+
   /* USER CODE END RTOS_THREADS */
 
   /* USER CODE BEGIN RTOS_EVENTS */
@@ -156,7 +163,9 @@ void StartDefaultTask(void *argument)
   /* Infinite loop */
   for(;;)
   {
-    osDelay(1);
+	HAL_GPIO_TogglePin(GPIOG, GPIO_PIN_10);
+    osDelay(100);
+
   }
   /* USER CODE END defaultTask */
 }

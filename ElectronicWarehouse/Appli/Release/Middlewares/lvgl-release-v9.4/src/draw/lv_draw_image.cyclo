@@ -1,0 +1,9 @@
+../Middlewares/lvgl-release-v9.4/src/draw/lv_draw_image.c:337:13:img_decode_and_draw	6
+../Middlewares/lvgl-release-v9.4/src/draw/lv_draw_image.c:50:6:lv_draw_image_dsc_init	1
+../Middlewares/lvgl-release-v9.4/src/draw/lv_draw_image.c:62:23:lv_draw_task_get_image_dsc	2
+../Middlewares/lvgl-release-v9.4/src/draw/lv_draw_image.c:190:16:lv_image_src_get_type	2
+../Middlewares/lvgl-release-v9.4/src/draw/lv_draw_image.c:247:6:lv_draw_image_tiled_helper	7
+../Middlewares/lvgl-release-v9.4/src/draw/lv_draw_image.c:306:6:lv_image_buf_get_transformed_area	4
+../Middlewares/lvgl-release-v9.4/src/draw/lv_draw_image.c:67:6:lv_draw_layer	4
+../Middlewares/lvgl-release-v9.4/src/draw/lv_draw_image.c:98:6:lv_draw_image	15
+../Middlewares/lvgl-release-v9.4/src/draw/lv_draw_image.c:207:6:lv_draw_image_normal_helper	7

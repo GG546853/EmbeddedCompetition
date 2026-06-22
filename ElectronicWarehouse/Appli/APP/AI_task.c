@@ -23,6 +23,9 @@ extern uint8_t g_ltdc_framebuf[480 * 800 * 3];
 
 #define RGB888(r, g, b)  (((uint32_t)(r) << 16) | ((uint32_t)(g) << 8) | (uint32_t)(b))
 
+volatile int g_trigger_identify = 0;
+
+
 static void fill_rect(int x, int y, int w, int h, uint8_t r, uint8_t g, uint8_t b)
 {
     if (x < 0) { w += x; x = 0; }
@@ -31,6 +34,10 @@ static void fill_rect(int x, int y, int w, int h, uint8_t r, uint8_t g, uint8_t 
     if (y + h > DISP_H) h = DISP_H - y;
     if (w <= 0 || h <= 0) return;
 
+    extern osMutexId_t dma2d_mutex;
+    if (dma2d_mutex != NULL) {
+        osMutexAcquire(dma2d_mutex, osWaitForever);
+    }
     hdma2d.Init.Mode = DMA2D_R2M;
     hdma2d.Init.ColorMode = DMA2D_OUTPUT_RGB888;
     hdma2d.Init.OutputOffset = DISP_W - w;
@@ -38,6 +45,9 @@ static void fill_rect(int x, int y, int w, int h, uint8_t r, uint8_t g, uint8_t 
     HAL_DMA2D_Start(&hdma2d, RGB888(r, g, b),
                     (uint32_t)&g_ltdc_framebuf[(y * DISP_W + x) * 3], w, h);
     HAL_DMA2D_PollForTransfer(&hdma2d, 50);
+    if (dma2d_mutex != NULL) {
+        osMutexRelease(dma2d_mutex);
+    }
 }
 
 static void draw_box(int x, int y, int w, int h, uint8_t r, uint8_t g, uint8_t b)
@@ -72,17 +82,14 @@ static void draw_one_detection(ai_detection_t *d, uint8_t r, uint8_t g, uint8_t 
 
 static void draw_detections_on_display(ai_result_t *result)
 {
-    if (result->nb_detect == 0) return;
-
+	if (result->nb_detect == 0) return;
     /* 暂停 PIPE1 连续写入，防止 DCMIPP 新帧覆盖正在绘制的框 */
     HAL_DCMIPP_CSI_PIPE_Stop(&hdcmipp, DCMIPP_PIPE1, DCMIPP_VIRTUAL_CHANNEL0);
-
     for (uint32_t i = 0; i < result->nb_detect; i++) {
         draw_one_detection(&result->detections[i], 0, 255, 0);
     }
-
     HAL_DCMIPP_CSI_PIPE_Start(&hdcmipp, DCMIPP_PIPE1, DCMIPP_VIRTUAL_CHANNEL0,
-                              (uint32_t)g_ltdc_framebuf, DCMIPP_MODE_CONTINUOUS);
+    (uint32_t)g_ltdc_framebuf, DCMIPP_MODE_CONTINUOUS);
 }
 
 osThreadId_t AITaskHandle;
@@ -115,9 +122,9 @@ typedef enum {
     REID_IDENTIFY,
 } reid_action_t;
 
-static reid_action_t reid_pending;
+reid_action_t reid_pending;
 static char          reid_name[FACE_NAME_MAX];
-static int           g_capture_pending = 0; /* set by 'register' or 's' cmd, consumed by pipeline */
+int           g_capture_pending = 0; /* set by 'register' or 's' cmd, consumed by pipeline */
 
 /* BSP interrupt-driven RX accumulates into g_uart_rx_buf[].
    g_uart_rx_sta bit15 = line ready (received \r\n). */
@@ -230,7 +237,6 @@ static void run_reid_pipeline(ai_result_t *result)
             if (remaining == 0) {
                 reid_pending = REID_IDLE;
                 printf("[REID] Enrolled '%s'\r\n", reid_name);
-                rgblcd_show_string(10, 10, 200, 16, 16, reid_name, GREEN);
             }
             /* else: keep REID_REGISTER; wait for next 's' */
         }
@@ -241,10 +247,8 @@ static void run_reid_pipeline(ai_result_t *result)
         int idx = ai_face_identify(embedding, name, &dist);
         if (idx >= 0) {
             printf("[REID] Matched: '%s' (dist=%.3f)\r\n", name, dist);
-            rgblcd_show_string(10, 30, 200, 16, 16, name, GREEN);
         } else {
             printf("[REID] No match (dist=%.3f)\r\n", dist);
-            rgblcd_show_string(10, 30, 200, 16, 16, "Unknown", RED);
         }
     }
 
@@ -307,12 +311,17 @@ void AI_Task(void *argument)
 
         /* Draw detection boxes + keypoints on LTDC layer 2 overlay */
         draw_detections_on_display(&result);
-
         /* Check serial commands */
         process_serial_commands();
 
         /* Run ReID pipeline if triggered */
         run_reid_pipeline(&result);
+
+        if(g_trigger_identify == 1)
+        {
+        	g_trigger_identify = 0;
+        	reid_pending = REID_IDENTIFY;
+        }
 
         vTaskDelay(pdMS_TO_TICKS(1));
     }

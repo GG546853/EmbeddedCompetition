@@ -1,0 +1,13 @@
+../Middlewares/lvgl-release-v9.4/src/core/lv_obj_style_gen.h:544:26:lv_obj_get_style_text_color_filtered	1
+../Middlewares/lvgl-release-v9.4/src/core/lv_obj_draw.c:434:21:image_apply_layer_recolor.isra	6
+../Middlewares/lvgl-release-v9.4/src/core/lv_obj_draw.c:415:19:normal_apply_layer_recolor.isra	3
+../Middlewares/lvgl-release-v9.4/src/core/lv_obj_draw.c:399:24:get_layer_opa.isra	3
+../Middlewares/lvgl-release-v9.4/src/core/lv_obj_draw.c:48:6:lv_obj_init_draw_rect_dsc	23
+../Middlewares/lvgl-release-v9.4/src/core/lv_obj_draw.c:168:6:lv_obj_init_draw_label_dsc	4
+../Middlewares/lvgl-release-v9.4/src/core/lv_obj_draw.c:206:6:lv_obj_init_draw_image_dsc	5
+../Middlewares/lvgl-release-v9.4/src/core/lv_obj_draw.c:246:6:lv_obj_init_draw_line_dsc	6
+../Middlewares/lvgl-release-v9.4/src/core/lv_obj_draw.c:287:6:lv_obj_init_draw_arc_dsc	5
+../Middlewares/lvgl-release-v9.4/src/core/lv_obj_draw.c:322:9:lv_obj_calculate_ext_draw_size	5
+../Middlewares/lvgl-release-v9.4/src/core/lv_obj_draw.c:382:9:lv_obj_get_ext_draw_size	2
+../Middlewares/lvgl-release-v9.4/src/core/lv_obj_draw.c:358:6:lv_obj_refresh_ext_draw_size	5
+../Middlewares/lvgl-release-v9.4/src/core/lv_obj_draw.c:388:17:lv_obj_get_layer_type	2

@@ -1,0 +1,14 @@
+../Middlewares/lvgl-release-v9.4/src/layouts/flex/lv_flex.c:495:13:place_content	9
+../Middlewares/lvgl-release-v9.4/src/layouts/flex/lv_flex.c:534:19:get_next_item	4
+../Middlewares/lvgl-release-v9.4/src/layouts/flex/../../core/lv_obj_style_gen.h:196:23:lv_obj_get_style_margin_top	1
+../Middlewares/lvgl-release-v9.4/src/layouts/flex/../../core/lv_obj_style_gen.h:202:23:lv_obj_get_style_margin_bottom	1
+../Middlewares/lvgl-release-v9.4/src/layouts/flex/../../core/lv_obj_style_gen.h:208:23:lv_obj_get_style_margin_left	1
+../Middlewares/lvgl-release-v9.4/src/layouts/flex/../../core/lv_obj_style_gen.h:214:23:lv_obj_get_style_margin_right	1
+../Middlewares/lvgl-release-v9.4/src/layouts/flex/lv_flex.c:555:16:lv_obj_get_height_with_margin	1
+../Middlewares/lvgl-release-v9.4/src/layouts/flex/lv_flex.c:548:16:lv_obj_get_width_with_margin	1
+../Middlewares/lvgl-release-v9.4/src/layouts/flex/lv_flex.c:233:16:find_track_end	27
+../Middlewares/lvgl-release-v9.4/src/layouts/flex/lv_flex.c:126:13:flex_update	56
+../Middlewares/lvgl-release-v9.4/src/layouts/flex/lv_flex.c:95:6:lv_flex_init	1
+../Middlewares/lvgl-release-v9.4/src/layouts/flex/lv_flex.c:101:6:lv_obj_set_flex_flow	1
+../Middlewares/lvgl-release-v9.4/src/layouts/flex/lv_flex.c:107:6:lv_obj_set_flex_align	1
+../Middlewares/lvgl-release-v9.4/src/layouts/flex/lv_flex.c:116:6:lv_obj_set_flex_grow	1

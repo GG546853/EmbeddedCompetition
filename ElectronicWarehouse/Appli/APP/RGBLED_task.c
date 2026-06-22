@@ -11,6 +11,8 @@ const osThreadAttr_t RGBLEDTask_attributes = {
 void RGBLED_Task(void *argument)
 {
 
+	  rgblcd_init();
+	  rgblcd_display_dir(1);  /* 设置RGB LCD显示方向 */
 	while(1)
 	{
 //		  rgblcd_show_string(30, 50, 200, 16, 16, "STM32", RED);

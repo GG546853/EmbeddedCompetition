@@ -4,7 +4,7 @@ C:/Users/96022/Desktop/EmbeddedCompetition/ElectronicWarehouse/Drivers/STM32N6xx
 C:/Users/96022/Desktop/EmbeddedCompetition/ElectronicWarehouse/Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_hal_cortex.c:250:6:HAL_NVIC_SetPriority	16	static
 C:/Users/96022/Desktop/EmbeddedCompetition/ElectronicWarehouse/Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_hal_cortex.c:274:6:HAL_NVIC_EnableIRQ	0	static,ignoring_inline_asm
 C:/Users/96022/Desktop/EmbeddedCompetition/ElectronicWarehouse/Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_hal_cortex.c:291:6:HAL_NVIC_DisableIRQ	0	static,ignoring_inline_asm
-C:/Users/96022/Desktop/EmbeddedCompetition/ElectronicWarehouse/Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_hal_cortex.c:304:6:HAL_NVIC_SystemReset	0	static,ignoring_inline_asm
+C:/Users/96022/Desktop/EmbeddedCompetition/ElectronicWarehouse/Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_hal_cortex.c:304:18:HAL_NVIC_SystemReset	0	static,ignoring_inline_asm
 C:/Users/96022/Desktop/EmbeddedCompetition/ElectronicWarehouse/Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_hal_cortex.c:317:10:HAL_SYSTICK_Config	0	static
 C:/Users/96022/Desktop/EmbeddedCompetition/ElectronicWarehouse/Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_hal_cortex.c:345:10:HAL_NVIC_GetPriorityGrouping	0	static
 C:/Users/96022/Desktop/EmbeddedCompetition/ElectronicWarehouse/Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_hal_cortex.c:373:6:HAL_NVIC_GetPriority	16	static

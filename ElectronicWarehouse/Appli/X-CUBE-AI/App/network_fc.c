@@ -39,7 +39,7 @@
  * --Ocache-opt = true
  * --output-info-file = "c_info"
  * --onnx-input = "C:/Users/96022/.stm32cubemx/network_fc_output/mobilefacenet_int8_faces_OE_3_3_0.onnx"
- * --out-dir-prefix = "C:/Users/96022/AppData/Local/Temp/mxAI_workspace3196153842865009746476199494372181/neural_art__network_fc/"
+ * --out-dir-prefix = "C:/Users/96022/AppData/Local/Temp/mxAI_workspace56600730469005426188065433114993/neural_art__network_fc/"
  * --network-name = "network_fc"
  * --all-buffers-info = true
  * --mvei = true

@@ -43,6 +43,7 @@ APP \
 APP/ui \
 Core/Src \
 Core/Startup \
+Drivers/BSP/AHT10 \
 Drivers/BSP/EEPROM \
 Drivers/BSP/HyperRAM \
 Drivers/BSP/IMX335/STM32_IMX335 \

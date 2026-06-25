@@ -88,6 +88,11 @@
       <locationURI>PARENT-1-PROJECT_LOC/Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_hal_i2c_ex.c</locationURI>
     </link>
     <link>
+      <name>Drivers/STM32N6xx_HAL_Driver/stm32n6xx_hal_i3c.c</name>
+      <type>1</type>
+      <locationURI>PARENT-1-PROJECT_LOC/Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_hal_i3c.c</locationURI>
+    </link>
+    <link>
       <name>Drivers/STM32N6xx_HAL_Driver/stm32n6xx_hal_ltdc.c</name>
       <type>1</type>
       <locationURI>PARENT-1-PROJECT_LOC/Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_hal_ltdc.c</locationURI>
@@ -151,6 +156,11 @@
       <name>Drivers/STM32N6xx_HAL_Driver/stm32n6xx_hal_xspi.c</name>
       <type>1</type>
       <locationURI>PARENT-1-PROJECT_LOC/Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_hal_xspi.c</locationURI>
+    </link>
+    <link>
+      <name>Drivers/STM32N6xx_HAL_Driver/stm32n6xx_util_i3c.c</name>
+      <type>1</type>
+      <locationURI>PARENT-1-PROJECT_LOC/Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_util_i3c.c</locationURI>
     </link>
     <link>
       <name>Middlewares/RTOS2/CMSIS/RTOS2/Core/TZ_Secure_Only/cmsis_os2.c</name>

@@ -201,3 +201,122 @@ void action_action_stop_camera(lv_event_t * e) {
 2. `HAL_DCMIPP_DeInit` 会关闭外设时钟，如果 DCMIPP 正在通过 AXI DMA 写入内存，关闭时钟会导致总线异常。只能在确认 DMA 完全停止后调用。
 3. CMSIS-RTOS2 的 `osMutex` 不可递归，同一任务不能多次获取同一个互斥锁。
 4. 在 LVGL UI 线程（`LV_Task`）中不能调用任何阻塞等待硬件标志位的函数，否则 UI 无响应。
+
+---
+
+## 问题 3：摄像头任务运行时触摸屏失灵（PD4 冲突）
+
+### 问题描述
+
+- 注释掉 Sensor_Task（摄像头任务）→ 触摸屏正常
+- 启用 Sensor_Task → 触摸屏失灵
+- 注释掉 LV_Task（仅运行摄像头任务）→ 摄像头正常
+
+### 背景
+
+更换为团队自画的板子后，CubeMX 中 IMX335 摄像头的 **I2C2_SDA 从 PD15 改为 PD4**。PD4 同时也是触摸屏软件 I2C 的 **CT_IIC_SDA**（数据线）。
+
+修改前后的引脚对比：
+
+| 信号 | 原引脚（正点原子 N647） | 新引脚（自画板） |
+|------|------------------------|-----------------|
+| I2C2_SCL | PD14 | PD14（不变） |
+| I2C2_SDA | PD15 | **PD4** |
+| CT_IIC_SCL | PD14 | PD14（不变） |
+| CT_IIC_SDA | PD4 | PD4（不变） |
+
+### 原因分析
+
+之前只解决过 PD14（SCL）的冲突——摄像头 I2C 通信时短暂偷走 SCL，但触摸的 SDA（PD4）始终保持 GPIO 模式。触摸软件 I2C 读取过程中即使 SCL 偶有异常，SDA 还能正常拉低/读取，整体功能勉强可用。
+
+I2C2_SDA 改到 PD4 后，摄像头 I2C 通信时 PD14 和 PD4 **同时被切到 AF4**：
+
+```
+摄像头 I2C 通信期间：
+  PD14 → AF4 (I2C2_SCL)
+  PD4  → AF4 (I2C2_SDA)
+
+触摸软件 I2C 需要：
+  PD14 → GPIO_OUTPUT_PP (CT_IIC_SCL)
+  PD4  → GPIO_OUTPUT_OD  (CT_IIC_SDA)
+```
+
+两个引脚同时消失，触摸软件 I2C 的 SCL 和 SDA 双双失效，`tp_dev.scan(0)` 无法与触摸芯片通信。
+
+### 为什么单独运行一个任务正常
+
+两个任务本身逻辑都没问题，问题出在**并发时序窗口**：
+
+- Sensor_Task 每 10ms 走一次 `imx335_isp_background_process` → ISP 内部通过 I2C2 读写传感器寄存器 → 调用 `imx335_io_readreg/writereg` 切换 PD14/PD4
+- LV_Task 以更高频率（约 30ms）调用 `touchpad_read` → `tp_dev.scan(0)` → 软件 I2C 读取触摸坐标
+
+两者没有互斥保护，传感器 I2C 通信时间窗口内恰好撞上触摸读取时，触摸读取失败。10ms 周期 × 高频率碰撞 → 触摸基本处于持续失效状态。
+
+单独运行时不存在竞争，各自正常。
+
+### 解决方法：加入互斥锁串行化 PD14/PD4 访问
+
+**文件**：`ElectronicWarehouse/Appli/Drivers/BSP/IMX335/imx335.c`、`ElectronicWarehouse/Appli/Core/Src/lv_port_indev.c`
+
+新增一个 CMSIS-RTOS2 互斥锁 `pd_i2c_mutex`，摄像头 I2C 和触摸 I2C 操作前必须先获取锁。
+
+**修改 1** — `imx335.c` 新增互斥锁全局变量和初始化：
+
+```c
+// 全局变量（文件顶部）
+osMutexId_t pd_i2c_mutex;
+const osMutexAttr_t pd_i2c_mutex_attr = { .name = "pd_i2c_mutex" };
+
+// 在 imx335_dcmipp_init() 中创建（任何 I2C 通信之前）
+pd_i2c_mutex = osMutexNew(&pd_i2c_mutex_attr);
+```
+
+**修改 2** — `imx335.c` 读写函数加锁：
+
+```c
+static int32_t imx335_io_writereg(...) {
+    osMutexAcquire(pd_i2c_mutex, osWaitForever);
+    pd14_to_i2c2();
+    pd4_to_i2c2();
+    HAL_StatusTypeDef status = HAL_I2C_Mem_Write(&hi2c2, ...);
+    pd4_to_gpio();
+    pd14_to_gpio();
+    osMutexRelease(pd_i2c_mutex);
+    return (status == HAL_OK) ? 0 : 1;
+}
+```
+
+`imx335_io_readreg` 同理。
+
+**修改 3** — `lv_port_indev.c` 触摸读取加锁：
+
+```c
+#include "cmsis_os.h"
+extern osMutexId_t pd_i2c_mutex;
+
+static void touchpad_read(lv_indev_t *indev, lv_indev_data_t *data) {
+    if (pd_i2c_mutex != NULL) {
+        osMutexAcquire(pd_i2c_mutex, osWaitForever);
+    }
+    tp_dev.scan(0);
+    if (pd_i2c_mutex != NULL) {
+        osMutexRelease(pd_i2c_mutex);
+    }
+    // ... 状态处理不变
+}
+```
+
+**互斥锁作用示意**：
+
+```
+Sensor_Task (摄像头)              LV_Task (触摸)
+    │                                  │
+    │ Acquire(pd_i2c_mutex) ✓          │
+    │ pd14/4→AF4, I2C通信              │ Acquire(pd_i2c_mutex) ⏳阻塞
+    │ pd14/4→GPIO                      │ (等待...)
+    │ Release(pd_i2c_mutex)            │ Acquire(pd_i2c_mutex) ✓
+    │                                  │ tp_dev.scan(0)
+    │                                  │ Release(pd_i2c_mutex)
+```
+
+**NULL 检查的原因**：LVGL 可能在摄像头任务创建锁之前就尝试读触摸（启动初期），此时 `pd_i2c_mutex == NULL` 跳过加锁，保证启动阶段触摸也能正常工作。

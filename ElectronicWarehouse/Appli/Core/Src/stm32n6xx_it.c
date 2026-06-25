@@ -57,6 +57,7 @@
 /* External variables --------------------------------------------------------*/
 extern DCMIPP_HandleTypeDef hdcmipp;
 extern DMA2D_HandleTypeDef hdma2d;
+extern I3C_HandleTypeDef hi3c2;
 extern UART_HandleTypeDef huart1;
 extern TIM_HandleTypeDef htim6;
 
@@ -203,6 +204,34 @@ void DMA2D_IRQHandler(void)
   /* USER CODE BEGIN DMA2D_IRQn 1 */
 
   /* USER CODE END DMA2D_IRQn 1 */
+}
+
+/**
+  * @brief This function handles I3C2 event interrupt.
+  */
+void I3C2_EV_IRQHandler(void)
+{
+  /* USER CODE BEGIN I3C2_EV_IRQn 0 */
+
+  /* USER CODE END I3C2_EV_IRQn 0 */
+  HAL_I3C_EV_IRQHandler(&hi3c2);
+  /* USER CODE BEGIN I3C2_EV_IRQn 1 */
+
+  /* USER CODE END I3C2_EV_IRQn 1 */
+}
+
+/**
+  * @brief This function handles I3C2 error interrupt.
+  */
+void I3C2_ER_IRQHandler(void)
+{
+  /* USER CODE BEGIN I3C2_ER_IRQn 0 */
+
+  /* USER CODE END I3C2_ER_IRQn 0 */
+  HAL_I3C_ER_IRQHandler(&hi3c2);
+  /* USER CODE BEGIN I3C2_ER_IRQn 1 */
+
+  /* USER CODE END I3C2_ER_IRQn 1 */
 }
 
 /**

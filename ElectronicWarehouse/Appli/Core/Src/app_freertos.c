@@ -30,6 +30,7 @@
 
 #include "imx335.h"
 #include "rgblcd.h"
+#include "aht10.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -138,7 +139,7 @@ void MX_FREERTOS_Init(void) {
   /* add threads, ... */
 
   RGBLED_TaskHandle = osThreadNew(RGBLED_Task, NULL, &RGBLEDTask_attributes);
-  Sensor_TaskHandle = osThreadNew(Sensor_Task, NULL, &SensorTask_attributes);
+  //Sensor_TaskHandle = osThreadNew(Sensor_Task, NULL, &SensorTask_attributes);
   LV_TaskHandle = osThreadNew(LVGL_Task, NULL, &LVTask_attributes);
   //AITaskHandle = osThreadNew(AI_Task, NULL, &AITask_attributes);
   //Electromagnet_TaskHandle = osThreadNew(Electromagnet_Task, NULL, &ElectromagnetTask_attributes);
@@ -160,12 +161,16 @@ void MX_FREERTOS_Init(void) {
 void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN defaultTask */
+//	float H;
+//	float T;
+//	aht10_init();
   /* Infinite loop */
   for(;;)
   {
+//	aht10_read(&H, &T);
+//	printf("H:%.3f, T:%.3f", H, T);
+	osDelay(2000);
 	HAL_GPIO_TogglePin(GPIOG, GPIO_PIN_10);
-    osDelay(100);
-
   }
   /* USER CODE END defaultTask */
 }

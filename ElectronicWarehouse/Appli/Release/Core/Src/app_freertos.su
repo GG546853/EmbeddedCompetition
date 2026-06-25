@@ -1,6 +1,6 @@
-../Core/Src/app_freertos.c:160:6:StartDefaultTask	8	static
-../Core/Src/app_freertos.c:71:6:vApplicationMallocFailedHook	0	static
-../Core/Src/app_freertos.c:87:6:vApplicationStackOverflowHook	0	static
-../Core/Src/app_freertos.c:97:13:configureTimerForRunTimeStats	0	static
-../Core/Src/app_freertos.c:102:22:getRunTimeCounterValue	0	static
-../Core/Src/app_freertos.c:113:6:MX_FREERTOS_Init	8	static
+../Core/Src/app_freertos.c:161:6:StartDefaultTask	8	static
+../Core/Src/app_freertos.c:72:6:vApplicationMallocFailedHook	0	static
+../Core/Src/app_freertos.c:88:6:vApplicationStackOverflowHook	0	static
+../Core/Src/app_freertos.c:98:13:configureTimerForRunTimeStats	0	static
+../Core/Src/app_freertos.c:103:22:getRunTimeCounterValue	0	static
+../Core/Src/app_freertos.c:114:6:MX_FREERTOS_Init	8	static

@@ -55,6 +55,8 @@ void SecureFault_Handler(void);
 void DebugMon_Handler(void);
 void DCMIPP_IRQHandler(void);
 void DMA2D_IRQHandler(void);
+void I3C2_EV_IRQHandler(void);
+void I3C2_ER_IRQHandler(void);
 void TIM6_IRQHandler(void);
 void USART1_IRQHandler(void);
 /* USER CODE BEGIN EFP */

@@ -28,6 +28,8 @@ extern I2C_HandleTypeDef hi2c2; /* I2C句柄 */
 
 extern DCMIPP_HandleTypeDef hdcmipp;
 extern osSemaphoreId_t cam_frame_sem;
+osMutexId_t pd_i2c_mutex;
+const osMutexAttr_t pd_i2c_mutex_attr = { .name = "pd_i2c_mutex" };
 static __IO uint32_t imx335_capture_frame_count = 0;
 static IMX335_Object_t imx335_object = {0};
 static ISP_HandleTypeDef imx335_hisp = {0};
@@ -274,6 +276,8 @@ static uint8_t imx335_dcmipp_init(void)
     IMX335_RST(1);
     HAL_Delay(3);
 
+    pd_i2c_mutex = osMutexNew(&pd_i2c_mutex_attr);
+
     hdcmipp.Instance = DCMIPP;
     if (HAL_DCMIPP_Init(&hdcmipp) != HAL_OK)
     {
@@ -409,7 +413,7 @@ static int32_t imx335_io_deinit(void)
  * @param   length: 数据长度
  * @retval  执行结果
  */
-/* PD14 与触摸的软件 I2C 共享冲突 → I2C 通信前切到 AF4，通信后还给 GPIO 模式 */
+/* PD14/PD4 与触摸的软件 I2C 共享冲突 → I2C 通信前切到 AF4，通信后还给 GPIO 模式 */
 static void pd14_to_i2c2(void)
 {
     GPIO_InitTypeDef gpio = {0};
@@ -432,11 +436,37 @@ static void pd14_to_gpio(void)
     HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_SET);
 }
 
+static void pd4_to_i2c2(void)
+{
+    GPIO_InitTypeDef gpio = {0};
+    gpio.Pin = GPIO_PIN_4;
+    gpio.Mode = GPIO_MODE_AF_OD;
+    gpio.Pull = GPIO_NOPULL;
+    gpio.Speed = GPIO_SPEED_FREQ_LOW;
+    gpio.Alternate = GPIO_AF4_I2C2;
+    HAL_GPIO_Init(GPIOD, &gpio);
+}
+
+static void pd4_to_gpio(void)
+{
+    GPIO_InitTypeDef gpio = {0};
+    gpio.Pin = GPIO_PIN_4;
+    gpio.Mode = GPIO_MODE_OUTPUT_OD;
+    gpio.Pull = GPIO_PULLUP;
+    gpio.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+    HAL_GPIO_Init(GPIOD, &gpio);
+    HAL_GPIO_WritePin(GPIOD, GPIO_PIN_4, GPIO_PIN_SET);
+}
+
 static int32_t imx335_io_writereg(uint16_t dev_addr, uint16_t reg, uint8_t *data, uint16_t length)
 {
+    osMutexAcquire(pd_i2c_mutex, osWaitForever);
     pd14_to_i2c2();
+    pd4_to_i2c2();
     HAL_StatusTypeDef status = HAL_I2C_Mem_Write(&hi2c2, dev_addr, reg, I2C_MEMADD_SIZE_16BIT, data, length, 1000);
+    pd4_to_gpio();
     pd14_to_gpio();
+    osMutexRelease(pd_i2c_mutex);
     return (status == HAL_OK) ? 0 : 1;
 }
 
@@ -450,9 +480,13 @@ static int32_t imx335_io_writereg(uint16_t dev_addr, uint16_t reg, uint8_t *data
  */
 static int32_t imx335_io_readreg(uint16_t dev_addr, uint16_t reg, uint8_t *data, uint16_t length)
 {
+    osMutexAcquire(pd_i2c_mutex, osWaitForever);
     pd14_to_i2c2();
+    pd4_to_i2c2();
     HAL_StatusTypeDef status = HAL_I2C_Mem_Read(&hi2c2, dev_addr, reg, I2C_MEMADD_SIZE_16BIT, data, length, 1000);
+    pd4_to_gpio();
     pd14_to_gpio();
+    osMutexRelease(pd_i2c_mutex);
 
     if (status != HAL_OK)
     {

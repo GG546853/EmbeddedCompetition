@@ -824,7 +824,6 @@ static uint8_t crop_temp_buf[CROP_TEMP_SIZE]
 /* Entry points --------------------------------------------------------------*/
 
 
-
 void set_clk_sleep_mode(void)
 {
   /* Leave clocks enabled in Low Power modes */

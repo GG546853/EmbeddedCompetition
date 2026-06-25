@@ -179,6 +179,7 @@ RM := rm -rf
 -include Drivers/BSP/IMX335/subdir.mk
 -include Drivers/BSP/HyperRAM/subdir.mk
 -include Drivers/BSP/EEPROM/subdir.mk
+-include Drivers/BSP/AHT10/subdir.mk
 -include Core/Startup/subdir.mk
 -include Core/Src/subdir.mk
 -include APP/ui/subdir.mk

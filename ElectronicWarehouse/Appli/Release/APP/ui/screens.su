@@ -1,5 +1,5 @@
 ../APP/ui/screens.c:122:6:tick_screen_main	0	static
-../APP/ui/screens.c:183:6:tick_screen_camera	0	static
+../APP/ui/screens.c:182:6:tick_screen_camera	0	static
 ../APP/ui/screens.c:24:13:event_handler_cb_main_obj0	16	static
 ../APP/ui/screens.c:46:13:event_handler_cb_camera_obj3	16	static
 ../APP/ui/screens.c:35:13:event_handler_cb_camera_obj1	16	static
@@ -42,7 +42,7 @@
 ../APP/ui/eez-flow.h:3999:6:utf8upr	24	static
 ../APP/ui/eez-flow.h:4349:1:utf8rcodepoint	0	static
 ../APP/ui/screens.c:61:6:create_screen_main	32	static
-../APP/ui/screens.c:127:6:create_screen_camera	40	static
-../APP/ui/screens.c:193:6:tick_screen	0	static
-../APP/ui/screens.c:198:6:tick_screen_by_id	0	static
-../APP/ui/screens.c:276:6:create_screens	24	static
+../APP/ui/screens.c:127:6:create_screen_camera	32	static
+../APP/ui/screens.c:192:6:tick_screen	0	static
+../APP/ui/screens.c:197:6:tick_screen_by_id	0	static
+../APP/ui/screens.c:275:6:create_screens	24	static

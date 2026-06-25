@@ -136,10 +136,10 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef* i2cHandle)
 
     __HAL_RCC_GPIOD_CLK_ENABLE();
     /**I2C2 GPIO Configuration
-    PD15     ------> I2C2_SDA
+    PD4     ------> I2C2_SDA
     PD14     ------> I2C2_SCL
     */
-    GPIO_InitStruct.Pin = GPIO_PIN_15|GPIO_PIN_14;
+    GPIO_InitStruct.Pin = GPIO_PIN_4|GPIO_PIN_14;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -199,10 +199,10 @@ void HAL_I2C_MspDeInit(I2C_HandleTypeDef* i2cHandle)
     __HAL_RCC_I2C2_CLK_DISABLE();
 
     /**I2C2 GPIO Configuration
-    PD15     ------> I2C2_SDA
+    PD4     ------> I2C2_SDA
     PD14     ------> I2C2_SCL
     */
-    HAL_GPIO_DeInit(GPIOD, GPIO_PIN_15);
+    HAL_GPIO_DeInit(GPIOD, GPIO_PIN_4);
 
     HAL_GPIO_DeInit(GPIOD, GPIO_PIN_14);
 

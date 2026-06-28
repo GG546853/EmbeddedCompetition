@@ -22,6 +22,7 @@
 #include "stm32n6xx_it.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "Barcode_task.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -57,7 +58,8 @@
 /* External variables --------------------------------------------------------*/
 extern DCMIPP_HandleTypeDef hdcmipp;
 extern DMA2D_HandleTypeDef hdma2d;
-extern I3C_HandleTypeDef hi3c2;
+extern UART_HandleTypeDef huart4;
+extern UART_HandleTypeDef huart5;
 extern UART_HandleTypeDef huart1;
 extern TIM_HandleTypeDef htim6;
 
@@ -207,34 +209,6 @@ void DMA2D_IRQHandler(void)
 }
 
 /**
-  * @brief This function handles I3C2 event interrupt.
-  */
-void I3C2_EV_IRQHandler(void)
-{
-  /* USER CODE BEGIN I3C2_EV_IRQn 0 */
-
-  /* USER CODE END I3C2_EV_IRQn 0 */
-  HAL_I3C_EV_IRQHandler(&hi3c2);
-  /* USER CODE BEGIN I3C2_EV_IRQn 1 */
-
-  /* USER CODE END I3C2_EV_IRQn 1 */
-}
-
-/**
-  * @brief This function handles I3C2 error interrupt.
-  */
-void I3C2_ER_IRQHandler(void)
-{
-  /* USER CODE BEGIN I3C2_ER_IRQn 0 */
-
-  /* USER CODE END I3C2_ER_IRQn 0 */
-  HAL_I3C_ER_IRQHandler(&hi3c2);
-  /* USER CODE BEGIN I3C2_ER_IRQn 1 */
-
-  /* USER CODE END I3C2_ER_IRQn 1 */
-}
-
-/**
   * @brief This function handles TIM6 global interrupt.
   */
 void TIM6_IRQHandler(void)
@@ -262,6 +236,45 @@ void USART1_IRQHandler(void)
   /* USER CODE END USART1_IRQn 1 */
 }
 
-/* USER CODE BEGIN 1 */
+/**
+  * @brief This function handles UART4 global interrupt.
+  */
+void UART4_IRQHandler(void)
+{
+  /* USER CODE BEGIN UART4_IRQn 0 */
 
+  /* USER CODE END UART4_IRQn 0 */
+  HAL_UART_IRQHandler(&huart4);
+  /* USER CODE BEGIN UART4_IRQn 1 */
+
+  /* USER CODE END UART4_IRQn 1 */
+}
+
+/**
+  * @brief This function handles UART5 global interrupt.
+  */
+void UART5_IRQHandler(void)
+{
+  /* USER CODE BEGIN UART5_IRQn 0 */
+
+  /* USER CODE END UART5_IRQn 0 */
+  HAL_UART_IRQHandler(&huart5);
+  /* USER CODE BEGIN UART5_IRQn 1 */
+  if (__HAL_UART_GET_FLAG(&huart5, UART_FLAG_IDLE)) {
+      __HAL_UART_CLEAR_IDLEFLAG(&huart5);
+      UART5_IDLE_Callback();
+  }
+
+  if (__HAL_UART_GET_FLAG(&huart5, UART_FLAG_RXNE)) {
+      uint8_t byte = huart5.Instance->RDR;
+      UART5_RxCallback(byte);
+  }
+
+  if (__HAL_UART_GET_FLAG(&huart5, UART_FLAG_ORE)) {
+      __HAL_UART_CLEAR_OREFLAG(&huart5);
+  }
+  /* USER CODE END UART5_IRQn 1 */
+}
+
+/* USER CODE BEGIN 1 */
 /* USER CODE END 1 */

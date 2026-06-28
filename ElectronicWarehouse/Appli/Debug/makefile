@@ -168,10 +168,14 @@ RM := rm -rf
 -include Middlewares/RTOS2/CMSIS/RTOS2/Heap/Heap_4/subdir.mk
 -include Middlewares/RTOS2/CMSIS/RTOS2/Core/TZ_Secure_Only/subdir.mk
 -include Drivers/STM32N6xx_HAL_Driver/subdir.mk
+-include Drivers/BSP/VL53L1X/subdir.mk
 -include Drivers/BSP/UART/subdir.mk
 -include Drivers/BSP/TOUCH/subdir.mk
+-include Drivers/BSP/SoftI2C/subdir.mk
 -include Drivers/BSP/SYS/subdir.mk
+-include Drivers/BSP/SK9822/subdir.mk
 -include Drivers/BSP/RGBLCD/subdir.mk
+-include Drivers/BSP/Printer/subdir.mk
 -include Drivers/BSP/NORFlash/subdir.mk
 -include Drivers/BSP/LED/subdir.mk
 -include Drivers/BSP/KEY/subdir.mk
@@ -179,6 +183,7 @@ RM := rm -rf
 -include Drivers/BSP/IMX335/subdir.mk
 -include Drivers/BSP/HyperRAM/subdir.mk
 -include Drivers/BSP/EEPROM/subdir.mk
+-include Drivers/BSP/AHT10/subdir.mk
 -include Core/Startup/subdir.mk
 -include Core/Src/subdir.mk
 -include APP/ui/subdir.mk

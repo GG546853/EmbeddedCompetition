@@ -1,0 +1,6 @@
+../Drivers/BSP/SoftI2C/soft_i2c.c:7:6:soft_i2c_delay_us	8	static,ignoring_inline_asm
+../Drivers/BSP/SoftI2C/soft_i2c.c:24:6:soft_i2c_init	40	static
+../Drivers/BSP/SoftI2C/soft_i2c.c:48:6:soft_i2c_start	8	static
+../Drivers/BSP/SoftI2C/soft_i2c.c:63:6:soft_i2c_stop	8	static
+../Drivers/BSP/SoftI2C/soft_i2c.c:78:9:soft_i2c_write_byte	32	static
+../Drivers/BSP/SoftI2C/soft_i2c.c:113:9:soft_i2c_read_byte	16	static

@@ -1,0 +1,11 @@
+../Drivers/BSP/VL53L1X/vl53l1_platform.c:31:12:_I2CRead	1
+../Drivers/BSP/VL53L1X/vl53l1_platform.c:25:12:_I2CWrite.constprop	1
+../Drivers/BSP/VL53L1X/vl53l1_platform.c:37:14:VL53L1_WriteMulti	2
+../Drivers/BSP/VL53L1X/vl53l1_platform.c:51:14:VL53L1_ReadMulti	3
+../Drivers/BSP/VL53L1X/vl53l1_platform.c:66:14:VL53L1_WrByte	1
+../Drivers/BSP/VL53L1X/vl53l1_platform.c:77:14:VL53L1_WrWord	1
+../Drivers/BSP/VL53L1X/vl53l1_platform.c:89:14:VL53L1_WrDWord	1
+../Drivers/BSP/VL53L1X/vl53l1_platform.c:103:14:VL53L1_RdByte	3
+../Drivers/BSP/VL53L1X/vl53l1_platform.c:118:14:VL53L1_RdWord	3
+../Drivers/BSP/VL53L1X/vl53l1_platform.c:134:14:VL53L1_RdDWord	3
+../Drivers/BSP/VL53L1X/vl53l1_platform.c:151:14:VL53L1_WaitMs	2

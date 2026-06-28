@@ -43,6 +43,7 @@ APP \
 APP/ui \
 Core/Src \
 Core/Startup \
+Drivers/BSP/AHT10 \
 Drivers/BSP/EEPROM \
 Drivers/BSP/HyperRAM \
 Drivers/BSP/IMX335/STM32_IMX335 \
@@ -50,10 +51,14 @@ Drivers/BSP/IMX335 \
 Drivers/BSP/KEY \
 Drivers/BSP/LED \
 Drivers/BSP/NORFlash \
+Drivers/BSP/Printer \
 Drivers/BSP/RGBLCD \
+Drivers/BSP/SK9822 \
 Drivers/BSP/SYS \
+Drivers/BSP/SoftI2C \
 Drivers/BSP/TOUCH \
 Drivers/BSP/UART \
+Drivers/BSP/VL53L1X \
 Drivers/STM32N6xx_HAL_Driver \
 Middlewares/RTOS2/CMSIS/RTOS2/Core/TZ_Secure_Only \
 Middlewares/RTOS2/CMSIS/RTOS2/Heap/Heap_4 \

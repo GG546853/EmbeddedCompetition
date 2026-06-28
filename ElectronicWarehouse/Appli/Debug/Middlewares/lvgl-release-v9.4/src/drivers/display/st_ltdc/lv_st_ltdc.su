@@ -1,10 +1,10 @@
 ../Middlewares/lvgl-release-v9.4/src/drivers/display/st_ltdc/lv_st_ltdc.c:90:16:lv_st_ltdc_create_direct	32	static
 ../Middlewares/lvgl-release-v9.4/src/drivers/display/st_ltdc/lv_st_ltdc.c:95:16:lv_st_ltdc_create_partial	32	static
 ../Middlewares/lvgl-release-v9.4/src/drivers/display/st_ltdc/lv_st_ltdc.c:105:23:create	64	static
-../Middlewares/lvgl-release-v9.4/src/drivers/display/st_ltdc/lv_st_ltdc.c:141:13:flush_cb	120	static
-../Middlewares/lvgl-release-v9.4/src/drivers/display/st_ltdc/lv_st_ltdc.c:208:13:flush_wait_cb	24	static
-../Middlewares/lvgl-release-v9.4/src/drivers/display/st_ltdc/lv_st_ltdc.c:216:26:get_lv_cf_from_layer_cf	16	static
-../Middlewares/lvgl-release-v9.4/src/drivers/display/st_ltdc/lv_st_ltdc.c:234:13:reload_event_callback	24	static
-../Middlewares/lvgl-release-v9.4/src/drivers/display/st_ltdc/lv_st_ltdc.c:246:13:transfer_complete_callback	24	static
-../Middlewares/lvgl-release-v9.4/src/drivers/display/st_ltdc/lv_st_ltdc.c:257:17:get_dma2d_output_cf_from_layer_cf	16	static
-../Middlewares/lvgl-release-v9.4/src/drivers/display/st_ltdc/lv_st_ltdc.c:271:17:get_dma2d_input_cf_from_lv_cf	16	static
+../Middlewares/lvgl-release-v9.4/src/drivers/display/st_ltdc/lv_st_ltdc.c:141:13:flush_cb	136	static,ignoring_inline_asm
+../Middlewares/lvgl-release-v9.4/src/drivers/display/st_ltdc/lv_st_ltdc.c:213:13:flush_wait_cb	24	static
+../Middlewares/lvgl-release-v9.4/src/drivers/display/st_ltdc/lv_st_ltdc.c:225:26:get_lv_cf_from_layer_cf	16	static
+../Middlewares/lvgl-release-v9.4/src/drivers/display/st_ltdc/lv_st_ltdc.c:243:13:reload_event_callback	24	static
+../Middlewares/lvgl-release-v9.4/src/drivers/display/st_ltdc/lv_st_ltdc.c:255:13:transfer_complete_callback	24	static
+../Middlewares/lvgl-release-v9.4/src/drivers/display/st_ltdc/lv_st_ltdc.c:266:17:get_dma2d_output_cf_from_layer_cf	16	static
+../Middlewares/lvgl-release-v9.4/src/drivers/display/st_ltdc/lv_st_ltdc.c:280:17:get_dma2d_input_cf_from_lv_cf	16	static

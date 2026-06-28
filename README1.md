@@ -320,3 +320,162 @@ Sensor_Task (摄像头)              LV_Task (触摸)
 ```
 
 **NULL 检查的原因**：LVGL 可能在摄像头任务创建锁之前就尝试读触摸（启动初期），此时 `pd_i2c_mutex == NULL` 跳过加锁，保证启动阶段触摸也能正常工作。
+
+---
+
+## 问题 4：AHT10 温湿度传感器无法通信（总线无活动）
+
+### 问题描述
+
+在 STM32N6 平台上通过 I3C2 外设（I2C 兼容模式）驱动 AHT10 温湿度传感器失败。I3C HAL 初始化返回成功，`aht10_i2c_write` 返回错误。切换到软件 I2C（Bit-Bang GPIO）后仍无法通信。
+
+### 环境信息
+
+| 项目 | 详情 |
+|------|------|
+| MCU | STM32N647X0HXQ |
+| 外设 | I3C2（PH7=SCL, PH8=SDA, AF2） |
+| 传感器 | AHT10（I2C 7位地址 0x38） |
+| 内核时钟 | PCLK1（CCIPR4 I3C2SEL=1） |
+| RTOS | FreeRTOS（CMSIS-RTOS2） |
+| TrustZone | 使能（`__ARM_FEATURE_CMSE == 3U`） |
+| RIF | 已配置 GPIOH PIN7/8 为 GPIO_PIN_SEC |
+
+### 第一阶段：HAL I3C 驱动（I2C Private Message）
+
+**现象**：`aht10_init()` 返回 1（`aht10_i2c_write` 失败），SCL/SDA 始终为高电平，逻辑分析仪抓不到任何总线活动。
+
+**排查步骤**：
+
+**1. CtrlBuf/TxBuf 空指针崩溃**
+
+`I3C_XferTypeDef xfer = {0}` 将缓冲区指针初始化为 NULL，导致 `I3C_ControlBuffer_PriorPreparation` 返回 `HAL_ERROR`，`HAL_I3C_AddDescToFrame` 失败。
+
+修复：在栈上预分配 `uint32_t ctrl_buf[2]`、`uint8_t tx_buf[8]`、`uint8_t rx_buf[8]`。
+
+**2. 多余的 I3C 仲裁调用**
+
+原代码调用了 `HAL_I3C_Ctrl_GenerateArbitration()`（发送 `S + 0x7E + W`）。总线上没有 I3C 目标器件，仲裁必然因无 ACK 而失败。
+
+修复：删除仲裁调用。
+
+**3. I3C 地址格式修正**
+
+I3C HAL 的 `TargetAddr` 字段要求原始 7 位地址（0x38），不同于传统 `HAL_I2C` 需要传入左移 1 位后的地址（0x70）。
+
+修复：`AHT10_ADDR` 设为 `0x38`。
+
+**4. 启用 ControlFIFO**
+
+怀疑 STM32N6 的 I3C 需要通过 C-FIFO + TSFSET 触发机制而不是直接写 CR 寄存器来启动传输。
+
+修改 `i3c.c`：`sFifoConfig.ControlFifo = HAL_I3C_CONTROLFIFO_ENABLE`。
+
+结果：**无效**，总线仍无任何活动。
+
+**5. 硬件寄存器深度诊断**
+
+在 `main.c` 加入 I3C2 全寄存器 dump（CFGR/CR/SR/EVR/IER/SER/TIMINGR0/1）和 RCC 时钟状态（APB1ENR1/APB1RSTR1/CCIPR4/MSICFGR）。同时加入直接 LL 层 CR 写入测试，完全绕过 HAL。
+
+**寄存器 dump 关键输出**：
+
+```
+I3C2 CFGR=0x00080003:  EN=1 CRINIT=1 NOARBH=0 TMODE=1 SMODE=0
+I3C2 EVR=0x00000003:   CFEF=1 TXFEF=1 CFNFF=0
+RCC APB1ENR1=0x02400011:  I3C2EN=1 (时钟已使能)
+RCC APB1RSTR1=0x00000000: I3C2RST=0 (复位已释放)
+RCC CCIPR4=0x02401010:    I3C2SEL=1 (内核时钟=PCLK1)
+GPIOH IDR=0x00000180:    PH7=1 PH8=1 (引脚读回高电平)
+```
+
+**EVR 寄存器异常分析**：
+
+EVR（Event Register）关键位：
+- 位 0 `CFEF`（Control FIFO Empty Flag）= 1 → C-FIFO 为空
+- 位 2 `CFNFF`（Control FIFO Not Full Flag）= **0** → C-FIFO 显示"已满"
+
+这两个标志**相互矛盾**：空 FIFO 应该也是"Not Full"。CFNFF=0 意味着硬件拒绝接受控制数据。
+
+**直接 LL 层 CR 写入测试**：
+- TMODE=1（ControlFIFO 模式），通过 C-FIFO + TSFSET 触发
+- 写入 CR 控制字后：CFEF 变为 0（FIFO 收到数据），CFNFF 仍为 0
+- 置 `TSFSET=1` 后：EVR **无任何变化**，FCF（帧完成）从未置位，ERRF（错误）从未置位
+- 等待 100ms 超时：总线始终无 START 条件
+
+**结论**：I3C2 硬件对 C-FIFO 数据写入和 TSFSET 触发均不响应。即使直接写 CR 寄存器（TMODE=0 模式）也无反应。外设配置全部正确（EN=1, CRINIT=1, 时钟已使能, 复位已释放），最可能原因是 STM32N6 I3C2 硅片勘误或内核时钟未到达外设内部逻辑。ST 社区 2026-02 有相同报障帖（"STM32N6 I3C mixed communication - no signal"），0 回复，无公开解决方案。
+
+### 第二阶段：软件 I2C（Bit-Bang GPIO）
+
+放弃 I3C 硬件，用纯 GPIO 模拟 I2C 时序。
+
+**实现文件**：`Appli/Drivers/BSP/SoftI2C/soft_i2c.c`
+
+- GPIO 开漏输出模式 + 上拉，BSRR 寄存器原子写控制 SCL/SDA
+- 微秒延时经历三次迭代：
+
+| 方案 | 现象 |
+|------|------|
+| DWT `CYCCNT` 周期计数器 | 卡死在 `while ((DWT->CYCCNT - start) < cycles)` — 计数器不递增 |
+| `SysTick->VAL` | VAL 始终为 0 — SysTick 未运行或已被 RTOS 重新配置 |
+| `__NOP()` 忙等循环 | 可执行，循环正常完成 |
+
+**现象**：`aht10_init()` 返回 1（Init FAILED），PH7/PH8 始终高电平。
+
+**GPIO 控制诊断**：
+
+在 FreeRTOS `StartDefaultTask` 任务中直接调用 `HAL_GPIO_WritePin` / `HAL_GPIO_TogglePin` 翻转 PH7：
+- 任务确实被执行（断点确认到达）
+- 用**逻辑分析仪**抓取 PH7 电平 → **始终高电平，无任何跳变**
+- 查看 GPIOH MODER → PH7/PH8 已配置为输出模式
+- 写入 BSRR 拉低 PH7 的代码已执行，但物理引脚无反应
+
+### 第三阶段：RIF 安全性排查
+
+检查 `SystemIsolation_Config()`（`main.c:312`）中的 RIF 配置：
+
+```c
+HAL_GPIO_ConfigPinAttributes(GPIOH, GPIO_PIN_7, GPIO_PIN_SEC | GPIO_PIN_NPRIV);
+HAL_GPIO_ConfigPinAttributes(GPIOH, GPIO_PIN_8, GPIO_PIN_SEC | GPIO_PIN_NPRIV);
+```
+
+- PH7/PH8 被标记为安全引脚（`GPIO_PIN_SEC`）+ 非特权可访问（`GPIO_PIN_NPRIV`）
+- GPIOH 时钟确认使能（`gpio.c:50` 和 `ltdc.c:133` 均有 `__HAL_RCC_GPIOH_CLK_ENABLE()`）
+- 代码运行在 Secure 模式（`__ARM_FEATURE_CMSE == 3U`），与引脚安全属性匹配
+- GPIOH 组级别未被 `HAL_RIF_RISC_SetSlaveSecureAttributes` 显式配置为安全外设，但引脚级属性应独立生效
+
+### 根因结论
+
+**AHT10 传感器本身硬件损坏。**
+
+判断依据：
+1. I3C2 硬件不产生总线活动（ControlFIFO 使能/禁用、直接 CR 写入均无效）
+2. 软件 I2C（GPIO 直接写 BSRR 寄存器翻转引脚）在逻辑分析仪上无任何电平变化
+3. 软件 I2C 独立于 I3C 外设，仅依赖 GPIO 输出驱动 — GPIO 寄存器写入不改变引脚电平，直接排除 I3C 问题
+4. GPIOH 其他引脚工作正常（LCD/LTDC 使用 PH4/PH9/PH10/PH11/PH12/PH13/PH14/PH15），排除 GPIOH 整组问题
+5. RIF 安全配置与代码运行模式匹配（Secure 代码访问 Secure 引脚），排除 TrustZone 问题
+6. 最可能的硬件故障：PH7/PH8 引脚内部输出驱动电路损坏，或 AHT10 传感器端 SDA/SCL 对 VDD 短路导致开漏输出无法拉低总线电平
+
+### 解决方向
+
+1. 更换 AHT10 传感器模块
+2. 或改用其他任意空闲 GPIO 引脚作为软件 I2C（避免受影响的 PH7/PH8），确认新引脚可正常翻转后再连接 AHT10
+3. I3C2 外设问题待 ST 发布 STM32N6 勘误表后再评估是否可修复
+
+### 涉及文件
+
+| 文件 | 说明 |
+|------|------|
+| `Appli/Drivers/BSP/AHT10/aht10.h` | AHT10 驱动头文件 |
+| `Appli/Drivers/BSP/AHT10/aht10.c` | AHT10 驱动实现（切换为软件 I2C） |
+| `Appli/Drivers/BSP/SoftI2C/soft_i2c.h` | 软件 I2C 驱动头文件（引脚宏 + GPIO 控制宏） |
+| `Appli/Drivers/BSP/SoftI2C/soft_i2c.c` | 软件 I2C 驱动实现（NOP 忙等延时） |
+| `Appli/Core/Src/main.c` | 主程序（含 AHT10 诊断测试代码） |
+| `Appli/Core/Src/i3c.c` | I3C2 初始化（已添加 RELEASE_RESET） |
+
+### 关键经验
+
+1. **I3C 兼容 I2C**：STM32N6 的 I3C2 在 Legacy I2C 模式下可能存在硅片问题。ST 社区 2026-02 已有相同报障且无回复，暂不建议在此平台上用 I3C 驱动纯 I2C 设备
+2. **软件 I2C 延时**：RTOS 环境下 DWT 和 SysTick 均可能不可用，NOP 忙等是最可靠的回退方案
+3. **GPIO 安全属性**：TrustZone + RIF 环境下需注意引脚级安全配置（`HAL_GPIO_ConfigPinAttributes`）是否与代码执行模式匹配
+4. **寄存器诊断方法**：直接读写外设寄存器并逐位解码，能比 HAL 返回值更快定位问题根因
+5. **分层隔离验证**：从 HAL → LL → 纯 GPIO → 换引脚 逐层剥离，排除中间件问题后最终定位到硬件

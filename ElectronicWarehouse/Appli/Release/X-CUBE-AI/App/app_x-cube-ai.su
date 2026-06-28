@@ -13,6 +13,6 @@
 ../X-CUBE-AI/App/app_x-cube-ai.c:744:7:ai_face_gallery_print	24	static
 ../X-CUBE-AI/App/app_x-cube-ai.c:756:7:ai_face_reid_run	24	static,ignoring_inline_asm
 ../X-CUBE-AI/App/app_x-cube-ai.c:800:7:MX_X_CUBE_AI_Process_User	256	static,ignoring_inline_asm
-../X-CUBE-AI/App/app_x-cube-ai.c:827:6:set_clk_sleep_mode	32	static
-../X-CUBE-AI/App/app_x-cube-ai.c:866:6:MX_X_CUBE_AI_Init	56	static
-../X-CUBE-AI/App/app_x-cube-ai.c:925:6:MX_X_CUBE_AI_Process	8	static,ignoring_inline_asm
+../X-CUBE-AI/App/app_x-cube-ai.c:828:6:set_clk_sleep_mode	32	static
+../X-CUBE-AI/App/app_x-cube-ai.c:867:6:MX_X_CUBE_AI_Init	56	static
+../X-CUBE-AI/App/app_x-cube-ai.c:926:6:MX_X_CUBE_AI_Process	8	static,ignoring_inline_asm

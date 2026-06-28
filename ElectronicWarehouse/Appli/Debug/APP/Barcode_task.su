@@ -1,0 +1,4 @@
+../APP/Barcode_task.c:24:6:UART5_RxCallback	16	static
+../APP/Barcode_task.c:31:6:UART5_IDLE_Callback	4	static
+../APP/Barcode_task.c:38:13:parse_inventory	48	static
+../APP/Barcode_task.c:80:6:Barcode_Task	568	static

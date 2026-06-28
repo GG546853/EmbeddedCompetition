@@ -27,7 +27,12 @@
 #include "Electromagnet.h"
 #include "AI_task.h"
 #include "LV_task.h"
+#include "VL53L1X_task.h"
+#include "Barcode_task.h"
+#include "Printer_task.h"
+#include "tim.h"
 
+#include <stdio.h>
 #include "imx335.h"
 #include "rgblcd.h"
 #include "aht10.h"
@@ -65,6 +70,10 @@ const osThreadAttr_t defaultTask_attributes = {
 osSemaphoreId_t cam_frame_sem;
 const osSemaphoreAttr_t cam_frame_sem_attributes = {
   .name = "cam_frame_sem"
+};
+osMutexId_t i2c2_mutex;
+const osMutexAttr_t i2c2_mutex_attributes = {
+  .name = "i2c2_mutex"
 };
 /* USER CODE END FunctionPrototypes */
 
@@ -118,6 +127,7 @@ void MX_FREERTOS_Init(void) {
 
   /* USER CODE BEGIN RTOS_MUTEX */
   /* add mutexes, ... */
+  i2c2_mutex = osMutexNew(&i2c2_mutex_attributes);
   /* USER CODE END RTOS_MUTEX */
 
   /* USER CODE BEGIN RTOS_SEMAPHORES */
@@ -138,12 +148,14 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
 
-  RGBLED_TaskHandle = osThreadNew(RGBLED_Task, NULL, &RGBLEDTask_attributes);
+  //RGBLED_TaskHandle = osThreadNew(RGBLED_Task, NULL, &RGBLEDTask_attributes);
   //Sensor_TaskHandle = osThreadNew(Sensor_Task, NULL, &SensorTask_attributes);
-  LV_TaskHandle = osThreadNew(LVGL_Task, NULL, &LVTask_attributes);
+  //LV_TaskHandle = osThreadNew(LVGL_Task, NULL, &LVTask_attributes);
   //AITaskHandle = osThreadNew(AI_Task, NULL, &AITask_attributes);
   //Electromagnet_TaskHandle = osThreadNew(Electromagnet_Task, NULL, &ElectromagnetTask_attributes);
-
+  //VL53L1X_TaskHandle = osThreadNew(VL53L1X_Task, NULL, &VL53L1XTask_attributes);
+  Barcode_TaskHandle = osThreadNew(Barcode_Task, NULL, &BarcodeTask_attributes);
+  //Printer_TaskHandle = osThreadNew(Printer_Task, NULL, &PrinterTask_attributes);
   /* USER CODE END RTOS_THREADS */
 
   /* USER CODE BEGIN RTOS_EVENTS */
@@ -161,16 +173,25 @@ void MX_FREERTOS_Init(void) {
 void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN defaultTask */
-//	float H;
-//	float T;
-//	aht10_init();
+//	float H = 0;
+//	float T = 0;
+//	while(aht10_init())
+//	{
+//		HAL_GPIO_WritePin(GPIOG, GPIO_PIN_10, 0);
+//	}
+
   /* Infinite loop */
   for(;;)
   {
 //	aht10_read(&H, &T);
+
 //	printf("H:%.3f, T:%.3f", H, T);
+//	HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_3);
+//	osDelay(1000);
+//	HAL_GPIO_TogglePin(GPIOG, GPIO_PIN_10);
+//	HAL_TIM_PWM_Stop(&htim4, TIM_CHANNEL_3);
+	//HAL_UART_Transmit(&huart4, (uint8_t[]){0x01},1 , 100);
 	osDelay(2000);
-	HAL_GPIO_TogglePin(GPIOG, GPIO_PIN_10);
   }
   /* USER CODE END defaultTask */
 }

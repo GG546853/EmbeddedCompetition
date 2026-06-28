@@ -1,8 +1,8 @@
-../APP/AI_task.c:26:13:fill_rect	32	static
-../APP/AI_task.c:43:13:draw_box	40	static
-../APP/AI_task.c:51:13:draw_kp	40	static
-../APP/AI_task.c:57:13:draw_one_detection	64	static
-../APP/AI_task.c:73:13:draw_detections_on_display	32	static
-../APP/AI_task.c:122:13:process_serial_commands	80	static
-../APP/AI_task.c:175:13:run_reid_pipeline	608	static,ignoring_inline_asm
-../APP/AI_task.c:253:6:AI_Task	128	static,ignoring_inline_asm
+../APP/AI_task.c:29:13:fill_rect	32	static
+../APP/AI_task.c:53:13:draw_box	40	static
+../APP/AI_task.c:61:13:draw_kp	40	static
+../APP/AI_task.c:67:13:draw_one_detection	64	static
+../APP/AI_task.c:83:13:draw_detections_on_display	32	static
+../APP/AI_task.c:132:13:process_serial_commands	80	static
+../APP/AI_task.c:185:13:run_reid_pipeline	608	static,ignoring_inline_asm
+../APP/AI_task.c:263:6:AI_Task	128	static,ignoring_inline_asm

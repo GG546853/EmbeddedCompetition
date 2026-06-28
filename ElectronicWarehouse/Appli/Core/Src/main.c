@@ -24,9 +24,10 @@
 #include "dcmipp.h"
 #include "dma2d.h"
 #include "i2c.h"
-#include "i3c.h"
 #include "ltdc.h"
 #include "ramcfg.h"
+#include "spi.h"
+#include "tim.h"
 #include "usart.h"
 #include "xspi.h"
 #include "xspim.h"
@@ -41,6 +42,8 @@
 #include "imx335.h"
 #include "rgblcd.h"
 #include "uart.h"
+#include "aht10.h"
+#include "../Drivers/BSP/SoftI2C/soft_i2c.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -97,7 +100,7 @@ int main(void)
 #endif
 
 	SystemCoreClockUpdate();
-	SystemIsolation_Config();
+
 
 //	  /* Enable I-Cache---------------------------------------------------------*/
 //	  SCB_EnableICache();
@@ -183,7 +186,12 @@ int main(void)
   //MX_XSPI2_Init();
   MX_CACHEAXI_Init();
   MX_RAMCFG_Init();
-  MX_I3C2_Init();
+  MX_UART7_Init();
+  MX_SPI5_Init();
+  MX_TIM4_Init();
+  MX_I2C1_Init();
+  MX_UART4_Init();
+  MX_UART5_Init();
   MX_X_CUBE_AI_Init();
   SystemIsolation_Config();
   /* USER CODE BEGIN 2 */
@@ -212,6 +220,55 @@ int main(void)
   }
 #endif
 
+//  /* ==== AHT10 软件 I2C 诊断 ==== */
+//  printf("AHT10 Soft I2C Diagnostic:\r\n");
+//  printf("  SystemCoreClock=%lu\r\n", SystemCoreClock);
+//
+//  /* 查看 GPIOH 初始状态 */
+//  printf("  GPIOH MODER=0x%08lX ODR=0x%08lX IDR=0x%08lX\r\n",
+//         GPIOH->MODER, GPIOH->ODR, GPIOH->IDR);
+//
+//  /* 初始化软 I2C（重配 PH7/PH8 为开漏输出） */
+//  soft_i2c_init();
+//
+//  printf("  After soft_i2c_init:\r\n");
+//  printf("  GPIOH MODER=0x%08lX ODR=0x%08lX IDR=0x%08lX\r\n",
+//         GPIOH->MODER, GPIOH->ODR, GPIOH->IDR);
+//
+//  /* 手动翻转 SDA 验证 GPIO 控制有效 */
+//  printf("  Toggling SDA LOW...\r\n");
+//  SDA_L();
+//  HAL_Delay(500);
+//  printf("  GPIOH ODR=0x%08lX IDR=0x%08lX\r\n", GPIOH->ODR, GPIOH->IDR);
+//
+//  printf("  Toggling SDA HIGH...\r\n");
+//  SDA_H();
+//  HAL_Delay(500);
+//  printf("  GPIOH ODR=0x%08lX IDR=0x%08lX\r\n", GPIOH->ODR, GPIOH->IDR);
+//
+//  /* 复位总线后尝试 AHT10 */
+//  SDA_H();
+//  SCL_H();
+//  HAL_Delay(10);
+//
+//  printf("  Calling aht10_init...\r\n");
+//  fflush(stdout);
+//
+//  if (aht10_init() != 0) {
+//      printf("  Init FAILED\r\n");
+//      printf("  Final GPIOH MODER=0x%08lX ODR=0x%08lX IDR=0x%08lX\r\n",
+//             GPIOH->MODER, GPIOH->ODR, GPIOH->IDR);
+//      while (1) { HAL_Delay(1000); }
+//  }
+//  printf("  Init OK\r\n");
+//
+//  float t = 0, h = 0;
+//  if (aht10_read(&h, &t) != 0) {
+//      printf("  Read FAILED\r\n");
+//      while (1) { HAL_Delay(1000); }
+//  }
+//  printf("  T=%.1f C  H=%.1f %%\r\n", t, h);
+//  fflush(stdout);
 
 
   /* USER CODE END 2 */
@@ -247,8 +304,9 @@ void PeriphCommonClock_Config(void)
 
   /** Initializes the peripherals clock
   */
-  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_CKPER;
+  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_TIM|RCC_PERIPHCLK_CKPER;
   PeriphClkInitStruct.CkperClockSelection = RCC_CLKPCLKSOURCE_HSI;
+  PeriphClkInitStruct.TIMPresSelection = RCC_TIMPRES_DIV1;
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
   {
     Error_Handler();
@@ -307,12 +365,20 @@ void PeriphCommonClock_Config(void)
   HAL_GPIO_ConfigPinAttributes(GPIOB,GPIO_PIN_10,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
   HAL_GPIO_ConfigPinAttributes(GPIOB,GPIO_PIN_11,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
   HAL_GPIO_ConfigPinAttributes(GPIOB,GPIO_PIN_12,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
+  HAL_GPIO_ConfigPinAttributes(GPIOB,GPIO_PIN_13,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
   HAL_GPIO_ConfigPinAttributes(GPIOB,GPIO_PIN_15,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
+  HAL_GPIO_ConfigPinAttributes(GPIOC,GPIO_PIN_1,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
   HAL_GPIO_ConfigPinAttributes(GPIOC,GPIO_PIN_6,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
+  HAL_GPIO_ConfigPinAttributes(GPIOC,GPIO_PIN_10,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
+  HAL_GPIO_ConfigPinAttributes(GPIOC,GPIO_PIN_11,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
+  HAL_GPIO_ConfigPinAttributes(GPIOC,GPIO_PIN_12,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
   HAL_GPIO_ConfigPinAttributes(GPIOC,GPIO_PIN_13,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
   HAL_GPIO_ConfigPinAttributes(GPIOD,GPIO_PIN_1,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
   HAL_GPIO_ConfigPinAttributes(GPIOD,GPIO_PIN_4,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
+  HAL_GPIO_ConfigPinAttributes(GPIOD,GPIO_PIN_5,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
   HAL_GPIO_ConfigPinAttributes(GPIOD,GPIO_PIN_14,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
+  HAL_GPIO_ConfigPinAttributes(GPIOE,GPIO_PIN_5,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
+  HAL_GPIO_ConfigPinAttributes(GPIOE,GPIO_PIN_7,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
   HAL_GPIO_ConfigPinAttributes(GPIOE,GPIO_PIN_10,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
   HAL_GPIO_ConfigPinAttributes(GPIOE,GPIO_PIN_13,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
   HAL_GPIO_ConfigPinAttributes(GPIOE,GPIO_PIN_14,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
@@ -320,6 +386,7 @@ void PeriphCommonClock_Config(void)
   HAL_GPIO_ConfigPinAttributes(GPIOF,GPIO_PIN_9,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
   HAL_GPIO_ConfigPinAttributes(GPIOF,GPIO_PIN_12,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
   HAL_GPIO_ConfigPinAttributes(GPIOF,GPIO_PIN_13,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
+  HAL_GPIO_ConfigPinAttributes(GPIOF,GPIO_PIN_14,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
   HAL_GPIO_ConfigPinAttributes(GPIOG,GPIO_PIN_0,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
   HAL_GPIO_ConfigPinAttributes(GPIOG,GPIO_PIN_4,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
   HAL_GPIO_ConfigPinAttributes(GPIOG,GPIO_PIN_6,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
@@ -327,9 +394,14 @@ void PeriphCommonClock_Config(void)
   HAL_GPIO_ConfigPinAttributes(GPIOG,GPIO_PIN_10,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
   HAL_GPIO_ConfigPinAttributes(GPIOG,GPIO_PIN_11,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
   HAL_GPIO_ConfigPinAttributes(GPIOG,GPIO_PIN_13,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
+  HAL_GPIO_ConfigPinAttributes(GPIOG,GPIO_PIN_14,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
+  HAL_GPIO_ConfigPinAttributes(GPIOH,GPIO_PIN_2,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
+  HAL_GPIO_ConfigPinAttributes(GPIOH,GPIO_PIN_3,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
   HAL_GPIO_ConfigPinAttributes(GPIOH,GPIO_PIN_4,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
+  HAL_GPIO_ConfigPinAttributes(GPIOH,GPIO_PIN_5,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
   HAL_GPIO_ConfigPinAttributes(GPIOH,GPIO_PIN_7,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
   HAL_GPIO_ConfigPinAttributes(GPIOH,GPIO_PIN_8,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
+  HAL_GPIO_ConfigPinAttributes(GPIOH,GPIO_PIN_9,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
   HAL_GPIO_ConfigPinAttributes(GPION,GPIO_PIN_0,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
   HAL_GPIO_ConfigPinAttributes(GPION,GPIO_PIN_1,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
   HAL_GPIO_ConfigPinAttributes(GPION,GPIO_PIN_2,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
@@ -354,7 +426,10 @@ void PeriphCommonClock_Config(void)
   HAL_GPIO_ConfigPinAttributes(GPIOP,GPIO_PIN_6,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
   HAL_GPIO_ConfigPinAttributes(GPIOP,GPIO_PIN_7,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
   HAL_GPIO_ConfigPinAttributes(GPIOQ,GPIO_PIN_3,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
+  HAL_GPIO_ConfigPinAttributes(GPIOQ,GPIO_PIN_4,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
+  HAL_GPIO_ConfigPinAttributes(GPIOQ,GPIO_PIN_5,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
   HAL_GPIO_ConfigPinAttributes(GPIOQ,GPIO_PIN_6,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
+  HAL_GPIO_ConfigPinAttributes(GPIOQ,GPIO_PIN_7,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
 
 /* USER CODE BEGIN RIF_Init 1 */
   RIMC_master.MasterCID = RIF_CID_1;

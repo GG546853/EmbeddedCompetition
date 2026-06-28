@@ -1,0 +1,10 @@
+../Drivers/BSP/VL53L1X/vl53l1x_bsp.c:4:9:vl53l1x_boot_state	16	static
+../Drivers/BSP/VL53L1X/vl53l1x_bsp.c:9:9:vl53l1x_get_sensor_id	16	static
+../Drivers/BSP/VL53L1X/vl53l1x_bsp.c:14:9:vl53l1x_init	8	static
+../Drivers/BSP/VL53L1X/vl53l1x_bsp.c:19:9:vl53l1x_start_ranging	8	static
+../Drivers/BSP/VL53L1X/vl53l1x_bsp.c:24:9:vl53l1x_stop_ranging	8	static
+../Drivers/BSP/VL53L1X/vl53l1x_bsp.c:29:9:vl53l1x_is_data_ready	16	static
+../Drivers/BSP/VL53L1X/vl53l1x_bsp.c:34:9:vl53l1x_clear_interrupt	8	static
+../Drivers/BSP/VL53L1X/vl53l1x_bsp.c:39:9:vl53l1x_read_distance	16	static
+../Drivers/BSP/VL53L1X/vl53l1x_bsp.c:44:9:vl53l1x_set_distance_mode	16	static
+../Drivers/BSP/VL53L1X/vl53l1x_bsp.c:49:9:vl53l1x_set_timing_budget_ms	16	static

@@ -1,3 +1,3 @@
-../Drivers/BSP/AHT10/aht10.c:31:26:aht10_i2c_write.constprop	72	static
-../Drivers/BSP/AHT10/aht10.c:80:9:aht10_init	16	static
-../Drivers/BSP/AHT10/aht10.c:102:9:aht10_read	104	static
+../Drivers/BSP/AHT10/aht10.c:10:16:aht10_write.constprop	16	static
+../Drivers/BSP/AHT10/aht10.c:64:9:aht10_init	16	static
+../Drivers/BSP/AHT10/aht10.c:83:9:aht10_read	40	static

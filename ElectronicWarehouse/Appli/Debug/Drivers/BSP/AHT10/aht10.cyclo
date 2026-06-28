@@ -1,0 +1,4 @@
+../Drivers/BSP/AHT10/aht10.c:10:16:aht10_write	4
+../Drivers/BSP/AHT10/aht10.c:40:16:aht10_read_raw	3
+../Drivers/BSP/AHT10/aht10.c:64:9:aht10_init	2
+../Drivers/BSP/AHT10/aht10.c:83:9:aht10_read	4

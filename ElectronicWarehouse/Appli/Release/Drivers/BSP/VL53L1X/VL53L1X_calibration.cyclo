@@ -1,0 +1,2 @@
+../Drivers/BSP/VL53L1X/VL53L1X_calibration.c:25:8:VL53L1X_CalibrateOffset	4
+../Drivers/BSP/VL53L1X/VL53L1X_calibration.c:64:8:VL53L1X_CalibrateXtalk	4

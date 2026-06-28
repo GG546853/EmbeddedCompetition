@@ -1,0 +1,6 @@
+../Drivers/BSP/SK9822/sk9822.c:12:6:SK9822_Init	3
+../Drivers/BSP/SK9822/sk9822.c:31:6:SK9822_SetLED	2
+../Drivers/BSP/SK9822/sk9822.c:42:6:SK9822_SetGroup	3
+../Drivers/BSP/SK9822/sk9822.c:52:6:SK9822_SetAll	2
+../Drivers/BSP/SK9822/sk9822.c:59:6:SK9822_Clear	2
+../Drivers/BSP/SK9822/sk9822.c:70:6:SK9822_Transmit	1

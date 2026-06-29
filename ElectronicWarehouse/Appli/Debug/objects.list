@@ -40,6 +40,7 @@
 "./Core/Src/xspim.o"
 "./Core/Startup/startup_stm32n647x0hxq.o"
 "./Drivers/BSP/AHT10/aht10.o"
+"./Drivers/BSP/BUZZER/buzzer.o"
 "./Drivers/BSP/EEPROM/eeprom.o"
 "./Drivers/BSP/HyperRAM/hyperram.o"
 "./Drivers/BSP/IMX335/STM32_IMX335/imx335.o"

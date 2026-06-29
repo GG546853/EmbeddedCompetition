@@ -36,6 +36,7 @@
 #include "imx335.h"
 #include "rgblcd.h"
 #include "aht10.h"
+#include "gt9xxx.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -62,7 +63,7 @@ osThreadId_t defaultTaskHandle;
 const osThreadAttr_t defaultTask_attributes = {
   .name = "defaultTask",
   .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 128 * 4
+  .stack_size = 512 * 4
 };
 
 /* Private function prototypes -----------------------------------------------*/
@@ -154,7 +155,7 @@ void MX_FREERTOS_Init(void) {
   //AITaskHandle = osThreadNew(AI_Task, NULL, &AITask_attributes);
   //Electromagnet_TaskHandle = osThreadNew(Electromagnet_Task, NULL, &ElectromagnetTask_attributes);
   //VL53L1X_TaskHandle = osThreadNew(VL53L1X_Task, NULL, &VL53L1XTask_attributes);
-  Barcode_TaskHandle = osThreadNew(Barcode_Task, NULL, &BarcodeTask_attributes);
+  //Barcode_TaskHandle = osThreadNew(Barcode_Task, NULL, &BarcodeTask_attributes);
   //Printer_TaskHandle = osThreadNew(Printer_Task, NULL, &PrinterTask_attributes);
   /* USER CODE END RTOS_THREADS */
 
@@ -173,25 +174,98 @@ void MX_FREERTOS_Init(void) {
 void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN defaultTask */
-//	float H = 0;
-//	float T = 0;
-//	while(aht10_init())
-//	{
-//		HAL_GPIO_WritePin(GPIOG, GPIO_PIN_10, 0);
-//	}
+
+  const uint8_t cfg_1txt[184] = {
+    0x60,0xE0,0x01,0x10,0x01,0x05,0x0F,0x00,0x01,0x08,
+    0x28,0x05,0x50,0x32,0x03,0x05,0x00,0x00,0xFF,0xFF,
+    0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x89,0x28,0x0A,
+    0x17,0x15,0x31,0x0D,0x00,0x00,0x02,0x9B,0x03,0x25,
+    0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x32,0x00,0x00,
+    0x00,0x0F,0x94,0x94,0xC5,0x02,0x07,0x00,0x00,0x04,
+    0x8D,0x13,0x00,0x5C,0x1E,0x00,0x3C,0x30,0x00,0x29,
+    0x4C,0x00,0x1E,0x78,0x00,0x1E,0x00,0x00,0x00,0x00,
+    0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+    0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+    0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+    0x00,0x00,0x08,0x0A,0x0C,0x0E,0x10,0x12,0x14,0x16,
+    0x18,0x1A,0x00,0x00,0x00,0x00,0x1F,0xFF,0xFF,0xFF,
+    0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
+    0xFF,0xFF,0x00,0x02,0x04,0x05,0x06,0x08,0x0A,0x0C,
+    0x0E,0x1D,0x1E,0x1F,0x20,0x22,0x24,0x28,0x29,0xFF,
+    0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0xFF,0xFF,
+    0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
+    0xFF,0xFF,0xFF,0xFF
+  };
+  uint8_t buf[184];
+  uint8_t data;
+  uint16_t sum = 0;
+  uint8_t checksum;
+
+  osDelay(500);
+
+  if (gt9xxx_init() != 0) {
+    printf("GT9xxx init failed!\r\n");
+  } else {
+//    /* ====== 写入 1.txt 配置表 ====== */
+//    printf("Writing config from 1.txt...\r\n");
+//
+//    /* 先停扫描，进入配置模式 */
+//    data = 0x00;
+//    gt9xxx_wr_reg(GT9XXX_CTRL_REG, &data, 1);
+//    osDelay(10);
+//
+//    /* 写配置 + checksum */
+//    gt9xxx_wr_reg(GT9XXX_CFGS_REG, (uint8_t *)cfg_1txt, 184);
+//    for (int i = 0; i < 184; i++) sum += cfg_1txt[i];
+//    checksum = (0x100 - (sum & 0xFF)) & 0xFF;
+//    gt9xxx_wr_reg(GT9XXX_CHECK_REG, &checksum, 1);
+//    printf("Checksum: 0x%02X\r\n", checksum);
+//
+//    /* 重启扫描 → 芯片检测 checksum 变化，自动烧 flash */
+//    data = 0x01;
+//    gt9xxx_wr_reg(GT9XXX_CTRL_REG, &data, 1);
+//    osDelay(200);
+//
+//    /* 软复位验证：从 flash 重新加载 */
+//    data = 0x02;
+//    gt9xxx_wr_reg(GT9XXX_CTRL_REG, &data, 1);
+//    osDelay(10);
+//    data = 0x00;
+//    gt9xxx_wr_reg(GT9XXX_CTRL_REG, &data, 1);
+
+    /* ====== 回读验证 ====== */
+    gt9xxx_rd_reg(GT9XXX_CFGS_REG, buf, 184);
+
+    printf("\r\n=== GT9xxx Config Table After Write ===\r\n");
+    for (int i = 0; i < 184; i += 8) {
+      printf("[0x%04X]: ", 0x8047 + i);
+      for (int j = 0; j < 8 && (i + j) < 184; j++) {
+        printf("0x%02X ", buf[i + j]);
+      }
+      printf("\r\n");
+    }
+
+    /* 逐字节对比 */
+    int mismatch = 0;
+    for (int i = 0; i < 184; i++) {
+      if (buf[i] != cfg_1txt[i]) {
+        if (mismatch == 0) printf("\r\n=== MISMATCH ===\r\n");
+        printf("  [0x%04X]: wrote 0x%02X, read 0x%02X\r\n",
+               0x8047 + i, cfg_1txt[i], buf[i]);
+        mismatch++;
+      }
+    }
+    if (mismatch == 0) {
+      printf("\r\n=== All 184 bytes match! ===\r\n");
+    } else {
+      printf("=== %d bytes mismatch ===\r\n", mismatch);
+    }
+  }
 
   /* Infinite loop */
   for(;;)
   {
-//	aht10_read(&H, &T);
-
-//	printf("H:%.3f, T:%.3f", H, T);
-//	HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_3);
-//	osDelay(1000);
-//	HAL_GPIO_TogglePin(GPIOG, GPIO_PIN_10);
-//	HAL_TIM_PWM_Stop(&htim4, TIM_CHANNEL_3);
-	//HAL_UART_Transmit(&huart4, (uint8_t[]){0x01},1 , 100);
-	osDelay(2000);
+    osDelay(2000);
   }
   /* USER CODE END defaultTask */
 }

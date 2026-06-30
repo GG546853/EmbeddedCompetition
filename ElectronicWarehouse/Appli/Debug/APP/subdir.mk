@@ -6,10 +6,12 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
 ../APP/AI_task.c \
+../APP/Aht10_task.c \
 ../APP/Barcode_task.c \
 ../APP/Electromagnet.c \
 ../APP/LCD_task.c \
 ../APP/LV_task.c \
+../APP/Outbound_task.c \
 ../APP/Printer_task.c \
 ../APP/RGBLED_task.c \
 ../APP/Sensor_task.c \
@@ -19,10 +21,12 @@ C_SRCS += \
 
 C_DEPS += \
 ./APP/AI_task.d \
+./APP/Aht10_task.d \
 ./APP/Barcode_task.d \
 ./APP/Electromagnet.d \
 ./APP/LCD_task.d \
 ./APP/LV_task.d \
+./APP/Outbound_task.d \
 ./APP/Printer_task.d \
 ./APP/RGBLED_task.d \
 ./APP/Sensor_task.d \
@@ -32,10 +36,12 @@ C_DEPS += \
 
 OBJS += \
 ./APP/AI_task.o \
+./APP/Aht10_task.o \
 ./APP/Barcode_task.o \
 ./APP/Electromagnet.o \
 ./APP/LCD_task.o \
 ./APP/LV_task.o \
+./APP/Outbound_task.o \
 ./APP/Printer_task.o \
 ./APP/RGBLED_task.o \
 ./APP/Sensor_task.o \
@@ -51,7 +57,7 @@ APP/%.o APP/%.su APP/%.cyclo: ../APP/%.c APP/subdir.mk
 clean: clean-APP
 
 clean-APP:
-	-$(RM) ./APP/AI_task.cyclo ./APP/AI_task.d ./APP/AI_task.o ./APP/AI_task.su ./APP/Barcode_task.cyclo ./APP/Barcode_task.d ./APP/Barcode_task.o ./APP/Barcode_task.su ./APP/Electromagnet.cyclo ./APP/Electromagnet.d ./APP/Electromagnet.o ./APP/Electromagnet.su ./APP/LCD_task.cyclo ./APP/LCD_task.d ./APP/LCD_task.o ./APP/LCD_task.su ./APP/LV_task.cyclo ./APP/LV_task.d ./APP/LV_task.o ./APP/LV_task.su ./APP/Printer_task.cyclo ./APP/Printer_task.d ./APP/Printer_task.o ./APP/Printer_task.su ./APP/RGBLED_task.cyclo ./APP/RGBLED_task.d ./APP/RGBLED_task.o ./APP/RGBLED_task.su ./APP/Sensor_task.cyclo ./APP/Sensor_task.d ./APP/Sensor_task.o ./APP/Sensor_task.su ./APP/TempHumidity_task.cyclo ./APP/TempHumidity_task.d ./APP/TempHumidity_task.o ./APP/TempHumidity_task.su ./APP/UART_protocol.cyclo ./APP/UART_protocol.d ./APP/UART_protocol.o ./APP/UART_protocol.su ./APP/VL53L1X_task.cyclo ./APP/VL53L1X_task.d ./APP/VL53L1X_task.o ./APP/VL53L1X_task.su
+	-$(RM) ./APP/AI_task.cyclo ./APP/AI_task.d ./APP/AI_task.o ./APP/AI_task.su ./APP/Aht10_task.cyclo ./APP/Aht10_task.d ./APP/Aht10_task.o ./APP/Aht10_task.su ./APP/Barcode_task.cyclo ./APP/Barcode_task.d ./APP/Barcode_task.o ./APP/Barcode_task.su ./APP/Electromagnet.cyclo ./APP/Electromagnet.d ./APP/Electromagnet.o ./APP/Electromagnet.su ./APP/LCD_task.cyclo ./APP/LCD_task.d ./APP/LCD_task.o ./APP/LCD_task.su ./APP/LV_task.cyclo ./APP/LV_task.d ./APP/LV_task.o ./APP/LV_task.su ./APP/Outbound_task.cyclo ./APP/Outbound_task.d ./APP/Outbound_task.o ./APP/Outbound_task.su ./APP/Printer_task.cyclo ./APP/Printer_task.d ./APP/Printer_task.o ./APP/Printer_task.su ./APP/RGBLED_task.cyclo ./APP/RGBLED_task.d ./APP/RGBLED_task.o ./APP/RGBLED_task.su ./APP/Sensor_task.cyclo ./APP/Sensor_task.d ./APP/Sensor_task.o ./APP/Sensor_task.su ./APP/TempHumidity_task.cyclo ./APP/TempHumidity_task.d ./APP/TempHumidity_task.o ./APP/TempHumidity_task.su ./APP/UART_protocol.cyclo ./APP/UART_protocol.d ./APP/UART_protocol.o ./APP/UART_protocol.su ./APP/VL53L1X_task.cyclo ./APP/VL53L1X_task.d ./APP/VL53L1X_task.o ./APP/VL53L1X_task.su
 
 .PHONY: clean-APP
 

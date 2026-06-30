@@ -1,2 +1,1 @@
-../APP/Electromagnet.c:9:6:Electromagnet_Open	16	static
-../APP/Electromagnet.c:26:6:Electromagnet_Task	16	static
+../APP/Electromagnet.c:12:6:Electromagnet_Task	24	static

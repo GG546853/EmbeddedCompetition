@@ -13,6 +13,7 @@ static volatile uint8_t  uart5_processing;
 
 char     uart4_resp_str[UART4_RESP_BUF_SIZE];
 volatile uint8_t  uart4_resp_ready;
+InventoryItem inventory_item;
 
 osThreadId_t Barcode_TaskHandle;
 const osThreadAttr_t BarcodeTask_attributes = {
@@ -38,42 +39,45 @@ void UART5_IDLE_Callback(void)
 static void parse_inventory(const uint8_t *payload, uint8_t len)
 {
     uint16_t pos = 0;
-    const uint8_t *name, *value, *precision, *pkg, *voltage;
-    uint16_t qty;
+    const uint8_t *pa, *name, *type;
 
+    /* pa */
+    pa = &payload[pos];
+    while (pos < len && payload[pos] != '\0') pos++;
+    if (pos >= len) return;
+    pos++;
+
+    /* name */
     name = &payload[pos];
     while (pos < len && payload[pos] != '\0') pos++;
     if (pos >= len) return;
-    pos++; /* skip \0 */
+    pos++;
 
+    /* type */
+    type = &payload[pos];
+    while (pos < len && payload[pos] != '\0') pos++;
+    if (pos >= len) return;
+    pos++;
+
+    /* quantity (2 bytes big-endian) */
     if (pos + 2 > len) return;
-    qty = ((uint16_t)payload[pos] << 8) | payload[pos + 1];
-    pos += 2;
+    uint16_t qty = ((uint16_t)payload[pos] << 8) | payload[pos + 1];
 
-    value = &payload[pos];
-    while (pos < len && payload[pos] != '\0') pos++;
-    if (pos >= len) return;
-    pos++;
+    /* Fill struct with safe truncation */
+    strncpy(inventory_item.pa,   (const char *)pa,   sizeof(inventory_item.pa) - 1);
+    strncpy(inventory_item.name, (const char *)name, sizeof(inventory_item.name) - 1);
+    strncpy(inventory_item.type, (const char *)type, sizeof(inventory_item.type) - 1);
+    inventory_item.pa[sizeof(inventory_item.pa) - 1]     = '\0';
+    inventory_item.name[sizeof(inventory_item.name) - 1] = '\0';
+    inventory_item.type[sizeof(inventory_item.type) - 1] = '\0';
+    inventory_item.quantity = qty;
 
-    precision = &payload[pos];
-    while (pos < len && payload[pos] != '\0') pos++;
-    if (pos >= len) return;
-    pos++;
-
-    pkg = &payload[pos];
-    while (pos < len && payload[pos] != '\0') pos++;
-    if (pos >= len) return;
-    pos++;
-
-    voltage = &payload[pos];
-
+    /* Format readable string */
     uint16_t off = 0;
-    off += sprintf(uart4_resp_str + off, "name:%s ", name);
-    off += sprintf(uart4_resp_str + off, "qty:%u ", qty);
-    off += sprintf(uart4_resp_str + off, "value:%s ", value);
-    off += sprintf(uart4_resp_str + off, "precision:%s ", precision);
-    off += sprintf(uart4_resp_str + off, "package:%s ", pkg);
-    off += sprintf(uart4_resp_str + off, "voltage:%s", voltage);
+    off += sprintf(uart4_resp_str + off, "pa:%s ", inventory_item.pa);
+    off += sprintf(uart4_resp_str + off, "name:%s ", inventory_item.name);
+    off += sprintf(uart4_resp_str + off, "type:%s ", inventory_item.type);
+    off += sprintf(uart4_resp_str + off, "qty:%u", inventory_item.quantity);
     uart4_resp_ready = 1;
 }
 

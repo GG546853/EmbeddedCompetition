@@ -1,4 +1,4 @@
-../APP/Barcode_task.c:24:6:UART5_RxCallback	3
-../APP/Barcode_task.c:31:6:UART5_IDLE_Callback	3
-../APP/Barcode_task.c:38:13:parse_inventory	14
-../APP/Barcode_task.c:80:6:Barcode_Task	7
+../APP/Barcode_task.c:25:6:UART5_RxCallback	3
+../APP/Barcode_task.c:32:6:UART5_IDLE_Callback	3
+../APP/Barcode_task.c:39:13:parse_inventory	11
+../APP/Barcode_task.c:84:6:Barcode_Task	7

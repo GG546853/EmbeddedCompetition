@@ -29,7 +29,9 @@
 #include "LV_task.h"
 #include "VL53L1X_task.h"
 #include "Barcode_task.h"
+#include "Outbound_task.h"
 #include "Printer_task.h"
+#include "Aht10_task.h"
 #include "tim.h"
 
 #include <stdio.h>
@@ -149,7 +151,7 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
 
-  //RGBLED_TaskHandle = osThreadNew(RGBLED_Task, NULL, &RGBLEDTask_attributes);
+  //RGBLED_TaskHandle = osThreadNew(RGBLED_Task, (void *)(uintptr_t)0, &RGBLEDTask_attributes);
   //Sensor_TaskHandle = osThreadNew(Sensor_Task, NULL, &SensorTask_attributes);
   //LV_TaskHandle = osThreadNew(LVGL_Task, NULL, &LVTask_attributes);
   //AITaskHandle = osThreadNew(AI_Task, NULL, &AITask_attributes);
@@ -157,6 +159,8 @@ void MX_FREERTOS_Init(void) {
   //VL53L1X_TaskHandle = osThreadNew(VL53L1X_Task, NULL, &VL53L1XTask_attributes);
   //Barcode_TaskHandle = osThreadNew(Barcode_Task, NULL, &BarcodeTask_attributes);
   //Printer_TaskHandle = osThreadNew(Printer_Task, NULL, &PrinterTask_attributes);
+  //Outbound_TaskHandle = osThreadNew(Outbound_Task, NULL, &OutboundTask_attributes);
+  Aht10_TaskHandle = osThreadNew(Aht10_Task, NULL, &Aht10Task_attributes);
   /* USER CODE END RTOS_THREADS */
 
   /* USER CODE BEGIN RTOS_EVENTS */
@@ -175,96 +179,11 @@ void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN defaultTask */
 
-  const uint8_t cfg_1txt[184] = {
-    0x60,0xE0,0x01,0x10,0x01,0x05,0x0F,0x00,0x01,0x08,
-    0x28,0x05,0x50,0x32,0x03,0x05,0x00,0x00,0xFF,0xFF,
-    0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x89,0x28,0x0A,
-    0x17,0x15,0x31,0x0D,0x00,0x00,0x02,0x9B,0x03,0x25,
-    0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x32,0x00,0x00,
-    0x00,0x0F,0x94,0x94,0xC5,0x02,0x07,0x00,0x00,0x04,
-    0x8D,0x13,0x00,0x5C,0x1E,0x00,0x3C,0x30,0x00,0x29,
-    0x4C,0x00,0x1E,0x78,0x00,0x1E,0x00,0x00,0x00,0x00,
-    0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
-    0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
-    0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
-    0x00,0x00,0x08,0x0A,0x0C,0x0E,0x10,0x12,0x14,0x16,
-    0x18,0x1A,0x00,0x00,0x00,0x00,0x1F,0xFF,0xFF,0xFF,
-    0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
-    0xFF,0xFF,0x00,0x02,0x04,0x05,0x06,0x08,0x0A,0x0C,
-    0x0E,0x1D,0x1E,0x1F,0x20,0x22,0x24,0x28,0x29,0xFF,
-    0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0xFF,0xFF,
-    0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
-    0xFF,0xFF,0xFF,0xFF
-  };
-  uint8_t buf[184];
-  uint8_t data;
-  uint16_t sum = 0;
-  uint8_t checksum;
-
-  osDelay(500);
-
-  if (gt9xxx_init() != 0) {
-    printf("GT9xxx init failed!\r\n");
-  } else {
-//    /* ====== 写入 1.txt 配置表 ====== */
-//    printf("Writing config from 1.txt...\r\n");
-//
-//    /* 先停扫描，进入配置模式 */
-//    data = 0x00;
-//    gt9xxx_wr_reg(GT9XXX_CTRL_REG, &data, 1);
-//    osDelay(10);
-//
-//    /* 写配置 + checksum */
-//    gt9xxx_wr_reg(GT9XXX_CFGS_REG, (uint8_t *)cfg_1txt, 184);
-//    for (int i = 0; i < 184; i++) sum += cfg_1txt[i];
-//    checksum = (0x100 - (sum & 0xFF)) & 0xFF;
-//    gt9xxx_wr_reg(GT9XXX_CHECK_REG, &checksum, 1);
-//    printf("Checksum: 0x%02X\r\n", checksum);
-//
-//    /* 重启扫描 → 芯片检测 checksum 变化，自动烧 flash */
-//    data = 0x01;
-//    gt9xxx_wr_reg(GT9XXX_CTRL_REG, &data, 1);
-//    osDelay(200);
-//
-//    /* 软复位验证：从 flash 重新加载 */
-//    data = 0x02;
-//    gt9xxx_wr_reg(GT9XXX_CTRL_REG, &data, 1);
-//    osDelay(10);
-//    data = 0x00;
-//    gt9xxx_wr_reg(GT9XXX_CTRL_REG, &data, 1);
-
-    /* ====== 回读验证 ====== */
-    gt9xxx_rd_reg(GT9XXX_CFGS_REG, buf, 184);
-
-    printf("\r\n=== GT9xxx Config Table After Write ===\r\n");
-    for (int i = 0; i < 184; i += 8) {
-      printf("[0x%04X]: ", 0x8047 + i);
-      for (int j = 0; j < 8 && (i + j) < 184; j++) {
-        printf("0x%02X ", buf[i + j]);
-      }
-      printf("\r\n");
-    }
-
-    /* 逐字节对比 */
-    int mismatch = 0;
-    for (int i = 0; i < 184; i++) {
-      if (buf[i] != cfg_1txt[i]) {
-        if (mismatch == 0) printf("\r\n=== MISMATCH ===\r\n");
-        printf("  [0x%04X]: wrote 0x%02X, read 0x%02X\r\n",
-               0x8047 + i, cfg_1txt[i], buf[i]);
-        mismatch++;
-      }
-    }
-    if (mismatch == 0) {
-      printf("\r\n=== All 184 bytes match! ===\r\n");
-    } else {
-      printf("=== %d bytes mismatch ===\r\n", mismatch);
-    }
-  }
-
-  /* Infinite loop */
+	//osThreadNew(RGBLED_Task, (void *)(uintptr_t)0xA800000, &RGBLEDTask_attributes);
+	//osThreadNew(Electromagnet_Task, (void *)(uintptr_t)0x30, &ElectromagnetTask_attributes);
   for(;;)
   {
+
     osDelay(2000);
   }
   /* USER CODE END defaultTask */

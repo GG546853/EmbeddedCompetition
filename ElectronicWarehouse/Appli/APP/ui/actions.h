@@ -7,10 +7,6 @@
 extern "C" {
 #endif
 
-extern void action_action_start_camera(lv_event_t * e);
-extern void action_action_stop_camera(lv_event_t * e);
-extern void action_action_recognize(lv_event_t * e);
-
 #ifdef __cplusplus
 }
 #endif

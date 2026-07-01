@@ -9,7 +9,7 @@ osThreadId_t LV_TaskHandle;
 const osThreadAttr_t LVTask_attributes = {
   .name = "LV_Task",
   .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 4096 * 4
+  .stack_size = 4096 * 24
 };
 
 // UI 专用帧缓冲 — Layer 1, RGB565, 800x480, 分配在 HyperRAM
@@ -60,6 +60,7 @@ void LVGL_Task(void *argument) {
     ui_init();  // EEZ Flow UI 初始化
 
     for (;;) {
+    	HAL_GPIO_TogglePin(GPIOG,GPIO_PIN_10);
         lv_timer_handler();
         ui_tick();
         vTaskDelay(pdMS_TO_TICKS(5));

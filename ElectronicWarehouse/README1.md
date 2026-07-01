@@ -153,3 +153,171 @@ HAL_LTDC_DisableColorKeying(&hltdc, 1);    // Main 屏幕必须关，否则黑�
 - [ ] DMA2D 互斥锁：LVGL flush 与 AI_Task `fill_rect()` 共用 DMA2D，需加 mutex 保护
 - [ ] `action_recognize`：需要 `g_trigger_identify` 全局变量对接 AI_task 的人脸识别流程
 - [ ] `action_stop_camera` 中 `rgblcd_clear(BLUE)` 与 LVGL flush 可能抢 DMA2D
+
+---
+
+# UI 移植记录：test_E → uip1（2026-07-01）
+
+## 概述
+
+将 `C:\Users\96022\Desktop\EEZ_PC_test\test_E` 生成的 UI 替换为 `C:\Users\96022\Desktop\uip1` 的仓库管理 UI（"Ewhouse"）。
+
+| 项目 | 旧 UI (test_E) | 新 UI (uip1) |
+|---|---|---|
+| 屏幕数 | 2 (Main, Camera) | 3 (PAGE_LOCK, PAGE_MAIN, PAGE_ERROR) |
+| Widget 数 | 6 | 90 |
+| 图片资源 | 1 (cat, 3.8MB) | 8 (~2.9MB) |
+| 字体 | Montserrat 14 only | 5 个中文字体 (~24MB) + Montserrat 8~48 |
+| Actions | 3 (camera 相关) | 0 |
+| Assets blob | 1036 bytes | 21180 bytes |
+| Flow 变量 | 无 | 17 个 |
+| 数据结构 | 无 | Cabinet, LogEntry |
+
+---
+
+## 操作步骤
+
+### 1. 替换 UI 源文件
+
+将 `C:\Users\96022\Desktop\uip1\src\ui\` 下全部 27 个文件复制到 `ElectronicWarehouse/Appli/APP/ui/`，覆盖旧的 15 个文件。删除旧文件 `ui_image_cat.c`。
+
+新增文件：
+
+| 类型 | 文件 | 大小 |
+|---|---|---|
+| 中文字体 | `ui_font_chinese.c` | 4.5 MB |
+| | `ui_font_chinese24.c` | 12 MB |
+| | `ui_font_chinese18.c` | 4.5 MB |
+| | `ui_font_chinese10.c` | 2.7 MB |
+| | `ui_font_chinese8.c` | 41 KB |
+| UI 图片 | `ui_image_p_iamge.c` | 2.4 MB |
+| | `ui_image_page_wms.c` | 191 KB |
+| | `ui_image_page_dashboard.c` | 20 KB |
+| | `ui_image_page_inventory.c` | 19 KB |
+| | `ui_image_page_activity.c` | 17 KB |
+| | `ui_image_page_uimode.c` | 121 KB |
+| | `ui_image_page_search.c` | 13 KB |
+| | `ui_image_page_printfer.c` | 14 KB |
+
+### 2. 更新构建系统
+
+修改 `Debug/APP/ui/subdir.mk` 和 `Release/APP/ui/subdir.mk`，将 `C_SRCS`、`C_DEPS`、`OBJS`、`clean` 段从旧的 6 个 .c 文件更新为 18 个 .c 文件。
+
+### 3. 重写 actions.c
+
+uip1 无 native C action 回调，将其改为最小桩文件，但保留 `dma2d_mutex` 定义（被 `lv_st_ltdc.c` 和 `AI_task.c` 通过 extern 引用）：
+
+```c
+#include "actions.h"
+#include "eez-flow.h"
+#include "cmsis_os.h"
+
+osMutexId_t dma2d_mutex;
+const osMutexAttr_t dma2d_mutex_attr = { .name = "dma2d_mutex" };
+```
+
+---
+
+## 遇到的错误与修复
+
+### 错误 1：`unsigned conversion from 'int' to 'unsigned int:20' changes value`
+
+**现象**：编译中文字体文件时大量 `-Woverflow` 警告。
+
+```
+../APP/ui/ui_font_chinese24.c:257583:22: warning:
+unsigned conversion from 'int' to 'unsigned int:20' changes value from '1969231' to '920655' [-Woverflow]
+```
+
+**原因**：LVGL v9.4 的 `lv_font_glyph_dsc_t` 结构体中 `bitmap_index` 是 20 位位域，最大值 1,048,575。中文字体 bitmap 数据超过 1MB，偏移量超出 20 位范围，值被截断后字形渲染会错位。
+
+**修复**：`Core/Inc/lv_conf.h` 第 655 行
+```c
+#define LV_FONT_FMT_TXT_LARGE 1   // 0 → 1
+```
+效果：`bitmap_index` 从 20 位位域变为完整 `uint32_t`，支持最大 4GB 字体 bitmap。
+
+---
+
+### 错误 2：`'lv_font_montserrat_XX' undeclared`
+
+**现象**：`screens.c` 引用的 `lv_font_montserrat_8` ~ `_48` 全部报未声明。
+
+**原因**：旧 UI 仅启用了 `lv_font_montserrat_14`，uip1 UI 的 screens.c 在第 3318–3378 行有字体查找表，直接引用了全部 21 个 Montserrat 字号。
+
+**修复**：`Core/Inc/lv_conf.h` 第 606–626 行，将 Montserrat 8~48 全部从 `0` 改为 `1`。
+
+---
+
+### 错误 3：`undefined reference to 'dma2d_mutex'`
+
+**现象**：链接时报错
+
+```
+lv_st_ltdc.c:(.text.flush_cb+0x1bc): undefined reference to `dma2d_mutex'
+```
+
+**原因**：`dma2d_mutex` 原来定义在旧的 `actions.c` 中，替换为桩文件后丢失。`lv_st_ltdc.c` 和 `AI_task.c` 都通过 `extern` 引用它来保护 DMA2D 的并发访问。
+
+**修复**：在 `APP/ui/actions.c` 中加回定义：
+```c
+#include "cmsis_os.h"
+osMutexId_t dma2d_mutex;
+const osMutexAttr_t dma2d_mutex_attr = { .name = "dma2d_mutex" };
+```
+
+---
+
+### 错误 4：启动后屏幕蓝屏转黑屏，LVGL 任务死掉（Hard Fault）
+
+**现象**：
+- 上电后屏幕闪蓝（Layer 0 背景色）→ 迅速变黑（Layer 1 帧缓冲被 memset 清零）
+- LVGL 任务中加的 `HAL_GPIO_TogglePin(GPIOG, GPIO_PIN_10)` 只反转一次即停止
+- 结论：任务在 `ui_init()` 或第一次 `lv_timer_handler()` 中崩溃
+
+**根因**：三个内存资源均不足，层层叠加：
+
+| 资源 | 位置 | 旧值 | 为什么不够 |
+|---|---|---|---|
+| LVGL 任务栈 | `LV_task.c` | 32KB | `create_screen_page_main()` ~3000 行，一口气创建 70+ widget，嵌套调用栈极深 |
+| FreeRTOS 堆 | `FreeRTOSConfig.h` | 40KB | LVGL 栈要 96KB 加上其他任务栈，远超出 40KB |
+| 系统堆 | 链接脚本 `.ld` | 2KB | `eez-flow.cpp` 用 C++ `new` 解析 21KB assets blob + 创建 90 个 widget 元数据，2KB 秒炸 |
+| LVGL 内存池 | `lv_conf.h` | 128KB | 90 个 widget × 几百字节/个，128KB 非常极限 |
+
+**修复**：
+
+① `APP/LV_task.c` — 任务栈
+```c
+.stack_size = 4096 * 24   // 32KB → 96KB
+```
+
+② `Core/Inc/FreeRTOSConfig.h` — FreeRTOS 堆
+```c
+#define configTOTAL_HEAP_SIZE    ((size_t)131072)   // 40KB → 128KB
+```
+
+③ Release 链接脚本 `STM32N647X0HXQ_ROMxspi2_RAMxspi1.ld` — 系统堆
+```c
+_Min_Heap_Size = 0x10000;   // 0x800 (2KB) → 0x10000 (64KB)
+```
+（Debug 链接脚本也需同样修改）
+
+④ `Core/Inc/lv_conf.h` — LVGL 内存池
+```c
+#define LV_MEM_SIZE (256 * 1024U)   // 128KB → 256KB
+```
+
+---
+
+## 改动的文件清单
+
+| 文件 | 改动内容 |
+|---|---|
+| `APP/ui/` (全部文件) | 替换为 uip1 版本，删除 `ui_image_cat.c` |
+| `APP/ui/actions.c` | 重写为桩文件，保留 `dma2d_mutex` |
+| `Debug/APP/ui/subdir.mk` | C_SRCS/C_DEPS/OBJS/clean 源文件列表更新 |
+| `Release/APP/ui/subdir.mk` | 同上 |
+| `Core/Inc/lv_conf.h` | `LV_FONT_FMT_TXT_LARGE=1`、Montserrat 8~48 全启用、`LV_MEM_SIZE=256KB` |
+| `Core/Inc/FreeRTOSConfig.h` | `configTOTAL_HEAP_SIZE=128KB` |
+| `APP/LV_task.c` | `stack_size` 增大到 `4096*24` |
+| `STM32N647X0HXQ_ROMxspi2_RAMxspi1.ld` | `_Min_Heap_Size=64KB` |

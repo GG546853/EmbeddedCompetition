@@ -63,6 +63,8 @@ static int32_t imx335_io_writereg(...)
 
 `imx335_io_readreg` 同理。
 
+
+可以尝试在摄像头任务彻底启动后
 ---
 
 ## 问题 2：摄像头界面返回后再进入画面卡死

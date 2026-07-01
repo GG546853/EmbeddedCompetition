@@ -23,6 +23,11 @@ const osThreadAttr_t RGBLEDTask_attributes = {
   .stack_size = 256 * 4
 };
 
+void RGBLED_Flash(uint32_t nub)
+{
+	osThreadNew(RGBLED_Task, (void *)(uintptr_t)nub, &RGBLEDTask_attributes);
+}
+
 //osThreadNew(RGBLED_Task, (void *)(uintptr_t)bitmap, &RGBLEDTask_attributes)
 void RGBLED_Task(void *argument)
 {

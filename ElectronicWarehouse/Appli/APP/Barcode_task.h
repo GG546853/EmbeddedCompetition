@@ -4,7 +4,6 @@
 #include "app_freertos.h"
 #include "main.h"
 #include "usart.h"
-#include "UART_protocol.h"
 
 extern osThreadId_t Barcode_TaskHandle;
 extern const osThreadAttr_t BarcodeTask_attributes;
@@ -12,9 +11,5 @@ extern const osThreadAttr_t BarcodeTask_attributes;
 void Barcode_Task(void *argument);
 void UART5_RxCallback(uint8_t byte);
 void UART5_IDLE_Callback(void);
-
-extern char uart4_resp_str[512];
-extern volatile uint8_t uart4_resp_ready;
-extern InventoryItem inventory_item;
 
 #endif

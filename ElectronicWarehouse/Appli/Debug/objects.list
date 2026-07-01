@@ -9,6 +9,7 @@
 "./APP/RGBLED_task.o"
 "./APP/Sensor_task.o"
 "./APP/TempHumidity_task.o"
+"./APP/UART4_RxTask.o"
 "./APP/UART_protocol.o"
 "./APP/VL53L1X_task.o"
 "./APP/ui/actions.o"

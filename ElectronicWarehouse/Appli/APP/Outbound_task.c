@@ -1,6 +1,7 @@
 #include "Outbound_task.h"
 #include "Electromagnet.h"
 #include "RGBLED_task.h"
+#include "UART4_RxTask.h"
 
 osThreadId_t Outbound_TaskHandle;
 const osThreadAttr_t OutboundTask_attributes = {

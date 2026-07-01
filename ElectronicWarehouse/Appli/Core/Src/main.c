@@ -220,6 +220,11 @@ int main(void)
   }
 #endif
 
+  rgblcd_init();
+  rgblcd_display_dir(1);  /* 设置RGB LCD显示方向 */
+  HAL_GPIO_WritePin(GPIOG, GPIO_PIN_4, 1);
+  HAL_GPIO_WritePin(GPIOG, GPIO_PIN_6, 1);
+
 //  /* ==== AHT10 软件 I2C 诊断 ==== */
 //  printf("AHT10 Soft I2C Diagnostic:\r\n");
 //  printf("  SystemCoreClock=%lu\r\n", SystemCoreClock);

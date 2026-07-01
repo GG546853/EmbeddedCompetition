@@ -1,0 +1,14 @@
+../APP/UART_protocol.c:4:9:protocol_build_frame	16	static
+../APP/UART_protocol.c:98:13:uart4_send_frame	272	static
+../APP/UART_protocol.c:20:6:frame_parser_init	0	static
+../APP/UART_protocol.c:29:5:frame_parser_feed	0	static
+../APP/UART_protocol.c:85:6:uart4_dispatch_frame	16	static
+../APP/UART_protocol.c:106:6:uart4_send_temperature	16	static
+../APP/UART_protocol.c:113:6:uart4_send_humidity	16	static
+../APP/UART_protocol.c:120:6:uart4_send_voltage	16	static
+../APP/UART_protocol.c:127:6:uart4_send_face_enroll	8	static
+../APP/UART_protocol.c:133:6:uart4_send_face_event	8	static
+../APP/UART_protocol.c:139:6:uart4_send_outbound	8	static
+../APP/UART_protocol.c:145:6:uart4_send_inbound	8	static
+../APP/UART_protocol.c:151:6:uart4_send_barcode	0	static
+../APP/UART_protocol.c:156:6:uart4_send_store	8	static

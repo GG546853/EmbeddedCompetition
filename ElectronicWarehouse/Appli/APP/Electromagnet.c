@@ -6,7 +6,10 @@ const osThreadAttr_t ElectromagnetTask_attributes = {
   .stack_size = 512 * 4
 };
 
-
+void Electromagnet_Open(uint8_t cabinet_mask)
+{
+	osThreadNew(Electromagnet_Task, (void *)(uintptr_t)cabinet_mask, &ElectromagnetTask_attributes);
+}
 //osThreadNew(Electromagnet_Task, (void *)(uintptr_t)cabinet_mask, &ElectromagnetTask_attributes);
 //3 锁  6 电磁铁
 void Electromagnet_Task(void *argument)

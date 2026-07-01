@@ -33,12 +33,15 @@
 #include "Printer_task.h"
 #include "Aht10_task.h"
 #include "tim.h"
+#include "UART4_RxTask.h"
 
 #include <stdio.h>
 #include "imx335.h"
 #include "rgblcd.h"
 #include "aht10.h"
 #include "gt9xxx.h"
+#include "semphr.h"
+#include "app_types.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -53,7 +56,7 @@
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-
+SystemState Cabinet;
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -71,6 +74,7 @@ const osThreadAttr_t defaultTask_attributes = {
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
 osSemaphoreId_t cam_frame_sem;
+osSemaphoreId_t inventory_sem;//用于协调 Barcode_Task 和 UART4_RxTask 之间的通信
 const osSemaphoreAttr_t cam_frame_sem_attributes = {
   .name = "cam_frame_sem"
 };
@@ -136,6 +140,7 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN RTOS_SEMAPHORES */
   /* add semaphores, ... */
 	cam_frame_sem = osSemaphoreNew(1, 0, &cam_frame_sem_attributes);
+	inventory_sem = osSemaphoreNew(1, 0, NULL);
   /* USER CODE END RTOS_SEMAPHORES */
 
   /* USER CODE BEGIN RTOS_TIMERS */
@@ -153,14 +158,17 @@ void MX_FREERTOS_Init(void) {
 
   //RGBLED_TaskHandle = osThreadNew(RGBLED_Task, (void *)(uintptr_t)0, &RGBLEDTask_attributes);
   //Sensor_TaskHandle = osThreadNew(Sensor_Task, NULL, &SensorTask_attributes);
-  //LV_TaskHandle = osThreadNew(LVGL_Task, NULL, &LVTask_attributes);
+  LV_TaskHandle = osThreadNew(LVGL_Task, NULL, &LVTask_attributes);
   //AITaskHandle = osThreadNew(AI_Task, NULL, &AITask_attributes);
   //Electromagnet_TaskHandle = osThreadNew(Electromagnet_Task, NULL, &ElectromagnetTask_attributes);
-  //VL53L1X_TaskHandle = osThreadNew(VL53L1X_Task, NULL, &VL53L1XTask_attributes);
   //Barcode_TaskHandle = osThreadNew(Barcode_Task, NULL, &BarcodeTask_attributes);
   //Printer_TaskHandle = osThreadNew(Printer_Task, NULL, &PrinterTask_attributes);
   //Outbound_TaskHandle = osThreadNew(Outbound_Task, NULL, &OutboundTask_attributes);
-  Aht10_TaskHandle = osThreadNew(Aht10_Task, NULL, &Aht10Task_attributes);
+
+
+  //Aht10_TaskHandle = osThreadNew(Aht10_Task, NULL, &Aht10Task_attributes);
+  //UART4_RxTaskHandle = osThreadNew(UART4_RxTask, NULL, &UART4_RxTask_attributes);
+  //VL53L1X_TaskHandle = osThreadNew(VL53L1X_Task, NULL, &VL53L1XTask_attributes);
   /* USER CODE END RTOS_THREADS */
 
   /* USER CODE BEGIN RTOS_EVENTS */
@@ -183,7 +191,6 @@ void StartDefaultTask(void *argument)
 	//osThreadNew(Electromagnet_Task, (void *)(uintptr_t)0x30, &ElectromagnetTask_attributes);
   for(;;)
   {
-
     osDelay(2000);
   }
   /* USER CODE END defaultTask */

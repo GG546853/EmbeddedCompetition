@@ -1,0 +1,11 @@
+../APP/UART4_RxTask.c:27:6:handle_led	2
+../APP/UART4_RxTask.c:39:6:handle_drawer	2
+../APP/UART4_RxTask.c:47:6:handle_face_clear	1
+../APP/UART4_RxTask.c:51:6:handle_alert	4
+../APP/UART4_RxTask.c:66:6:handle_heartbeat	2
+../APP/UART4_RxTask.c:79:6:handle_inventory	12
+../APP/UART4_RxTask.c:136:6:on_inventory_stm32	1
+../APP/UART4_RxTask.c:141:6:on_inventory_app	1
+../APP/UART4_RxTask.c:147:6:handle_store	3
+../APP/UART4_RxTask.c:162:6:inventory_store_to_slot	8
+../APP/UART4_RxTask.c:183:6:UART4_RxTask	3

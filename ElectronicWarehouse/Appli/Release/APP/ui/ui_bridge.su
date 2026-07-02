@@ -1,5 +1,6 @@
 ../APP/ui/eez-flow.h:1014:10:void eez::Value::freeRef()	8	static
 ../APP/ui/eez-flow.h:1021:12:eez::Value& eez::Value::operator=(const eez::Value&)	16	static
+../APP/ui/eez-flow.h:1006:2:eez::Value::Value(const eez::Value&)	8	static
 ../APP/ui/eez-flow.h:3030:14:utf8_int8_t* utf8cat(utf8_int8_t*, const utf8_int8_t*)	8	static
 ../APP/ui/eez-flow.h:3110:14:utf8_int8_t* utf8cpy(utf8_int8_t*, const utf8_int8_t*)	0	static
 ../APP/ui/eez-flow.h:3181:14:utf8_int8_t* utf8dup_ex(const utf8_int8_t*, utf8_int8_t* (*)(utf8_int8_t*, size_t), utf8_int8_t*)	16	static
@@ -18,3 +19,5 @@
 ../APP/ui/ui_bridge.cpp:6:6:void ui_set_integer(int, int)	24	static
 ../APP/ui/ui_bridge.cpp:10:5:int ui_get_integer(int)	24	static
 ../APP/ui/ui_bridge.cpp:14:6:void ui_sync_cabinets(const InventoryItem*, int)	88	static
+../APP/ui/ui_bridge.cpp:29:5:int ui_get_log_count()	24	static
+../APP/ui/ui_bridge.cpp:35:6:void ui_get_log_entry(int, char*, char*, char*, int*, char*, int*)	88	static

@@ -10,6 +10,7 @@ const osThreadAttr_t SensorTask_attributes = {
 
 void Sensor_Task(void *argument)
 {
+
 	  HAL_GPIO_WritePin(GPIOG, GPIO_PIN_4, 1);
 	  HAL_GPIO_WritePin(GPIOG, GPIO_PIN_6, 1);
 
@@ -18,7 +19,6 @@ void Sensor_Task(void *argument)
 		  vTaskDelay(pdMS_TO_TICKS(100));
 		  __NOP();
 	  }
-	  vTaskDelay(pdMS_TO_TICKS(100));
 
 	  if (imx335_start_capture((uint32_t)g_ltdc_framebuf) != 0) {
 	      printf("[Sensor] start_capture FAILED\r\n");

@@ -25,3 +25,24 @@ void ui_sync_cabinets(const InventoryItem *items, int count) {
     eez::flow::setGlobalVariable(FLOW_GLOBAL_VARIABLE_CABINETS, cabinets);
     ui_set_integer(FLOW_GLOBAL_VARIABLE_CABINET_COUNT, count);
 }
+
+int ui_get_log_count(void) {
+    Value v = eez::flow::getGlobalVariable(FLOW_GLOBAL_VARIABLE_HISTORY_RECORDS);
+    if (!v.isArray()) return 0;
+    return (int)v.getArray()->arraySize;
+}
+
+void ui_get_log_entry(int index, char *time, char *user, char *item,
+                      int *qty, char *type, int *cab_id) {
+    Value v = eez::flow::getGlobalVariable(FLOW_GLOBAL_VARIABLE_HISTORY_RECORDS);
+    if (!v.isArray()) return;
+    ArrayOfLogEntryValue logs(v);
+    if (index >= (int)logs.size()) return;
+    LogEntryValue entry = logs.at(index);
+    strcpy(time, entry.time());
+    strcpy(user, entry.user());
+    strcpy(item, entry.item_name());
+    *qty   = entry.qty();
+    strcpy(type, entry.type());
+    *cab_id = entry.cabinet_id();
+}

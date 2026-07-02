@@ -68,7 +68,7 @@ osThreadId_t defaultTaskHandle;
 const osThreadAttr_t defaultTask_attributes = {
   .name = "defaultTask",
   .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 512 * 4
+  .stack_size = 128 * 4
 };
 
 /* Private function prototypes -----------------------------------------------*/
@@ -160,7 +160,7 @@ void MX_FREERTOS_Init(void) {
   /* add threads, ... */
 
   //RGBLED_TaskHandle = osThreadNew(RGBLED_Task, (void *)(uintptr_t)0, &RGBLEDTask_attributes);
-  //Sensor_TaskHandle = osThreadNew(Sensor_Task, NULL, &SensorTask_attributes);
+  Sensor_TaskHandle = osThreadNew(Sensor_Task, NULL, &SensorTask_attributes);
   //LV_TaskHandle = osThreadNew(LVGL_Task, NULL, &LVTask_attributes);
   //AITaskHandle = osThreadNew(AI_Task, NULL, &AITask_attributes);
   //Electromagnet_TaskHandle = osThreadNew(Electromagnet_Task, NULL, &ElectromagnetTask_attributes);
@@ -170,7 +170,7 @@ void MX_FREERTOS_Init(void) {
 
 
   //Aht10_TaskHandle = osThreadNew(Aht10_Task, NULL, &Aht10Task_attributes);
-  UART4_RxTaskHandle = osThreadNew(UART4_RxTask, NULL, &UART4_RxTask_attributes);
+  //UART4_RxTaskHandle = osThreadNew(UART4_RxTask, NULL, &UART4_RxTask_attributes);
   //VL53L1X_TaskHandle = osThreadNew(VL53L1X_Task, NULL, &VL53L1XTask_attributes);
   /* USER CODE END RTOS_THREADS */
 
@@ -186,19 +186,18 @@ void MX_FREERTOS_Init(void) {
 * @retval None
 */
 /* USER CODE END Header_StartDefaultTask */
-extern UBaseType_t g_lv_stack_high_water;
 void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN defaultTask */
-	char now[32];
+	//char now[32];
 	//osThreadNew(RGBLED_Task, (void *)(uintptr_t)0xA800000, &RGBLEDTask_attributes);
 	//osThreadNew(Electromagnet_Task, (void *)(uintptr_t)0x30, &ElectromagnetTask_attributes);
   for(;;)
   {
-	get_current_time_str(now, sizeof(now));
-	printf("%s\r\n",now);
+	//get_current_time_str(now, sizeof(now));
+	//printf("%s\r\n",now);
   	HAL_GPIO_TogglePin(GPIOG,GPIO_PIN_10);
-    osDelay(2000);
+    osDelay(1000);
   }
   /* USER CODE END defaultTask */
 }

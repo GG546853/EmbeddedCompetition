@@ -5,6 +5,7 @@
 ../APP/ui/eez-flow.h:1011:2:eez::Value::~Value()	1
 ../APP/ui/eez-flow.h:1014:10:void eez::Value::freeRef()	3
 ../APP/ui/eez-flow.h:1021:12:eez::Value& eez::Value::operator=(const eez::Value&)	4
+../APP/ui/eez-flow.h:1097:10:bool eez::Value::isArray() const	4
 ../APP/ui/eez-flow.h:1151:6:int eez::Value::getInt() const	2
 ../APP/ui/eez-flow.h:1349:14:eez::Value eez::IntegerValue(int32_t)	1
 ../APP/ui/eez-flow.h:1353:14:eez::Value eez::StringValue(const char*)	1
@@ -33,12 +34,26 @@
 ../APP/ui/structs.h:72:10:void CabinetValue::pa(const char*)	1
 ../APP/ui/structs.h:79:10:void CabinetValue::spec(const char*)	1
 ../APP/ui/structs.h:86:10:void CabinetValue::pc(const char*)	1
+../APP/ui/structs.h:99:5:LogEntryValue::LogEntryValue(eez::Value)	1
+../APP/ui/structs.h:105:17:const char* LogEntryValue::time()	1
+../APP/ui/structs.h:112:17:const char* LogEntryValue::user()	1
+../APP/ui/structs.h:119:17:const char* LogEntryValue::item_name()	1
+../APP/ui/structs.h:126:9:int LogEntryValue::qty()	1
+../APP/ui/structs.h:133:17:const char* LogEntryValue::type()	1
+../APP/ui/structs.h:140:9:int LogEntryValue::cabinet_id()	1
 ../APP/ui/ui_bridge.cpp:6:6:void ui_set_integer(int, int)	1
 ../APP/ui/ui_bridge.cpp:10:5:int ui_get_integer(int)	1
 ../APP/ui/eez-flow.h:1355:8:eez::ArrayOf<CabinetValue, 81920>::~ArrayOf()	1
 ../APP/ui/structs.h:42:8:CabinetValue::~CabinetValue()	1
 ../APP/ui/ui_bridge.cpp:14:6:void ui_sync_cabinets(const InventoryItem*, int)	2
+../APP/ui/ui_bridge.cpp:29:5:int ui_get_log_count()	2
+../APP/ui/eez-flow.h:1355:8:eez::ArrayOf<LogEntryValue, 81921>::~ArrayOf()	1
+../APP/ui/structs.h:92:8:LogEntryValue::~LogEntryValue()	1
+../APP/ui/ui_bridge.cpp:35:6:void ui_get_log_entry(int, char*, char*, char*, int*, char*, int*)	4
 ../APP/ui/eez-flow.h:216:14:static void eez::ObjectAllocator<T>::deallocate(T*) [with T = eez::Ref]	1
 ../APP/ui/eez-flow.h:1357:5:eez::ArrayOf<T, ARRAY_TYPE>::ArrayOf(size_t) [with T = CabinetValue; long unsigned int ARRAY_TYPE = 81920]	1
 ../APP/ui/eez-flow.h:1369:10:void eez::ArrayOf<T, ARRAY_TYPE>::at(int, const T&) [with T = CabinetValue; long unsigned int ARRAY_TYPE = 81920]	1
 ../APP/ui/eez-flow.h:1361:5:eez::ArrayOf<T, ARRAY_TYPE>::operator eez::Value() const [with T = CabinetValue; long unsigned int ARRAY_TYPE = 81920]	1
+../APP/ui/eez-flow.h:1360:5:eez::ArrayOf<T, ARRAY_TYPE>::ArrayOf(eez::Value) [with T = LogEntryValue; long unsigned int ARRAY_TYPE = 81921]	1
+../APP/ui/eez-flow.h:1363:12:size_t eez::ArrayOf<T, ARRAY_TYPE>::size() [with T = LogEntryValue; long unsigned int ARRAY_TYPE = 81921]	1
+../APP/ui/eez-flow.h:1366:7:T eez::ArrayOf<T, ARRAY_TYPE>::at(int) [with T = LogEntryValue; long unsigned int ARRAY_TYPE = 81921]	1

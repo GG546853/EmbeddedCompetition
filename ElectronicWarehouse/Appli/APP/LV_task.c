@@ -60,7 +60,7 @@ static void lv_port_init(void) {
 
 void LVGL_Task(void *argument) {
 
-
+	vTaskDelay(pdMS_TO_TICKS(1000));
     lv_port_init();
 
     ui_init();  // EEZ Flow UI 初始化

@@ -1,7 +1,7 @@
 /*******************************************************************************
  * Size: 8 px
  * Bpp: 8
- * Opts: --bpp 8 --size 8 --no-compress --font ..\..\..\DELL\Desktop\09_SourceHanSerifSC\OTF\SimplifiedChinese\SourceHanSerifSC-SemiBold.otf --symbols 当前库存 --range 32-127 --format lvgl
+ * Opts: --bpp 8 --size 8 --no-compress --font C:\Users\DELL\Desktop\09_SourceHanSerifSC\OTF\SimplifiedChinese\SourceHanSerifSC-SemiBold.otf --symbols 当前库存 --range 32-127 --format lvgl
  ******************************************************************************/
 
 #ifdef __has_include
@@ -15,7 +15,7 @@
 #ifdef LV_LVGL_H_INCLUDE_SIMPLE
     #include "lvgl.h"
 #else
-    #include "lvgl.h"
+    #include "lvgl/lvgl.h"
 #endif
 
 #ifndef UI_FONT_CHINESE8

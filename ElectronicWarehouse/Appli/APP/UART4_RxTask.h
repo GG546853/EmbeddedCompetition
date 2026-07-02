@@ -9,6 +9,7 @@ extern osThreadId_t UART4_RxTaskHandle;
 extern const osThreadAttr_t UART4_RxTask_attributes;
 
 void UART4_RxTask(void *argument);
+void UART4_RxCallback(uint8_t byte);  // called from ISR
 
 /* Inventory data (filled by handle_inventory) */
 
@@ -26,7 +27,9 @@ void handle_face_clear(const uint8_t *payload, uint8_t len);
 void handle_alert(const uint8_t *payload, uint8_t len);
 void handle_heartbeat(const uint8_t *payload, uint8_t len);
 void handle_inventory(const uint8_t *payload, uint8_t len);
+void handle_time(const uint8_t *payload, uint8_t len);
 void handle_store(const uint8_t *payload, uint8_t len);
+void get_current_time_str(char *buf, int bufsize);
 
 /* Inventory source callbacks (user implements) */
 void on_inventory_stm32(const InventoryItem *item);

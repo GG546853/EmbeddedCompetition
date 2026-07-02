@@ -6,6 +6,7 @@
 
 typedef struct {
     char pa[32];
+    char pc[32];
     char name[48];
     char type[64];
     uint16_t quantity;
@@ -27,6 +28,8 @@ typedef struct {
     float temperature_th;
     float humidity_th;
     bool Scan_state;
+    int Count;
+
 } SystemState;
 
 extern SystemState Cabinet;

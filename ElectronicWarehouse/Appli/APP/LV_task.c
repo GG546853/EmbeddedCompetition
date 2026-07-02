@@ -5,6 +5,13 @@
 #include "ui/ui.h"        // EEZ Flow UI
 #include "ltdc.h"
 #include <string.h>
+#include "task.h"          // uxTaskGetStackHighWaterMark
+#include "vars.h"
+#include "ui_bridge.h"
+#include "app_types.h"
+
+
+UBaseType_t g_lv_stack_high_water;  // 启动后剩余栈空间（单位：word，4 字节）
 osThreadId_t LV_TaskHandle;
 const osThreadAttr_t LVTask_attributes = {
   .name = "LV_Task",
@@ -52,15 +59,16 @@ static void lv_port_init(void) {
 }
 
 void LVGL_Task(void *argument) {
-    // 等待 RGBLED_Task 中的 rgblcd_init() 完成（检测面板 + 配置 Layer 0）
-    vTaskDelay(pdMS_TO_TICKS(300));
+
 
     lv_port_init();
 
     ui_init();  // EEZ Flow UI 初始化
 
+    g_lv_stack_high_water = uxTaskGetStackHighWaterMark(NULL);  // 记录剩余栈
+
+
     for (;;) {
-    	HAL_GPIO_TogglePin(GPIOG,GPIO_PIN_10);
         lv_timer_handler();
         ui_tick();
         vTaskDelay(pdMS_TO_TICKS(5));

@@ -1,6 +1,8 @@
 #include "Barcode_task.h"
 #include "UART_protocol.h"
 #include "UART4_RxTask.h"
+#include "Outbound_task.h"
+#include "ui_bridge.h"
 #include <stdio.h>
 #include <string.h>
 #include "FreeRTOS.h"
@@ -17,7 +19,7 @@ osThreadId_t Barcode_TaskHandle;
 const osThreadAttr_t BarcodeTask_attributes = {
   .name = "BarcodeTask",
   .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 512 * 4
+  .stack_size = 512 * 8
 };
 
 void UART5_RxCallback(uint8_t byte)
@@ -36,6 +38,7 @@ void UART5_IDLE_Callback(void)
 
 void Barcode_Task(void *argument)
 {
+	osDelay(500);
     __HAL_UART_ENABLE_IT(&huart5, UART_IT_RXNE);
     __HAL_UART_ENABLE_IT(&huart5, UART_IT_IDLE);
 
@@ -52,29 +55,29 @@ void Barcode_Task(void *argument)
 
             uart4_send_barcode(uart5_rx_buf, len);
 
+            /* 清空可能残留的信号量 */
+            while (xSemaphoreTake(inventory_sem, 0) == pdTRUE);
+
             /* Wait for UART4_RxTask to receive INVENTORY frame */
             if (xSemaphoreTake(inventory_sem, pdMS_TO_TICKS(15000)) == pdTRUE) {
                 printf("[Barcode] resp: %s\r\n", uart4_resp_str);
 
-                char location[8];
-                printf("[Barcode] Enter location (D00-D05 / T00-T27): ");
-                g_uart_rx_sta = 0;
-                while (!(g_uart_rx_sta & 0x8000)) {
-                    vTaskDelay(pdMS_TO_TICKS(50));
-                }
-                uint16_t loc_len = g_uart_rx_sta & 0x3FFF;
-                if (loc_len > sizeof(location) - 1) loc_len = sizeof(location) - 1;
-                memcpy(location, g_uart_rx_buf, loc_len);
-                location[loc_len] = '\0';
-                uart4_send_store(location);
-                inventory_store_to_slot(&inventory_item, location);
-                printf("[Barcode] stored at %s\r\n", location);
+                static int next_t = 0;
+                char loc[4];
+                sprintf(loc, "T%02d", next_t);
+                inventory_store_to_slot(&inventory_item, loc);
+                ui_sync_cabinets(inventory_item_T, 28);
+                uart4_send_store(loc);
+                next_t = (next_t + 1) % 28;
             } else {
                 printf("[Barcode] UART4 timeout\r\n");
             }
 
             uart5_rx_len = 0;
             uart5_processing = 0;
+
+            // 重新使能 UART5 中断，防止 HAL 错误处理将其关闭
+            __HAL_UART_ENABLE_IT(&huart5, UART_IT_RXNE | UART_IT_IDLE);
         }
         vTaskDelay(pdMS_TO_TICKS(10));
     }

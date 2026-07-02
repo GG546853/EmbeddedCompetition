@@ -36,6 +36,3 @@
 ../APP/ui/eez-flow.h:4016:36:utf8lwrcodepoint	97
 ../APP/ui/eez-flow.h:4182:36:utf8uprcodepoint	99
 ../APP/ui/eez-flow.h:4349:1:utf8rcodepoint	6
-../APP/ui/actions.c:21:6:action_action_start_camera	1
-../APP/ui/actions.c:39:6:action_action_stop_camera	2
-../APP/ui/actions.c:59:6:action_action_recognize	1

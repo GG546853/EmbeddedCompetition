@@ -18,6 +18,7 @@
 "./APP/ui/screens.o"
 "./APP/ui/styles.o"
 "./APP/ui/ui.o"
+"./APP/ui/ui_bridge.o"
 "./APP/ui/ui_font_chinese.o"
 "./APP/ui/ui_font_chinese10.o"
 "./APP/ui/ui_font_chinese18.o"

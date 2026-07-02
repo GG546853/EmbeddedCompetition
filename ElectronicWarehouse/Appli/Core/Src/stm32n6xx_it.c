@@ -23,6 +23,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "Barcode_task.h"
+#include "UART4_RxTask.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -242,11 +243,17 @@ void USART1_IRQHandler(void)
 void UART4_IRQHandler(void)
 {
   /* USER CODE BEGIN UART4_IRQn 0 */
-
+  // 必须在 HAL_UART_IRQHandler 之前读 RDR，否则 HAL 会丢弃数据
+  if (__HAL_UART_GET_FLAG(&huart4, UART_FLAG_RXNE)) {
+      uint8_t byte = huart4.Instance->RDR;
+      UART4_RxCallback(byte);
+  }
   /* USER CODE END UART4_IRQn 0 */
   HAL_UART_IRQHandler(&huart4);
   /* USER CODE BEGIN UART4_IRQn 1 */
-
+  if (__HAL_UART_GET_FLAG(&huart4, UART_FLAG_ORE)) {
+      __HAL_UART_CLEAR_OREFLAG(&huart4);
+  }
   /* USER CODE END UART4_IRQn 1 */
 }
 
@@ -256,23 +263,22 @@ void UART4_IRQHandler(void)
 void UART5_IRQHandler(void)
 {
   /* USER CODE BEGIN UART5_IRQn 0 */
-
-  /* USER CODE END UART5_IRQn 0 */
-  HAL_UART_IRQHandler(&huart5);
-  /* USER CODE BEGIN UART5_IRQn 1 */
-  if (__HAL_UART_GET_FLAG(&huart5, UART_FLAG_IDLE)) {
-      __HAL_UART_CLEAR_IDLEFLAG(&huart5);
-      UART5_IDLE_Callback();
-  }
-
+  // 先读 RDR，避免 HAL_UART_IRQHandler 在 ORE 时关掉 RXNE 中断
   if (__HAL_UART_GET_FLAG(&huart5, UART_FLAG_RXNE)) {
       uint8_t byte = huart5.Instance->RDR;
       UART5_RxCallback(byte);
   }
-
+  if (__HAL_UART_GET_FLAG(&huart5, UART_FLAG_IDLE)) {
+      __HAL_UART_CLEAR_IDLEFLAG(&huart5);
+      UART5_IDLE_Callback();
+  }
   if (__HAL_UART_GET_FLAG(&huart5, UART_FLAG_ORE)) {
       __HAL_UART_CLEAR_OREFLAG(&huart5);
   }
+  /* USER CODE END UART5_IRQn 0 */
+  HAL_UART_IRQHandler(&huart5);
+  /* USER CODE BEGIN UART5_IRQn 1 */
+
   /* USER CODE END UART5_IRQn 1 */
 }
 

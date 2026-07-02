@@ -1,0 +1,20 @@
+../APP/ui/eez-flow.h:1014:10:void eez::Value::freeRef()	3
+../APP/ui/eez-flow.h:1021:12:eez::Value& eez::Value::operator=(const eez::Value&)	4
+../APP/ui/eez-flow.h:3030:14:utf8_int8_t* utf8cat(utf8_int8_t*, const utf8_int8_t*)	3
+../APP/ui/eez-flow.h:3110:14:utf8_int8_t* utf8cpy(utf8_int8_t*, const utf8_int8_t*)	2
+../APP/ui/eez-flow.h:3181:14:utf8_int8_t* utf8dup_ex(const utf8_int8_t*, utf8_int8_t* (*)(utf8_int8_t*, size_t), utf8_int8_t*)	6
+../APP/ui/eez-flow.h:3177:14:utf8_int8_t* utf8dup(const utf8_int8_t*)	1
+../APP/ui/eez-flow.h:3324:14:utf8_int8_t* utf8ncat(utf8_int8_t*, const utf8_int8_t*, size_t)	4
+../APP/ui/eez-flow.h:3362:14:utf8_int8_t* utf8ncpy(utf8_int8_t*, const utf8_int8_t*, size_t)	11
+../APP/ui/eez-flow.h:3402:14:utf8_int8_t* utf8ndup_ex(const utf8_int8_t*, size_t, utf8_int8_t* (*)(utf8_int8_t*, size_t), utf8_int8_t*)	7
+../APP/ui/eez-flow.h:3398:14:utf8_int8_t* utf8ndup(const utf8_int8_t*, size_t)	1
+../APP/ui/eez-flow.h:3877:1:constexpr utf8_int8_t* utf8codepoint(const utf8_int8_t*, utf8_int32_t*)	4
+../APP/ui/eez-flow.h:3930:14:utf8_int8_t* utf8catcodepoint(utf8_int8_t*, utf8_int32_t, size_t)	8
+../APP/ui/eez-flow.h:3811:5:int utf8makevalid(utf8_int8_t*, utf8_int32_t)	13
+../APP/ui/eez-flow.h:4016:36:constexpr utf8_int32_t utf8lwrcodepoint(utf8_int32_t)	72
+../APP/ui/eez-flow.h:3982:6:void utf8lwr(utf8_int8_t*)	5
+../APP/ui/eez-flow.h:4182:36:constexpr utf8_int32_t utf8uprcodepoint(utf8_int32_t)	71
+../APP/ui/eez-flow.h:3999:6:void utf8upr(utf8_int8_t*)	5
+../APP/ui/ui_bridge.cpp:6:6:void ui_set_integer(int, int)	1
+../APP/ui/ui_bridge.cpp:10:5:int ui_get_integer(int)	1
+../APP/ui/ui_bridge.cpp:14:6:void ui_sync_cabinets(const InventoryItem*, int)	2

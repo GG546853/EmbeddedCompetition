@@ -36,7 +36,7 @@
 ../APP/ui/eez-flow.h:4016:36:utf8lwrcodepoint	16	static
 ../APP/ui/eez-flow.h:4182:36:utf8uprcodepoint	16	static
 ../APP/ui/eez-flow.h:4349:1:utf8rcodepoint	24	static
-../APP/LV_task.c:18:13:lv_port_init	64	static
-../APP/LV_task.c:54:6:LVGL_Task	16	static
-../APP/LV_task.c:74:6:_exit	16	static
-../APP/LV_task.c:79:5:_gettimeofday	16	static
+../APP/LV_task.c:25:13:lv_port_init	64	static
+../APP/LV_task.c:61:6:LVGL_Task	16	static
+../APP/LV_task.c:83:6:_exit	16	static
+../APP/LV_task.c:88:5:_gettimeofday	16	static

@@ -5,7 +5,8 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
-../APP/ui/eez-flow.cpp 
+../APP/ui/eez-flow.cpp \
+../APP/ui/ui_bridge.cpp 
 
 C_SRCS += \
 ../APP/ui/actions.c \
@@ -14,18 +15,18 @@ C_SRCS += \
 ../APP/ui/styles.c \
 ../APP/ui/ui.c \
 ../APP/ui/ui_font_chinese.c \
-../APP/ui/ui_font_chinese24.c \
-../APP/ui/ui_font_chinese18.c \
 ../APP/ui/ui_font_chinese10.c \
+../APP/ui/ui_font_chinese18.c \
+../APP/ui/ui_font_chinese24.c \
 ../APP/ui/ui_font_chinese8.c \
 ../APP/ui/ui_image_p_iamge.c \
-../APP/ui/ui_image_page_wms.c \
+../APP/ui/ui_image_page_activity.c \
 ../APP/ui/ui_image_page_dashboard.c \
 ../APP/ui/ui_image_page_inventory.c \
-../APP/ui/ui_image_page_activity.c \
-../APP/ui/ui_image_page_uimode.c \
+../APP/ui/ui_image_page_printfer.c \
 ../APP/ui/ui_image_page_search.c \
-../APP/ui/ui_image_page_printfer.c
+../APP/ui/ui_image_page_uimode.c \
+../APP/ui/ui_image_page_wms.c 
 
 C_DEPS += \
 ./APP/ui/actions.d \
@@ -34,18 +35,18 @@ C_DEPS += \
 ./APP/ui/styles.d \
 ./APP/ui/ui.d \
 ./APP/ui/ui_font_chinese.d \
-./APP/ui/ui_font_chinese24.d \
-./APP/ui/ui_font_chinese18.d \
 ./APP/ui/ui_font_chinese10.d \
+./APP/ui/ui_font_chinese18.d \
+./APP/ui/ui_font_chinese24.d \
 ./APP/ui/ui_font_chinese8.d \
 ./APP/ui/ui_image_p_iamge.d \
-./APP/ui/ui_image_page_wms.d \
+./APP/ui/ui_image_page_activity.d \
 ./APP/ui/ui_image_page_dashboard.d \
 ./APP/ui/ui_image_page_inventory.d \
-./APP/ui/ui_image_page_activity.d \
-./APP/ui/ui_image_page_uimode.d \
+./APP/ui/ui_image_page_printfer.d \
 ./APP/ui/ui_image_page_search.d \
-./APP/ui/ui_image_page_printfer.d 
+./APP/ui/ui_image_page_uimode.d \
+./APP/ui/ui_image_page_wms.d 
 
 OBJS += \
 ./APP/ui/actions.o \
@@ -54,22 +55,24 @@ OBJS += \
 ./APP/ui/screens.o \
 ./APP/ui/styles.o \
 ./APP/ui/ui.o \
+./APP/ui/ui_bridge.o \
 ./APP/ui/ui_font_chinese.o \
-./APP/ui/ui_font_chinese24.o \
-./APP/ui/ui_font_chinese18.o \
 ./APP/ui/ui_font_chinese10.o \
+./APP/ui/ui_font_chinese18.o \
+./APP/ui/ui_font_chinese24.o \
 ./APP/ui/ui_font_chinese8.o \
 ./APP/ui/ui_image_p_iamge.o \
-./APP/ui/ui_image_page_wms.o \
+./APP/ui/ui_image_page_activity.o \
 ./APP/ui/ui_image_page_dashboard.o \
 ./APP/ui/ui_image_page_inventory.o \
-./APP/ui/ui_image_page_activity.o \
-./APP/ui/ui_image_page_uimode.o \
+./APP/ui/ui_image_page_printfer.o \
 ./APP/ui/ui_image_page_search.o \
-./APP/ui/ui_image_page_printfer.o 
+./APP/ui/ui_image_page_uimode.o \
+./APP/ui/ui_image_page_wms.o 
 
 CPP_DEPS += \
-./APP/ui/eez-flow.d 
+./APP/ui/eez-flow.d \
+./APP/ui/ui_bridge.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes
@@ -81,7 +84,7 @@ APP/ui/%.o APP/ui/%.su APP/ui/%.cyclo: ../APP/ui/%.cpp APP/ui/subdir.mk
 clean: clean-APP-2f-ui
 
 clean-APP-2f-ui:
-	-$(RM) ./APP/ui/actions.cyclo ./APP/ui/actions.d ./APP/ui/actions.o ./APP/ui/actions.su ./APP/ui/eez-flow.cyclo ./APP/ui/eez-flow.d ./APP/ui/eez-flow.o ./APP/ui/eez-flow.su ./APP/ui/images.cyclo ./APP/ui/images.d ./APP/ui/images.o ./APP/ui/images.su ./APP/ui/screens.cyclo ./APP/ui/screens.d ./APP/ui/screens.o ./APP/ui/screens.su ./APP/ui/styles.cyclo ./APP/ui/styles.d ./APP/ui/styles.o ./APP/ui/styles.su ./APP/ui/ui.cyclo ./APP/ui/ui.d ./APP/ui/ui.o ./APP/ui/ui.su ./APP/ui/ui_font_chinese.cyclo ./APP/ui/ui_font_chinese.d ./APP/ui/ui_font_chinese.o ./APP/ui/ui_font_chinese.su ./APP/ui/ui_font_chinese24.cyclo ./APP/ui/ui_font_chinese24.d ./APP/ui/ui_font_chinese24.o ./APP/ui/ui_font_chinese24.su ./APP/ui/ui_font_chinese18.cyclo ./APP/ui/ui_font_chinese18.d ./APP/ui/ui_font_chinese18.o ./APP/ui/ui_font_chinese18.su ./APP/ui/ui_font_chinese10.cyclo ./APP/ui/ui_font_chinese10.d ./APP/ui/ui_font_chinese10.o ./APP/ui/ui_font_chinese10.su ./APP/ui/ui_font_chinese8.cyclo ./APP/ui/ui_font_chinese8.d ./APP/ui/ui_font_chinese8.o ./APP/ui/ui_font_chinese8.su ./APP/ui/ui_image_p_iamge.cyclo ./APP/ui/ui_image_p_iamge.d ./APP/ui/ui_image_p_iamge.o ./APP/ui/ui_image_p_iamge.su ./APP/ui/ui_image_page_wms.cyclo ./APP/ui/ui_image_page_wms.d ./APP/ui/ui_image_page_wms.o ./APP/ui/ui_image_page_wms.su ./APP/ui/ui_image_page_dashboard.cyclo ./APP/ui/ui_image_page_dashboard.d ./APP/ui/ui_image_page_dashboard.o ./APP/ui/ui_image_page_dashboard.su ./APP/ui/ui_image_page_inventory.cyclo ./APP/ui/ui_image_page_inventory.d ./APP/ui/ui_image_page_inventory.o ./APP/ui/ui_image_page_inventory.su ./APP/ui/ui_image_page_activity.cyclo ./APP/ui/ui_image_page_activity.d ./APP/ui/ui_image_page_activity.o ./APP/ui/ui_image_page_activity.su ./APP/ui/ui_image_page_uimode.cyclo ./APP/ui/ui_image_page_uimode.d ./APP/ui/ui_image_page_uimode.o ./APP/ui/ui_image_page_uimode.su ./APP/ui/ui_image_page_search.cyclo ./APP/ui/ui_image_page_search.d ./APP/ui/ui_image_page_search.o ./APP/ui/ui_image_page_search.su ./APP/ui/ui_image_page_printfer.cyclo ./APP/ui/ui_image_page_printfer.d ./APP/ui/ui_image_page_printfer.o ./APP/ui/ui_image_page_printfer.su
+	-$(RM) ./APP/ui/actions.cyclo ./APP/ui/actions.d ./APP/ui/actions.o ./APP/ui/actions.su ./APP/ui/eez-flow.cyclo ./APP/ui/eez-flow.d ./APP/ui/eez-flow.o ./APP/ui/eez-flow.su ./APP/ui/images.cyclo ./APP/ui/images.d ./APP/ui/images.o ./APP/ui/images.su ./APP/ui/screens.cyclo ./APP/ui/screens.d ./APP/ui/screens.o ./APP/ui/screens.su ./APP/ui/styles.cyclo ./APP/ui/styles.d ./APP/ui/styles.o ./APP/ui/styles.su ./APP/ui/ui.cyclo ./APP/ui/ui.d ./APP/ui/ui.o ./APP/ui/ui.su ./APP/ui/ui_bridge.cyclo ./APP/ui/ui_bridge.d ./APP/ui/ui_bridge.o ./APP/ui/ui_bridge.su ./APP/ui/ui_font_chinese.cyclo ./APP/ui/ui_font_chinese.d ./APP/ui/ui_font_chinese.o ./APP/ui/ui_font_chinese.su ./APP/ui/ui_font_chinese10.cyclo ./APP/ui/ui_font_chinese10.d ./APP/ui/ui_font_chinese10.o ./APP/ui/ui_font_chinese10.su ./APP/ui/ui_font_chinese18.cyclo ./APP/ui/ui_font_chinese18.d ./APP/ui/ui_font_chinese18.o ./APP/ui/ui_font_chinese18.su ./APP/ui/ui_font_chinese24.cyclo ./APP/ui/ui_font_chinese24.d ./APP/ui/ui_font_chinese24.o ./APP/ui/ui_font_chinese24.su ./APP/ui/ui_font_chinese8.cyclo ./APP/ui/ui_font_chinese8.d ./APP/ui/ui_font_chinese8.o ./APP/ui/ui_font_chinese8.su ./APP/ui/ui_image_p_iamge.cyclo ./APP/ui/ui_image_p_iamge.d ./APP/ui/ui_image_p_iamge.o ./APP/ui/ui_image_p_iamge.su ./APP/ui/ui_image_page_activity.cyclo ./APP/ui/ui_image_page_activity.d ./APP/ui/ui_image_page_activity.o ./APP/ui/ui_image_page_activity.su ./APP/ui/ui_image_page_dashboard.cyclo ./APP/ui/ui_image_page_dashboard.d ./APP/ui/ui_image_page_dashboard.o ./APP/ui/ui_image_page_dashboard.su ./APP/ui/ui_image_page_inventory.cyclo ./APP/ui/ui_image_page_inventory.d ./APP/ui/ui_image_page_inventory.o ./APP/ui/ui_image_page_inventory.su ./APP/ui/ui_image_page_printfer.cyclo ./APP/ui/ui_image_page_printfer.d ./APP/ui/ui_image_page_printfer.o ./APP/ui/ui_image_page_printfer.su ./APP/ui/ui_image_page_search.cyclo ./APP/ui/ui_image_page_search.d ./APP/ui/ui_image_page_search.o ./APP/ui/ui_image_page_search.su ./APP/ui/ui_image_page_uimode.cyclo ./APP/ui/ui_image_page_uimode.d ./APP/ui/ui_image_page_uimode.o ./APP/ui/ui_image_page_uimode.su ./APP/ui/ui_image_page_wms.cyclo ./APP/ui/ui_image_page_wms.d ./APP/ui/ui_image_page_wms.o ./APP/ui/ui_image_page_wms.su
 
 .PHONY: clean-APP-2f-ui
 

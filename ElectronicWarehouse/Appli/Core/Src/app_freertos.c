@@ -68,13 +68,16 @@ osThreadId_t defaultTaskHandle;
 const osThreadAttr_t defaultTask_attributes = {
   .name = "defaultTask",
   .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 128 * 4
+  .stack_size = 512 * 4
 };
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
 osSemaphoreId_t cam_frame_sem;
 osSemaphoreId_t inventory_sem;//用于协调 Barcode_Task 和 UART4_RxTask 之间的通信
+const osSemaphoreAttr_t inventory_sem_attributes = {
+  .name = "inventory_sem"
+};
 const osSemaphoreAttr_t cam_frame_sem_attributes = {
   .name = "cam_frame_sem"
 };
@@ -140,7 +143,7 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN RTOS_SEMAPHORES */
   /* add semaphores, ... */
 	cam_frame_sem = osSemaphoreNew(1, 0, &cam_frame_sem_attributes);
-	inventory_sem = osSemaphoreNew(1, 0, NULL);
+	inventory_sem = osSemaphoreNew(1, 0, &inventory_sem_attributes);
   /* USER CODE END RTOS_SEMAPHORES */
 
   /* USER CODE BEGIN RTOS_TIMERS */
@@ -158,7 +161,7 @@ void MX_FREERTOS_Init(void) {
 
   //RGBLED_TaskHandle = osThreadNew(RGBLED_Task, (void *)(uintptr_t)0, &RGBLEDTask_attributes);
   //Sensor_TaskHandle = osThreadNew(Sensor_Task, NULL, &SensorTask_attributes);
-  LV_TaskHandle = osThreadNew(LVGL_Task, NULL, &LVTask_attributes);
+  //LV_TaskHandle = osThreadNew(LVGL_Task, NULL, &LVTask_attributes);
   //AITaskHandle = osThreadNew(AI_Task, NULL, &AITask_attributes);
   //Electromagnet_TaskHandle = osThreadNew(Electromagnet_Task, NULL, &ElectromagnetTask_attributes);
   //Barcode_TaskHandle = osThreadNew(Barcode_Task, NULL, &BarcodeTask_attributes);
@@ -167,7 +170,7 @@ void MX_FREERTOS_Init(void) {
 
 
   //Aht10_TaskHandle = osThreadNew(Aht10_Task, NULL, &Aht10Task_attributes);
-  //UART4_RxTaskHandle = osThreadNew(UART4_RxTask, NULL, &UART4_RxTask_attributes);
+  UART4_RxTaskHandle = osThreadNew(UART4_RxTask, NULL, &UART4_RxTask_attributes);
   //VL53L1X_TaskHandle = osThreadNew(VL53L1X_Task, NULL, &VL53L1XTask_attributes);
   /* USER CODE END RTOS_THREADS */
 
@@ -183,14 +186,18 @@ void MX_FREERTOS_Init(void) {
 * @retval None
 */
 /* USER CODE END Header_StartDefaultTask */
+extern UBaseType_t g_lv_stack_high_water;
 void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN defaultTask */
-
+	char now[32];
 	//osThreadNew(RGBLED_Task, (void *)(uintptr_t)0xA800000, &RGBLEDTask_attributes);
 	//osThreadNew(Electromagnet_Task, (void *)(uintptr_t)0x30, &ElectromagnetTask_attributes);
   for(;;)
   {
+	get_current_time_str(now, sizeof(now));
+	printf("%s\r\n",now);
+  	HAL_GPIO_TogglePin(GPIOG,GPIO_PIN_10);
     osDelay(2000);
   }
   /* USER CODE END defaultTask */

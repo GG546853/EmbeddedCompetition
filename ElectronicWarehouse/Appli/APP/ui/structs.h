@@ -23,8 +23,9 @@ enum FlowArrayOfStructures {
 enum CabinetFlowStructureFields {
     FLOW_STRUCTURE_CABINET_FIELD_NAME = 0,
     FLOW_STRUCTURE_CABINET_FIELD_QTY = 1,
-    FLOW_STRUCTURE_CABINET_FIELD_TYPE = 2,
+    FLOW_STRUCTURE_CABINET_FIELD_PA = 2,
     FLOW_STRUCTURE_CABINET_FIELD_SPEC = 3,
+    FLOW_STRUCTURE_CABINET_FIELD_PC = 4,
     FLOW_STRUCTURE_CABINET_NUM_FIELDS
 };
 
@@ -65,11 +66,11 @@ struct CabinetValue {
         value.getArray()->values[FLOW_STRUCTURE_CABINET_FIELD_QTY] = IntegerValue(qty);
     }
     
-    const char *type() {
-        return value.getArray()->values[FLOW_STRUCTURE_CABINET_FIELD_TYPE].getString();
+    const char *pa() {
+        return value.getArray()->values[FLOW_STRUCTURE_CABINET_FIELD_PA].getString();
     }
-    void type(const char *type) {
-        value.getArray()->values[FLOW_STRUCTURE_CABINET_FIELD_TYPE] = StringValue(type);
+    void pa(const char *pa) {
+        value.getArray()->values[FLOW_STRUCTURE_CABINET_FIELD_PA] = StringValue(pa);
     }
     
     const char *spec() {
@@ -77,6 +78,13 @@ struct CabinetValue {
     }
     void spec(const char *spec) {
         value.getArray()->values[FLOW_STRUCTURE_CABINET_FIELD_SPEC] = StringValue(spec);
+    }
+    
+    const char *pc() {
+        return value.getArray()->values[FLOW_STRUCTURE_CABINET_FIELD_PC].getString();
+    }
+    void pc(const char *pc) {
+        value.getArray()->values[FLOW_STRUCTURE_CABINET_FIELD_PC] = StringValue(pc);
     }
 };
 

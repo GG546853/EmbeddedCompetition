@@ -13,7 +13,7 @@
 #elif defined(LV_BUILD_TEST)
 #include "../lvgl.h"
 #else
-#include "lvgl.h"
+#include "lvgl/lvgl.h"
 #endif
 
 #ifndef LV_ATTRIBUTE_MEM_ALIGN

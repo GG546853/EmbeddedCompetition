@@ -22,18 +22,19 @@ enum FlowArrayOfStructures {
 
 enum CabinetFlowStructureFields {
     FLOW_STRUCTURE_CABINET_FIELD_NAME = 0,
-    FLOW_STRUCTURE_CABINET_FIELD_QTY = 1,
-    FLOW_STRUCTURE_CABINET_FIELD_TYPE = 2,
-    FLOW_STRUCTURE_CABINET_FIELD_SPEC = 3,
+    FLOW_STRUCTURE_CABINET_FIELD_PC = 1,
+    FLOW_STRUCTURE_CABINET_FIELD_QTY = 2,
+    FLOW_STRUCTURE_CABINET_FIELD_PA = 3,
+    FLOW_STRUCTURE_CABINET_FIELD_SPEC = 4,
     FLOW_STRUCTURE_CABINET_NUM_FIELDS
 };
 
 enum LogEntryFlowStructureFields {
     FLOW_STRUCTURE_LOG_ENTRY_FIELD_TIME = 0,
     FLOW_STRUCTURE_LOG_ENTRY_FIELD_USER = 1,
-    FLOW_STRUCTURE_LOG_ENTRY_FIELD_ITEM_NAME = 2,
+    FLOW_STRUCTURE_LOG_ENTRY_FIELD_PC = 2,
     FLOW_STRUCTURE_LOG_ENTRY_FIELD_QTY = 3,
-    FLOW_STRUCTURE_LOG_ENTRY_FIELD_TYPE = 4,
+    FLOW_STRUCTURE_LOG_ENTRY_FIELD_ACTION = 4,
     FLOW_STRUCTURE_LOG_ENTRY_FIELD_CABINET_ID = 5,
     FLOW_STRUCTURE_LOG_ENTRY_NUM_FIELDS
 };
@@ -58,6 +59,13 @@ struct CabinetValue {
         value.getArray()->values[FLOW_STRUCTURE_CABINET_FIELD_NAME] = StringValue(name);
     }
     
+    const char *pc() {
+        return value.getArray()->values[FLOW_STRUCTURE_CABINET_FIELD_PC].getString();
+    }
+    void pc(const char *pc) {
+        value.getArray()->values[FLOW_STRUCTURE_CABINET_FIELD_PC] = StringValue(pc);
+    }
+    
     int qty() {
         return value.getArray()->values[FLOW_STRUCTURE_CABINET_FIELD_QTY].getInt();
     }
@@ -65,11 +73,11 @@ struct CabinetValue {
         value.getArray()->values[FLOW_STRUCTURE_CABINET_FIELD_QTY] = IntegerValue(qty);
     }
     
-    const char *type() {
-        return value.getArray()->values[FLOW_STRUCTURE_CABINET_FIELD_TYPE].getString();
+    const char *pa() {
+        return value.getArray()->values[FLOW_STRUCTURE_CABINET_FIELD_PA].getString();
     }
-    void type(const char *type) {
-        value.getArray()->values[FLOW_STRUCTURE_CABINET_FIELD_TYPE] = StringValue(type);
+    void pa(const char *pa) {
+        value.getArray()->values[FLOW_STRUCTURE_CABINET_FIELD_PA] = StringValue(pa);
     }
     
     const char *spec() {
@@ -108,11 +116,11 @@ struct LogEntryValue {
         value.getArray()->values[FLOW_STRUCTURE_LOG_ENTRY_FIELD_USER] = StringValue(user);
     }
     
-    const char *item_name() {
-        return value.getArray()->values[FLOW_STRUCTURE_LOG_ENTRY_FIELD_ITEM_NAME].getString();
+    const char *pc() {
+        return value.getArray()->values[FLOW_STRUCTURE_LOG_ENTRY_FIELD_PC].getString();
     }
-    void item_name(const char *item_name) {
-        value.getArray()->values[FLOW_STRUCTURE_LOG_ENTRY_FIELD_ITEM_NAME] = StringValue(item_name);
+    void pc(const char *pc) {
+        value.getArray()->values[FLOW_STRUCTURE_LOG_ENTRY_FIELD_PC] = StringValue(pc);
     }
     
     int qty() {
@@ -122,11 +130,11 @@ struct LogEntryValue {
         value.getArray()->values[FLOW_STRUCTURE_LOG_ENTRY_FIELD_QTY] = IntegerValue(qty);
     }
     
-    const char *type() {
-        return value.getArray()->values[FLOW_STRUCTURE_LOG_ENTRY_FIELD_TYPE].getString();
+    const char *action() {
+        return value.getArray()->values[FLOW_STRUCTURE_LOG_ENTRY_FIELD_ACTION].getString();
     }
-    void type(const char *type) {
-        value.getArray()->values[FLOW_STRUCTURE_LOG_ENTRY_FIELD_TYPE] = StringValue(type);
+    void action(const char *action) {
+        value.getArray()->values[FLOW_STRUCTURE_LOG_ENTRY_FIELD_ACTION] = StringValue(action);
     }
     
     int cabinet_id() {

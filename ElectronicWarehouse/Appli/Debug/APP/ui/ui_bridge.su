@@ -29,10 +29,16 @@
 ../APP/ui/eez-flow.h:4016:36:constexpr utf8_int32_t utf8lwrcodepoint(utf8_int32_t)	16	static
 ../APP/ui/eez-flow.h:4182:36:constexpr utf8_int32_t utf8uprcodepoint(utf8_int32_t)	16	static
 ../APP/ui/structs.h:45:5:CabinetValue::CabinetValue()	40	static
+../APP/ui/structs.h:49:5:CabinetValue::CabinetValue(eez::Value)	16	static
+../APP/ui/structs.h:55:17:const char* CabinetValue::name()	16	static
 ../APP/ui/structs.h:58:10:void CabinetValue::name(const char*)	40	static
+../APP/ui/structs.h:62:9:int CabinetValue::qty()	16	static
 ../APP/ui/structs.h:65:10:void CabinetValue::qty(int)	40	static
+../APP/ui/structs.h:69:17:const char* CabinetValue::pa()	16	static
 ../APP/ui/structs.h:72:10:void CabinetValue::pa(const char*)	40	static
+../APP/ui/structs.h:76:17:const char* CabinetValue::spec()	16	static
 ../APP/ui/structs.h:79:10:void CabinetValue::spec(const char*)	40	static
+../APP/ui/structs.h:83:17:const char* CabinetValue::pc()	16	static
 ../APP/ui/structs.h:86:10:void CabinetValue::pc(const char*)	40	static
 ../APP/ui/structs.h:99:5:LogEntryValue::LogEntryValue(eez::Value)	16	static
 ../APP/ui/structs.h:105:17:const char* LogEntryValue::time()	16	static
@@ -46,14 +52,18 @@
 ../APP/ui/eez-flow.h:1355:8:eez::ArrayOf<CabinetValue, 81920>::~ArrayOf()	16	static
 ../APP/ui/structs.h:42:8:CabinetValue::~CabinetValue()	16	static
 ../APP/ui/ui_bridge.cpp:14:6:void ui_sync_cabinets(const InventoryItem*, int)	72	static
-../APP/ui/ui_bridge.cpp:29:5:int ui_get_log_count()	32	static
+../APP/ui/ui_bridge.cpp:29:6:void ui_load_cabinets(InventoryItem*, int)	96	static
+../APP/ui/ui_bridge.cpp:45:5:int ui_get_log_count()	32	static
 ../APP/ui/eez-flow.h:1355:8:eez::ArrayOf<LogEntryValue, 81921>::~ArrayOf()	16	static
 ../APP/ui/structs.h:92:8:LogEntryValue::~LogEntryValue()	16	static
-../APP/ui/ui_bridge.cpp:35:6:void ui_get_log_entry(int, char*, char*, char*, int*, char*, int*)	96	static
+../APP/ui/ui_bridge.cpp:51:6:void ui_get_log_entry(int, char*, char*, char*, int*, char*, int*)	96	static
 ../APP/ui/eez-flow.h:216:14:static void eez::ObjectAllocator<T>::deallocate(T*) [with T = eez::Ref]	16	static
 ../APP/ui/eez-flow.h:1357:5:eez::ArrayOf<T, ARRAY_TYPE>::ArrayOf(size_t) [with T = CabinetValue; long unsigned int ARRAY_TYPE = 81920]	40	static
 ../APP/ui/eez-flow.h:1369:10:void eez::ArrayOf<T, ARRAY_TYPE>::at(int, const T&) [with T = CabinetValue; long unsigned int ARRAY_TYPE = 81920]	24	static
 ../APP/ui/eez-flow.h:1361:5:eez::ArrayOf<T, ARRAY_TYPE>::operator eez::Value() const [with T = CabinetValue; long unsigned int ARRAY_TYPE = 81920]	16	static
+../APP/ui/eez-flow.h:1360:5:eez::ArrayOf<T, ARRAY_TYPE>::ArrayOf(eez::Value) [with T = CabinetValue; long unsigned int ARRAY_TYPE = 81920]	16	static
+../APP/ui/eez-flow.h:1363:12:size_t eez::ArrayOf<T, ARRAY_TYPE>::size() [with T = CabinetValue; long unsigned int ARRAY_TYPE = 81920]	16	static
+../APP/ui/eez-flow.h:1366:7:T eez::ArrayOf<T, ARRAY_TYPE>::at(int) [with T = CabinetValue; long unsigned int ARRAY_TYPE = 81920]	40	static
 ../APP/ui/eez-flow.h:1360:5:eez::ArrayOf<T, ARRAY_TYPE>::ArrayOf(eez::Value) [with T = LogEntryValue; long unsigned int ARRAY_TYPE = 81921]	16	static
 ../APP/ui/eez-flow.h:1363:12:size_t eez::ArrayOf<T, ARRAY_TYPE>::size() [with T = LogEntryValue; long unsigned int ARRAY_TYPE = 81921]	16	static
 ../APP/ui/eez-flow.h:1366:7:T eez::ArrayOf<T, ARRAY_TYPE>::at(int) [with T = LogEntryValue; long unsigned int ARRAY_TYPE = 81921]	40	static

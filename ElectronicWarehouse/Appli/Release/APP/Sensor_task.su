@@ -1,1 +1,1 @@
-../APP/Sensor_task.c:11:6:Sensor_Task	8	static
+../APP/Sensor_task.c:11:6:Sensor_Task	8	static,ignoring_inline_asm

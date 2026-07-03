@@ -10,7 +10,7 @@
 ../Drivers/BSP/IMX335/imx335.c:262:16:imx335_dcmipp_init	14
 ../Drivers/BSP/IMX335/imx335.c:397:13:cam_iic_delay	1
 ../Drivers/BSP/IMX335/imx335.c:407:16:imx335_io_init	1
-../Drivers/BSP/IMX335/imx335.c:438:16:imx335_io_deinit	1
+../Drivers/BSP/IMX335/imx335.c:438:9:imx335_io_deinit	1
 ../Drivers/BSP/IMX335/imx335.c:456:13:cam_iic_start	1
 ../Drivers/BSP/IMX335/imx335.c:467:13:cam_iic_stop	1
 ../Drivers/BSP/IMX335/imx335.c:477:16:cam_iic_wait_ack	3

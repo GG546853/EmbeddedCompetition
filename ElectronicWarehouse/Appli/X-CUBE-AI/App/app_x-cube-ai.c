@@ -367,7 +367,7 @@ static void ai_detection_temporal_smooth(ai_result_t *result)
              det.confidence = score;
 
              /* reject boxes smaller than 10% of image */
-             if (det.width < 0.10f || det.height < 0.10f) continue;
+             if (det.width < 0.30f || det.height < 0.40f) continue;
 
 #if 0
              /* DEBUG: print first detection above threshold */

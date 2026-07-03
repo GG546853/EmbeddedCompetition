@@ -35,7 +35,7 @@ static int32_t imx335_isp_exposure;
 
 static uint8_t imx335_dcmipp_init(void);
 static int32_t imx335_io_init(void);
-static int32_t imx335_io_deinit(void);
+int32_t imx335_io_deinit(void);
 static int32_t imx335_io_writereg(uint16_t dev_addr, uint16_t reg, uint8_t *data, uint16_t length);
 static int32_t imx335_io_readreg(uint16_t dev_addr, uint16_t reg, uint8_t *data, uint16_t length);
 static int32_t imx335_io_gettick(void);
@@ -435,7 +435,7 @@ static int32_t imx335_io_init(void)
  * @param   无
  * @retval  执行结果
  */
-static int32_t imx335_io_deinit(void)
+int32_t imx335_io_deinit(void)
 {
     GPIO_InitTypeDef gpio = {0};
 

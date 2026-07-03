@@ -36,5 +36,6 @@ void on_inventory_stm32(const InventoryItem *item);
 void on_inventory_app(const InventoryItem *item);
 
 void inventory_store_to_slot(const InventoryItem *item, const char *location);
+void inventory_add_quantity(const InventoryItem *item, const char *location);
 
 #endif

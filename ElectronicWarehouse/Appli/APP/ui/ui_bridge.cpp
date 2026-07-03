@@ -26,6 +26,22 @@ void ui_sync_cabinets(const InventoryItem *items, int count) {
     ui_set_integer(FLOW_GLOBAL_VARIABLE_CABINET_COUNT, count);
 }
 
+void ui_load_cabinets(InventoryItem *items, int count) {
+    Value v = eez::flow::getGlobalVariable(FLOW_GLOBAL_VARIABLE_CABINETS);
+    if (!v.isArray()) return;
+    ArrayOfCabinetValue cabinets(v);
+    int n = (int)cabinets.size();
+    if (n > count) n = count;
+    for (int i = 0; i < n; i++) {
+        CabinetValue cab = cabinets.at(i);
+        strncpy(items[i].name, cab.name(), sizeof(items[i].name) - 1);
+        items[i].quantity = (uint16_t)cab.qty();
+        strncpy(items[i].pa,   cab.pa(),   sizeof(items[i].pa) - 1);
+        strncpy(items[i].type, cab.spec(), sizeof(items[i].type) - 1);
+        strncpy(items[i].pc,   cab.pc(),   sizeof(items[i].pc) - 1);
+    }
+}
+
 int ui_get_log_count(void) {
     Value v = eez::flow::getGlobalVariable(FLOW_GLOBAL_VARIABLE_HISTORY_RECORDS);
     if (!v.isArray()) return 0;

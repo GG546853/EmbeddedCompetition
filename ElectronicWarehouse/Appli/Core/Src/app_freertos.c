@@ -162,7 +162,7 @@ void MX_FREERTOS_Init(void) {
   //RGBLED_TaskHandle = osThreadNew(RGBLED_Task, (void *)(uintptr_t)0, &RGBLEDTask_attributes);
   Sensor_TaskHandle = osThreadNew(Sensor_Task, NULL, &SensorTask_attributes);
   //LV_TaskHandle = osThreadNew(LVGL_Task, NULL, &LVTask_attributes);
-  //AITaskHandle = osThreadNew(AI_Task, NULL, &AITask_attributes);
+  AITaskHandle = osThreadNew(AI_Task, NULL, &AITask_attributes);
   //Electromagnet_TaskHandle = osThreadNew(Electromagnet_Task, NULL, &ElectromagnetTask_attributes);
   //Barcode_TaskHandle = osThreadNew(Barcode_Task, NULL, &BarcodeTask_attributes);
   //Printer_TaskHandle = osThreadNew(Printer_Task, NULL, &PrinterTask_attributes);

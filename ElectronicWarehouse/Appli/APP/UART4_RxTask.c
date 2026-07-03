@@ -238,7 +238,7 @@ void on_inventory_app(const InventoryItem *item)
 
 void handle_store(const uint8_t *payload, uint8_t len)
 {
-    if (len < 2) return;
+    if (len < 3) return;
     if (!pending_store) return;
 
     char location[8];
@@ -247,7 +247,14 @@ void handle_store(const uint8_t *payload, uint8_t len)
     location[2] = (char)('0' + (payload[1] % 10));
     location[3] = '\0';
 
-    inventory_store_to_slot(&pending_item, location);
+    uint8_t flag = payload[2];
+
+    if (flag == 0x00) {
+        inventory_store_to_slot(&pending_item, location);
+    } else if (flag == 0x01) {
+        inventory_add_quantity(&pending_item, location);
+    }
+
     pending_store = 0;
 }
 
@@ -267,6 +274,33 @@ void inventory_store_to_slot(const InventoryItem *item, const char *location)
         memcpy(&inventory_item_T[index], item, sizeof(InventoryItem));
         printf("[Store] %s %s %s %s qty:%u -> T%02d\r\n",
                item->pa, item->pc, item->name, item->type, item->quantity, index);
+    }
+}
+
+void inventory_add_quantity(const InventoryItem *item, const char *location)
+{
+    if (location[0] != 'D' && location[0] != 'T') return;
+
+    int index = atoi(&location[1]);
+
+    if (location[0] == 'D') {
+        if (index < 0 || index >= 6) return;
+        if (inventory_item_D[index].pc[0] == '\0') {
+            memcpy(&inventory_item_D[index], item, sizeof(InventoryItem));
+        } else {
+            inventory_item_D[index].quantity += item->quantity;
+        }
+        printf("[DupStore] +%u -> D%02d (total:%u)\r\n",
+               item->quantity, index, inventory_item_D[index].quantity);
+    } else {
+        if (index < 0 || index >= 28) return;
+        if (inventory_item_T[index].pc[0] == '\0') {
+            memcpy(&inventory_item_T[index], item, sizeof(InventoryItem));
+        } else {
+            inventory_item_T[index].quantity += item->quantity;
+        }
+        printf("[DupStore] +%u -> T%02d (total:%u)\r\n",
+               item->quantity, index, inventory_item_T[index].quantity);
     }
 }
 

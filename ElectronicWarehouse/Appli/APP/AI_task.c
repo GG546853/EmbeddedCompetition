@@ -73,11 +73,11 @@ static void draw_one_detection(ai_detection_t *d, uint8_t r, uint8_t g, uint8_t 
 
     draw_box(bx, by, bw, bh, r, g, b);
 
-    for (int k = 0; k < 6; k++) {
-        int kx = (int)(d->keypoints[k][0] * DISP_W);
-        int ky = (int)(d->keypoints[k][1] * DISP_H);
-        draw_kp(kx, ky, r, g, b);
-    }
+//    for (int k = 0; k < 6; k++) {
+//        int kx = (int)(d->keypoints[k][0] * DISP_W);
+//        int ky = (int)(d->keypoints[k][1] * DISP_H);
+//        draw_kp(kx, ky, r, g, b);
+//    }
 }
 
 static void draw_detections_on_display(ai_result_t *result)

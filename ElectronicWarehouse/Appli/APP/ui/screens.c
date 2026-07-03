@@ -4370,7 +4370,7 @@ void create_screen_page_main() {
                                         {
                                             lv_obj_t *obj = lv_label_create(parent_obj);
                                             objects.obj153 = obj;
-                                            lv_obj_set_pos(obj, 425, 18);
+                                            lv_obj_set_pos(obj, 450, 74);
                                             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
                                             lv_obj_set_style_bg_color(obj, lv_color_hex(0xf2f4f7), LV_PART_MAIN | LV_STATE_DEFAULT);
                                             lv_obj_set_style_bg_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);

@@ -200,6 +200,10 @@ static void event_handler_cb_page_main_obj67(lv_event_t *e) {
         e->user_data = (void *)0;
         flowPropagateValueLVGLEvent(flowState, 163, 0, e);
     }
+    if (event == LV_EVENT_CLICKED) {
+        e->user_data = (void *)0;
+        action_givetime(e);
+    }
 }
 
 static void event_handler_cb_page_main_obj81(lv_event_t *e) {

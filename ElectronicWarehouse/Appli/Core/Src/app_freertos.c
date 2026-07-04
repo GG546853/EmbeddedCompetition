@@ -34,6 +34,7 @@
 #include "Aht10_task.h"
 #include "tim.h"
 #include "UART4_RxTask.h"
+#include "Outbound_task.h"
 
 #include <stdio.h>
 #include "imx335.h"
@@ -42,6 +43,8 @@
 #include "gt9xxx.h"
 #include "semphr.h"
 #include "app_types.h"
+
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -68,19 +71,26 @@ osThreadId_t defaultTaskHandle;
 const osThreadAttr_t defaultTask_attributes = {
   .name = "defaultTask",
   .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 128 * 4
+  .stack_size = 1024 * 4
 };
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
 osSemaphoreId_t cam_frame_sem;
 osSemaphoreId_t inventory_sem;//用于协调 Barcode_Task 和 UART4_RxTask 之间的通信
+const osSemaphoreAttr_t inventory_sem_attributes = {
+  .name = "inventory_sem"
+};
 const osSemaphoreAttr_t cam_frame_sem_attributes = {
   .name = "cam_frame_sem"
 };
 osMutexId_t i2c2_mutex;
 const osMutexAttr_t i2c2_mutex_attributes = {
   .name = "i2c2_mutex"
+};
+osMutexId_t flow_var_mutex;
+const osMutexAttr_t flow_var_mutex_attributes = {
+  .name = "flow_var_mutex"
 };
 /* USER CODE END FunctionPrototypes */
 
@@ -135,12 +145,13 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN RTOS_MUTEX */
   /* add mutexes, ... */
   i2c2_mutex = osMutexNew(&i2c2_mutex_attributes);
+  flow_var_mutex = osMutexNew(&flow_var_mutex_attributes);
   /* USER CODE END RTOS_MUTEX */
 
   /* USER CODE BEGIN RTOS_SEMAPHORES */
   /* add semaphores, ... */
 	cam_frame_sem = osSemaphoreNew(1, 0, &cam_frame_sem_attributes);
-	inventory_sem = osSemaphoreNew(1, 0, NULL);
+	inventory_sem = osSemaphoreNew(1, 0, &inventory_sem_attributes);
   /* USER CODE END RTOS_SEMAPHORES */
 
   /* USER CODE BEGIN RTOS_TIMERS */
@@ -161,13 +172,13 @@ void MX_FREERTOS_Init(void) {
   LV_TaskHandle = osThreadNew(LVGL_Task, NULL, &LVTask_attributes);
   //AITaskHandle = osThreadNew(AI_Task, NULL, &AITask_attributes);
   //Electromagnet_TaskHandle = osThreadNew(Electromagnet_Task, NULL, &ElectromagnetTask_attributes);
-  //Barcode_TaskHandle = osThreadNew(Barcode_Task, NULL, &BarcodeTask_attributes);
+  Barcode_TaskHandle = osThreadNew(Barcode_Task, NULL, &BarcodeTask_attributes);
   //Printer_TaskHandle = osThreadNew(Printer_Task, NULL, &PrinterTask_attributes);
   //Outbound_TaskHandle = osThreadNew(Outbound_Task, NULL, &OutboundTask_attributes);
 
 
   //Aht10_TaskHandle = osThreadNew(Aht10_Task, NULL, &Aht10Task_attributes);
-  //UART4_RxTaskHandle = osThreadNew(UART4_RxTask, NULL, &UART4_RxTask_attributes);
+  UART4_RxTaskHandle = osThreadNew(UART4_RxTask, NULL, &UART4_RxTask_attributes);
   //VL53L1X_TaskHandle = osThreadNew(VL53L1X_Task, NULL, &VL53L1XTask_attributes);
   /* USER CODE END RTOS_THREADS */
 
@@ -186,11 +197,24 @@ void MX_FREERTOS_Init(void) {
 void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN defaultTask */
-
+	strcpy(Cabinet.User, "ZS");
+	//char now[32];
 	//osThreadNew(RGBLED_Task, (void *)(uintptr_t)0xA800000, &RGBLEDTask_attributes);
 	//osThreadNew(Electromagnet_Task, (void *)(uintptr_t)0x30, &ElectromagnetTask_attributes);
   for(;;)
   {
+    printf("[History] %d records:\r\n", history_count);
+    for (int i = 0; i < history_count; i++) {
+        printf("  [%d] t:%s u:%s pc:%s qty:%u act:%s cab:%d\r\n",
+               i,
+               history_list[i].time,
+               history_list[i].user,
+               history_list[i].pc,
+               history_list[i].quantity,
+               history_list[i].action,
+               history_list[i].cabinet_id);
+    }
+
     osDelay(2000);
   }
   /* USER CODE END defaultTask */

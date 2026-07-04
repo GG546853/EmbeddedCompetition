@@ -481,3 +481,158 @@ HAL_GPIO_ConfigPinAttributes(GPIOH, GPIO_PIN_8, GPIO_PIN_SEC | GPIO_PIN_NPRIV);
 3. **GPIO 安全属性**：TrustZone + RIF 环境下需注意引脚级安全配置（`HAL_GPIO_ConfigPinAttributes`）是否与代码执行模式匹配
 4. **寄存器诊断方法**：直接读写外设寄存器并逐位解码，能比 HAL 返回值更快定位问题根因
 5. **分层隔离验证**：从 HAL → LL → 纯 GPIO → 换引脚 逐层剥离，排除中间件问题后最终定位到硬件
+
+---
+
+## 问题 5：扫码选库后 UI 卡死（历史记录功能添加后引入）
+
+### 问题描述
+
+- 本地扫码 → 选柜子 → **库存信息正常显示** → **历史记录不显示** → **UI 卡死**
+- 加入扫码出入库历史记录功能前，扫码流程正常，多次测试均无卡死
+- 串口输出报错：`assertion "false" failed: file "../APP/ui/eez-flow.cpp", line 6387, function: void eez::flow::stopScript()`
+
+### 排查过程
+
+#### 1. 怀疑对象：多任务 UI 通信互斥锁不完整
+
+**分析路径**：`Barcode_Task` 和 `UART4_RxTask` 通过 `ui_bridge.cpp` 写入 EEZ-Flow 全局变量时持有 `flow_var_mutex`，但 `LV_Task` 在处理 UI 事件和渲染时直接调用 `eez::flow::setGlobalVariable()/getGlobalVariable()`，完全绕过互斥锁。
+
+**修改**（方案 1）：将 `flow_var_mutex` 从上层（`ui_bridge.cpp` + `eez_flow_tick()`）下沉到最底层 `eez-flow.cpp` 的 `setGlobalVariable()` / `getGlobalVariable()` 内部，确保所有访问路径都经过同一把锁。
+
+- `eez-flow.cpp`：`setGlobalVariable(Assets*, ...)` 和 `getGlobalVariable(Assets*, ...)` 内部加 `osMutexAcquire/Release`
+- `eez-flow.cpp`：`eez_flow_tick()` 移除互斥锁（避免与 `action_givetime` 内的 `setGlobalVariable` 形成非递归锁死锁）
+- `ui_bridge.cpp`：10 个 `ui_*` 函数全部移除 `osMutexAcquire/Release`（锁已下沉到底层）
+
+**结果**：库存正常显示，历史记录仍不显示，UI 仍卡死。锁的覆盖缺口不是根因。
+
+#### 2. 怀疑对象：action_givetime 重入触发死循环
+
+**分析路径**：`action_givetime` 是 LVGL 事件回调，运行在 `LV_Task` 上。它通过 `getGlobalVariable(HISTORY_RECORDS)` 读取历史数组，原地修改条目时间戳，然后调用 `setGlobalVariable(HISTORY_COUNT, count+1)` 递增计数。`setGlobalVariable` 写入 `HISTORY_COUNT` 后 EEZ-Flow 检测到变化，可能再次触发 UI 刷新 → 再次调用 `action_givetime` → 无限循环。
+
+**修改**（方案 A）：
+- `ui_push_history()`：新增 `setGlobalVariable(HISTORY_COUNT, count)` — 在写入历史记录的同时写入计数
+- `action_givetime()`：删除末尾的 `setGlobalVariable(HISTORY_COUNT, count+1)` — 打断重入循环链
+
+**结果**：现象不变。库存正常，历史记录不显示，UI 卡死 + 同样的 `assert(false)` 报错。重入循环也不是根因。
+
+#### 3. 根因定位：stopScript() 桩函数 assert(false)
+
+**分析路径**：`assert(false)` 报错直接指向 `eez-flow.cpp:6387` 的 `stopScript()` 函数：
+
+```cpp
+static void stopScript() {
+    assert(false);  // ← 桩函数，未实现
+}
+```
+
+追溯框架调用链：
+
+```
+ui_push_history() 写入 HISTORY_RECORDS
+  → EEZ-Flow tick() 检测变化
+    → 触发历史列表关联的 Flow 执行
+      → Flow 执行完毕
+        → executeEndComponent()          (eez-flow.cpp:2851)
+          → 判断：顶层独立 Flow（非子流程、非 Action）
+            → stopScriptHook()            (eez-flow.cpp:2858)
+              → stopScript()              (eez-flow.cpp:6386)
+                → assert(false) → 💥 卡死
+```
+
+**为什么库存列表不触发这个错误？**
+
+库存列表（`CABINETS`）走的是 **纯数据绑定** 路径——EEZ-Flow 的 List Widget 直接读取数组数据渲染 LVGL 控件，不涉及任何 Flow 执行。没有 Flow 执行，就没有 `executeEndComponent → stopScript` 调用。
+
+历史记录列表（`HISTORY_RECORDS`）触发了 **Flow 执行**——EEZ-Flow 为历史记录关联了一个流程脚本，脚本执行完毕后框架调用 `stopScript()` 进行清理。
+
+**为什么 assert(false) 导致 UI 卡死而非正常崩溃？**
+
+STM32 嵌入式环境的 `assert(false)` 等价于 `abort()` → 进入死循环 `while(1){}`。`stopScript()` 运行在 `LV_Task` 线程上，`LV_Task` 是唯一负责 LVGL 渲染和触摸事件的任务。它一死，屏幕定格、触摸无响应，表现为"卡死"。
+
+### 根因
+
+`eez-flow.cpp` 是 EEZ Studio 工具自动生成的代码。`stopScript()` 是 EEZ-Flow 框架的钩子函数，默认实现是 `assert(false)`，本意是"如果 UI 项目使用了 Flow 执行功能，你必须自己实现这个钩子"。
+
+历史记录功能触发了一个顶层 Flow 执行，Flow 执行完毕后调用 `stopScript()` → `assert(false)` → LV_Task 死在死循环里。
+
+这是 **EEZ Studio 代码生成器的桩函数未实现问题**，不是互斥锁问题。
+
+### 修改方法
+
+**文件**：`ElectronicWarehouse/Appli/APP/ui/eez-flow.cpp:6386-6388`
+
+将 `stopScript()` 从带 `assert(false)` 的桩函数改为空实现：
+
+```cpp
+static void stopScript() {
+    assert(false);  // ← 删除这行
+}
+```
+
+改为：
+
+```cpp
+static void stopScript() {
+}
+```
+
+### 全部修改汇总
+
+| 轮次 | 文件 | 改动 | 解决的问题 |
+|------|------|------|-----------|
+| R1 | `eez-flow.cpp` | `setGlobalVariable`/`getGlobalVariable` 内部加锁 | LV_Task 与 Barcode_Task 数据竞态 |
+| R1 | `eez-flow.cpp` | `eez_flow_tick()` 移除互斥锁 | 防止与 action_givetime 的非递归锁死锁 |
+| R1 | `ui_bridge.cpp` | 10 个 `ui_*` 函数移除互斥锁 | 锁下沉后外层锁冗余 |
+| R2 | `ui_bridge.cpp` | `ui_push_history` 增加 `HISTORY_COUNT` 同步写入 | 历史记录和计数原子写入 |
+| R2 | `ui_bridge.cpp` | `action_givetime` 删除 `setGlobalVariable(HISTORY_COUNT)` | 打断重入触发循环 |
+| **R3** | **`eez-flow.cpp`** | **`stopScript()` 移除 `assert(false)`** | **Flow 执行完毕不再崩溃** |
+
+### 涉及文件
+
+| 文件 | 说明 |
+|------|------|
+| `Appli/APP/ui/eez-flow.cpp` | EEZ Studio 自动生成代码（含 stopScript 桩函数） |
+| `Appli/APP/ui/ui_bridge.cpp` | UI 桥接层（历史记录/库存的推拉操作） |
+| `Appli/APP/Barcode_task.c` | 扫码任务（调用 ui_push_history） |
+| `Appli/APP/UART4_RxTask.c` | UART4 接收任务（handle_inventory → handle_store → ui_push_history） |
+| `Appli/APP/Outbound_task.c` | 出库任务（history_list/history_count 数据定义） |
+
+### UI 通信架构总览
+
+```
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│  Barcode_Task   │    │  UART4_RxTask    │    │    LV_Task      │
+│  (扫码枪)       │    │  (ESP32 通信)    │    │  (LVGL + EEZ)   │
+└──────┬──────────┘    └──────┬───────────┘    └──────┬──────────┘
+       │                      │                       │
+       │  ui_push_history     │  ui_push_history      │  lv_timer_handler
+       │  ui_push_inventory   │  ui_get/set_integer   │  ui_tick (eez_flow_tick)
+       │  ui_get/set_integer  │                       │
+       ▼                      ▼                       ▼
+  ┌────────────────────────────────────────────────────────┐
+  │                    ui_bridge.cpp                        │
+  │  (数据转换层：C struct ↔ EEZ-Flow Value/Array)          │
+  └────────────────────────┬───────────────────────────────┘
+                           │
+                           ▼
+  ┌────────────────────────────────────────────────────────┐
+  │                    eez-flow.cpp                         │
+  │  setGlobalVariable() / getGlobalVariable()              │
+  │  🔒 flow_var_mutex 保护（方案 1 加入）                   │
+  │                                                        │
+  │  eez::flow::tick() — Flow 执行引擎                      │
+  │  stopScript() — Flow 结束钩子（方案 3 修复）              │
+  └────────────────────────┬───────────────────────────────┘
+                           │
+                           ▼
+                  g_globalVariables->values[]
+                  (EEZ-Flow 全局变量数组)
+```
+
+### 经验教训
+
+1. **EEZ Studio 自动生成的钩子函数默认是 `assert(false)` 桩**：如果 UI 项目中使用了会触发 Flow/脚本执行的功能，必须自己实现或至少改为空实现。同类的钩子还有 `showKeyboardHook`、`showKeypadHook` 等
+2. **数据绑定 vs Flow 执行**：EEZ-Flow 中 List Widget 的数据绑定不触发 Flow 执行，但某些复杂 UI 组件（如带事件的列表项）会触发。添加新 UI 功能时要注意这个区别
+3. **assert 在嵌入式环境不会退出程序**：`assert(false)` 会进入 `abort()` 死循环，如果发生在 UI 线程上会导致整个屏幕冻结
+4. **调试技巧**：当 UI 卡死时，先检查串口是否有 `assert` 报错，它直接告诉你崩溃的精确位置

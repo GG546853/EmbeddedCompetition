@@ -10,6 +10,8 @@ extern const osThreadAttr_t OutboundTask_attributes;
 
 extern InventoryItem inventory_item_T[28];
 extern InventoryItem inventory_item_D[6];
+extern HistoryRecord history_list[32];
+extern int history_count;
 
 void Outbound_Task(void *argument);
 

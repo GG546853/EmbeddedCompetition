@@ -23,13 +23,10 @@
 #include "isp_api.h"
 #include "isp_param_conf.h"
 #include "cmsis_os.h"
-
-extern I2C_HandleTypeDef hi2c2; /* I2C句柄 */
+#include "sys.h"
 
 extern DCMIPP_HandleTypeDef hdcmipp;
 extern osSemaphoreId_t cam_frame_sem;
-osMutexId_t pd_i2c_mutex;
-const osMutexAttr_t pd_i2c_mutex_attr = { .name = "pd_i2c_mutex" };
 static __IO uint32_t imx335_capture_frame_count = 0;
 static IMX335_Object_t imx335_object = {0};
 static ISP_HandleTypeDef imx335_hisp = {0};
@@ -38,7 +35,7 @@ static int32_t imx335_isp_exposure;
 
 static uint8_t imx335_dcmipp_init(void);
 static int32_t imx335_io_init(void);
-static int32_t imx335_io_deinit(void);
+int32_t imx335_io_deinit(void);
 static int32_t imx335_io_writereg(uint16_t dev_addr, uint16_t reg, uint8_t *data, uint16_t length);
 static int32_t imx335_io_readreg(uint16_t dev_addr, uint16_t reg, uint8_t *data, uint16_t length);
 static int32_t imx335_io_gettick(void);
@@ -271,12 +268,10 @@ static uint8_t imx335_dcmipp_init(void)
 
     IMX335_PWDN(1);
     IMX335_RST(0);
-    HAL_Delay(200);
+    osDelay(200);
 
     IMX335_RST(1);
-    HAL_Delay(3);
-
-    pd_i2c_mutex = osMutexNew(&pd_i2c_mutex_attr);
+    osDelay(50);
 
     hdcmipp.Instance = DCMIPP;
     if (HAL_DCMIPP_Init(&hdcmipp) != HAL_OK)
@@ -385,6 +380,25 @@ static uint8_t imx335_dcmipp_init(void)
     return 0;
 }
 
+/********************************************************************************************************/
+/* 摄像头软 I2C — SCL=PD14, SDA=PC2 */
+
+#define CAM_IIC_SCL_PORT    GPIOD
+#define CAM_IIC_SCL_PIN     GPIO_PIN_14
+#define CAM_IIC_SDA_PORT    GPIOC
+#define CAM_IIC_SDA_PIN     GPIO_PIN_2
+
+#define CAM_SCL_H()   HAL_GPIO_WritePin(CAM_IIC_SCL_PORT, CAM_IIC_SCL_PIN, GPIO_PIN_SET)
+#define CAM_SCL_L()   HAL_GPIO_WritePin(CAM_IIC_SCL_PORT, CAM_IIC_SCL_PIN, GPIO_PIN_RESET)
+#define CAM_SDA_H()   HAL_GPIO_WritePin(CAM_IIC_SDA_PORT, CAM_IIC_SDA_PIN, GPIO_PIN_SET)
+#define CAM_SDA_L()   HAL_GPIO_WritePin(CAM_IIC_SDA_PORT, CAM_IIC_SDA_PIN, GPIO_PIN_RESET)
+#define CAM_SDA_READ  HAL_GPIO_ReadPin(CAM_IIC_SDA_PORT, CAM_IIC_SDA_PIN)
+
+static void cam_iic_delay(void)
+{
+    sys_delay_us(5);
+}
+
 /**
  * @brief   IMX335 IO初始化
  * @param   无
@@ -392,108 +406,221 @@ static uint8_t imx335_dcmipp_init(void)
  */
 static int32_t imx335_io_init(void)
 {
-    return 0;
-}
-
-/**
- * @brief   IMX335 IO反初始化
- * @param   无
- * @retval  执行结果
- */
-static int32_t imx335_io_deinit(void)
-{
-    return 0;
-}
-
-/**
- * @brief   IMX335 IO写寄存器
- * @param   dev_addr: 设备地址
- * @param   reg: 寄存器地址
- * @param   data: 数据
- * @param   length: 数据长度
- * @retval  执行结果
- */
-/* PD14/PD4 与触摸的软件 I2C 共享冲突 → I2C 通信前切到 AF4，通信后还给 GPIO 模式 */
-static void pd14_to_i2c2(void)
-{
     GPIO_InitTypeDef gpio = {0};
-    gpio.Pin = GPIO_PIN_14;
-    gpio.Mode = GPIO_MODE_AF_OD;
-    gpio.Pull = GPIO_NOPULL;
-    gpio.Speed = GPIO_SPEED_FREQ_LOW;
-    gpio.Alternate = GPIO_AF4_I2C2;
-    HAL_GPIO_Init(GPIOD, &gpio);
-}
 
-static void pd14_to_gpio(void)
-{
-    GPIO_InitTypeDef gpio = {0};
-    gpio.Pin = GPIO_PIN_14;
-    gpio.Mode = GPIO_MODE_OUTPUT_PP;
-    gpio.Pull = GPIO_PULLUP;
-    gpio.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-    HAL_GPIO_Init(GPIOD, &gpio);
-    HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_SET);
-}
+    __HAL_RCC_GPIOC_CLK_ENABLE();
+    __HAL_RCC_GPIOD_CLK_ENABLE();
 
-static void pd4_to_i2c2(void)
-{
-    GPIO_InitTypeDef gpio = {0};
-    gpio.Pin = GPIO_PIN_4;
-    gpio.Mode = GPIO_MODE_AF_OD;
-    gpio.Pull = GPIO_NOPULL;
-    gpio.Speed = GPIO_SPEED_FREQ_LOW;
-    gpio.Alternate = GPIO_AF4_I2C2;
-    HAL_GPIO_Init(GPIOD, &gpio);
-}
-
-static void pd4_to_gpio(void)
-{
-    GPIO_InitTypeDef gpio = {0};
-    gpio.Pin = GPIO_PIN_4;
+    /* SCL = PD14, 开漏输出 + 上拉 */
+    gpio.Pin = CAM_IIC_SCL_PIN;
     gpio.Mode = GPIO_MODE_OUTPUT_OD;
     gpio.Pull = GPIO_PULLUP;
     gpio.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-    HAL_GPIO_Init(GPIOD, &gpio);
-    HAL_GPIO_WritePin(GPIOD, GPIO_PIN_4, GPIO_PIN_SET);
-}
+    HAL_GPIO_Init(CAM_IIC_SCL_PORT, &gpio);
 
-static int32_t imx335_io_writereg(uint16_t dev_addr, uint16_t reg, uint8_t *data, uint16_t length)
-{
-    osMutexAcquire(pd_i2c_mutex, osWaitForever);
-    pd14_to_i2c2();
-    pd4_to_i2c2();
-    HAL_StatusTypeDef status = HAL_I2C_Mem_Write(&hi2c2, dev_addr, reg, I2C_MEMADD_SIZE_16BIT, data, length, 1000);
-    pd4_to_gpio();
-    pd14_to_gpio();
-    osMutexRelease(pd_i2c_mutex);
-    return (status == HAL_OK) ? 0 : 1;
+    /* SDA = PC2, 开漏输出 + 上拉 */
+    gpio.Pin = CAM_IIC_SDA_PIN;
+    HAL_GPIO_Init(CAM_IIC_SDA_PORT, &gpio);
+
+    /* 释放总线 */
+    CAM_SCL_H();
+    CAM_SDA_H();
+    cam_iic_delay();
+
+    return 0;
 }
 
 /**
- * @brief   IMX335 IO读寄存器
- * @param   dev_addr: 设备地址
- * @param   reg: 寄存器地址
+ * @brief   IMX335 IO反初始化 — PC2释放为高, PD14切到AF4(I2C2_SCL)给触摸屏
+ * @param   无
+ * @retval  执行结果
+ */
+int32_t imx335_io_deinit(void)
+{
+    GPIO_InitTypeDef gpio = {0};
+
+    /* PC2 保持输出高，释放 SDA */
+    HAL_GPIO_WritePin(CAM_IIC_SDA_PORT, CAM_IIC_SDA_PIN, GPIO_PIN_SET);
+
+    /* PD14 切换到 AF4 给 I2C2 触摸屏用 */
+    gpio.Pin = CAM_IIC_SCL_PIN;
+    gpio.Mode = GPIO_MODE_AF_OD;
+    gpio.Pull = GPIO_NOPULL;
+    gpio.Speed = GPIO_SPEED_FREQ_LOW;
+    gpio.Alternate = GPIO_AF4_I2C2;
+    HAL_GPIO_Init(CAM_IIC_SCL_PORT, &gpio);
+
+    return 0;
+}
+
+static void cam_iic_start(void)
+{
+    CAM_SDA_H();
+    CAM_SCL_H();
+    cam_iic_delay();
+    CAM_SDA_L();
+    cam_iic_delay();
+    CAM_SCL_L();
+    cam_iic_delay();
+}
+
+static void cam_iic_stop(void)
+{
+    CAM_SDA_L();
+    cam_iic_delay();
+    CAM_SCL_H();
+    cam_iic_delay();
+    CAM_SDA_H();
+    cam_iic_delay();
+}
+
+static uint8_t cam_iic_wait_ack(void)
+{
+    uint8_t waittime = 0;
+    uint8_t rack = 0;
+
+    CAM_SDA_H();
+    cam_iic_delay();
+    CAM_SCL_H();
+    cam_iic_delay();
+
+    while (CAM_SDA_READ)
+    {
+        waittime++;
+        if (waittime > 250)
+        {
+            cam_iic_stop();
+            rack = 1;
+            break;
+        }
+        cam_iic_delay();
+    }
+
+    CAM_SCL_L();
+    cam_iic_delay();
+    return rack;
+}
+
+static void cam_iic_send_byte(uint8_t data)
+{
+    uint8_t t;
+
+    for (t = 0; t < 8; t++)
+    {
+        if (data & 0x80)
+            CAM_SDA_H();
+        else
+            CAM_SDA_L();
+        cam_iic_delay();
+        CAM_SCL_H();
+        cam_iic_delay();
+        CAM_SCL_L();
+        data <<= 1;
+    }
+
+    CAM_SDA_H();
+}
+
+static uint8_t cam_iic_read_byte(uint8_t ack)
+{
+    uint8_t i, receive = 0;
+
+    for (i = 0; i < 8; i++)
+    {
+        receive <<= 1;
+        CAM_SCL_H();
+        cam_iic_delay();
+        if (CAM_SDA_READ)
+            receive++;
+        CAM_SCL_L();
+        cam_iic_delay();
+    }
+
+    if (ack)
+        CAM_SDA_H();  /* NACK */
+    else
+        CAM_SDA_L();  /* ACK */
+    cam_iic_delay();
+    CAM_SCL_H();
+    cam_iic_delay();
+    CAM_SCL_L();
+    cam_iic_delay();
+    CAM_SDA_H();
+
+    return receive;
+}
+
+/**
+ * @brief   IMX335 IO写寄存器（软件I2C, SCL=PD14, SDA=PC2）
+ * @param   dev_addr: 设备地址（7位地址左移1位）
+ * @param   reg: 寄存器地址（16bit）
  * @param   data: 数据
  * @param   length: 数据长度
- * @retval  执行结果
+ * @retval  0成功, 1失败
+ */
+static int32_t imx335_io_writereg(uint16_t dev_addr, uint16_t reg, uint8_t *data, uint16_t length)
+{
+    static uint32_t wr_cnt = 0;
+    wr_cnt++;
+
+    cam_iic_start();
+    cam_iic_send_byte(dev_addr & 0xFE);     /* 写命令 */
+    if (cam_iic_wait_ack()) {
+        printf("[I2C] W#%lu ACK fail at dev_addr 0x%02X\r\n", wr_cnt, dev_addr);
+        cam_iic_stop(); return 1;
+    }
+    cam_iic_send_byte(reg >> 8);            /* 寄存器高8位 */
+    if (cam_iic_wait_ack()) {
+        printf("[I2C] W#%lu ACK fail at reg_hi 0x%04X\r\n", wr_cnt, reg);
+        cam_iic_stop(); return 1;
+    }
+    cam_iic_send_byte(reg & 0xFF);          /* 寄存器低8位 */
+    if (cam_iic_wait_ack()) {
+        printf("[I2C] W#%lu ACK fail at reg_lo 0x%04X\r\n", wr_cnt, reg);
+        cam_iic_stop(); return 1;
+    }
+
+    for (uint16_t i = 0; i < length; i++)
+    {
+        cam_iic_send_byte(data[i]);
+        if (cam_iic_wait_ack()) {
+            printf("[I2C] W#%lu ACK fail at reg 0x%04X data[%u]\r\n", wr_cnt, reg, i);
+            cam_iic_stop(); return 1;
+        }
+    }
+
+    cam_iic_stop();
+    return 0;
+}
+
+/**
+ * @brief   IMX335 IO读寄存器（软件I2C, SCL=PD14, SDA=PC2）
+ * @param   dev_addr: 设备地址（7位地址左移1位）
+ * @param   reg: 寄存器地址（16bit）
+ * @param   data: 数据
+ * @param   length: 数据长度
+ * @retval  0成功, 1失败
  */
 static int32_t imx335_io_readreg(uint16_t dev_addr, uint16_t reg, uint8_t *data, uint16_t length)
 {
-    osMutexAcquire(pd_i2c_mutex, osWaitForever);
-    pd14_to_i2c2();
-    pd4_to_i2c2();
-    HAL_StatusTypeDef status = HAL_I2C_Mem_Read(&hi2c2, dev_addr, reg, I2C_MEMADD_SIZE_16BIT, data, length, 1000);
-    pd4_to_gpio();
-    pd14_to_gpio();
-    osMutexRelease(pd_i2c_mutex);
+    cam_iic_start();
+    cam_iic_send_byte(dev_addr & 0xFE);     /* 写命令（先写寄存器地址） */
+    if (cam_iic_wait_ack()) { cam_iic_stop(); return 1; }
+    cam_iic_send_byte(reg >> 8);            /* 寄存器高8位 */
+    if (cam_iic_wait_ack()) { cam_iic_stop(); return 1; }
+    cam_iic_send_byte(reg & 0xFF);          /* 寄存器低8位 */
+    if (cam_iic_wait_ack()) { cam_iic_stop(); return 1; }
 
-    if (status != HAL_OK)
+    cam_iic_start();
+    cam_iic_send_byte(dev_addr | 0x01);     /* 读命令 */
+    if (cam_iic_wait_ack()) { cam_iic_stop(); return 1; }
+
+    for (uint16_t i = 0; i < length; i++)
     {
-        uint32_t i2c_error = hi2c2.ErrorCode;
-        (void)i2c_error;
-        return 1;
+        data[i] = cam_iic_read_byte(i == (length - 1) ? 1 : 0);
     }
+
+    cam_iic_stop();
     return 0;
 }
 

@@ -21,8 +21,10 @@
 #include "string.h"
 #include "rgblcd.h"
 #include "touch.h"
-#include "ctiic.h"
 #include "gt9xxx.h"
+#include "i2c.h"
+
+extern I2C_HandleTypeDef hi2c2;
 //#include "../SYS/sys.h"
 
 
@@ -38,26 +40,10 @@ uint8_t g_gt_tnum = 5;      /* 默认支持的触摸屏点数(5点触摸) */
  */
 uint8_t gt9xxx_wr_reg(uint16_t reg, uint8_t *buf, uint8_t len)
 {
-    uint8_t i;
-    uint8_t ret = 0;
-    ct_iic_start();
-    ct_iic_send_byte(GT9XXX_CMD_WR);    /* 发送写命令 */
-    ct_iic_wait_ack();
-    ct_iic_send_byte(reg >> 8);         /* 发送高8位地址 */
-    ct_iic_wait_ack();
-    ct_iic_send_byte(reg & 0XFF);       /* 发送低8位地址 */
-    ct_iic_wait_ack();
-
-    for (i = 0; i < len; i++)
-    {
-        ct_iic_send_byte(buf[i]);       /* 发数据 */
-        ret = ct_iic_wait_ack();
-
-        if (ret)break;
-    }
-
-    ct_iic_stop();  /* 产生一个停止条件 */
-    return ret;
+    if (HAL_I2C_Mem_Write(&hi2c2, GT9XXX_CMD_WR, reg, I2C_MEMADD_SIZE_16BIT, buf, len, 1000) == HAL_OK)
+        return 0;
+    else
+        return 1;
 }
 
 /**
@@ -69,24 +55,7 @@ uint8_t gt9xxx_wr_reg(uint16_t reg, uint8_t *buf, uint8_t len)
  */
 void gt9xxx_rd_reg(uint16_t reg, uint8_t *buf, uint8_t len)
 {
-    uint8_t i;
-    ct_iic_start();
-    ct_iic_send_byte(GT9XXX_CMD_WR);    /* 发送写命令 */
-    ct_iic_wait_ack();
-    ct_iic_send_byte(reg >> 8);         /* 发送高8位地址 */
-    ct_iic_wait_ack();
-    ct_iic_send_byte(reg & 0XFF);       /* 发送低8位地址 */
-    ct_iic_wait_ack();
-    ct_iic_start();
-    ct_iic_send_byte(GT9XXX_CMD_RD);    /* 发送读命令 */
-    ct_iic_wait_ack();
-
-    for (i = 0; i < len; i++)
-    {
-        buf[i] = ct_iic_read_byte(i == (len - 1) ? 0 : 1);  /* 读取数据 */
-    }
-
-    ct_iic_stop();  /* 产生一个停止条件 */
+    HAL_I2C_Mem_Read(&hi2c2, GT9XXX_CMD_WR, reg, I2C_MEMADD_SIZE_16BIT, buf, len, 1000);
 }
 
 /**
@@ -114,7 +83,6 @@ uint8_t gt9xxx_init(void)
     gpio_init_struct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;     /* 高速 */
     HAL_GPIO_Init(GT9XXX_INT_GPIO_PORT, &gpio_init_struct); /* 初始化INT引脚 */
 
-    ct_iic_init();      /* 初始化电容屏的I2C总线 */
     GT9XXX_RST(0);      /* 复位 */
     HAL_Delay(10);
     GT9XXX_RST(1);      /* 释放复位 */

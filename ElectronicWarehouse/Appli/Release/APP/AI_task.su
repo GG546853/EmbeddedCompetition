@@ -1,2 +1,2 @@
 ../APP/AI_task.c:29:13:fill_rect.constprop	40	static
-../APP/AI_task.c:263:6:AI_Task	672	static,ignoring_inline_asm
+../APP/AI_task.c:263:6:AI_Task	688	static,ignoring_inline_asm

@@ -6,6 +6,7 @@
 
 typedef struct {
     char pa[32];
+    char pc[32];
     char name[48];
     char type[64];
     uint16_t quantity;
@@ -27,7 +28,20 @@ typedef struct {
     float temperature_th;
     float humidity_th;
     bool Scan_state;
+    int Count;
+    char User[32];
 } SystemState;
+
+
+typedef struct {
+    char time[32];
+    char action[8];
+    char pc[32];
+    char user[32];
+    uint8_t cabinet_id;
+    uint16_t quantity;
+} HistoryRecord;
+
 
 extern SystemState Cabinet;
 

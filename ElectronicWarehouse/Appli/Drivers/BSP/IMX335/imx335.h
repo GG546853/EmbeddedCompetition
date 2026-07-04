@@ -45,6 +45,7 @@
 
 /* 函数声明 */
 uint8_t imx335_init(void);                                                      /* 初始化IMX335 */
+int32_t imx335_io_deinit(void);                                                /* 释放IMX335 I2C总线给触摸屏 */
 uint8_t imx335_get_capture(uint32_t address);                                   /* IMX335采集图像 */
 uint8_t imx335_start_capture(uint32_t address);                                 /* 启动IMX335采集图像 */
 void imx335_stop_capture(void);                                                 /* 停止IMX335采集图像 */

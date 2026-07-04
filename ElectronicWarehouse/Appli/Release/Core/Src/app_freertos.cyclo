@@ -1,6 +1,6 @@
-../Core/Src/app_freertos.c:186:6:StartDefaultTask	1
-../Core/Src/app_freertos.c:88:6:vApplicationMallocFailedHook	1
-../Core/Src/app_freertos.c:104:6:vApplicationStackOverflowHook	1
-../Core/Src/app_freertos.c:114:13:configureTimerForRunTimeStats	1
-../Core/Src/app_freertos.c:119:22:getRunTimeCounterValue	1
-../Core/Src/app_freertos.c:130:6:MX_FREERTOS_Init	1
+../Core/Src/app_freertos.c:197:6:StartDefaultTask	2
+../Core/Src/app_freertos.c:98:6:vApplicationMallocFailedHook	1
+../Core/Src/app_freertos.c:114:6:vApplicationStackOverflowHook	1
+../Core/Src/app_freertos.c:124:13:configureTimerForRunTimeStats	1
+../Core/Src/app_freertos.c:129:22:getRunTimeCounterValue	1
+../Core/Src/app_freertos.c:140:6:MX_FREERTOS_Init	1

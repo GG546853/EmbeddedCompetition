@@ -70,6 +70,7 @@ extern void handle_face_clear(const uint8_t *payload, uint8_t len);
 extern void handle_alert(const uint8_t *payload, uint8_t len);
 extern void handle_heartbeat(const uint8_t *payload, uint8_t len);
 extern void handle_inventory(const uint8_t *payload, uint8_t len);
+extern void handle_time(const uint8_t *payload, uint8_t len);
 extern void handle_store(const uint8_t *payload, uint8_t len);
 
 static const FrameDispatchEntry dispatch_table[] = {
@@ -80,6 +81,7 @@ static const FrameDispatchEntry dispatch_table[] = {
     { FRAME_TYPE_HEARTBEAT,  handle_heartbeat },
     { FRAME_TYPE_INVENTORY,  handle_inventory },
     { FRAME_TYPE_STORE,      handle_store },
+    { FRAME_TYPE_TIME,       handle_time },
 };
 
 void uart4_dispatch_frame(uint8_t type, const uint8_t *payload, uint8_t len)
@@ -100,7 +102,6 @@ static void uart4_send_frame(uint8_t type, const uint8_t *payload, uint8_t len)
     uint8_t frame[259];
     uint8_t frame_len = protocol_build_frame(type, payload, len, frame);
     HAL_UART_Transmit(&huart4, frame, frame_len, 100);
-    HAL_UART_AbortReceive(&huart4);
 }
 
 void uart4_send_temperature(float val)

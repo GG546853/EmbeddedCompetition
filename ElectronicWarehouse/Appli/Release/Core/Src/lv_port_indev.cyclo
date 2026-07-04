@@ -1,2 +1,2 @@
-../Core/Src/lv_port_indev.c:9:13:touchpad_read	4
-../Core/Src/lv_port_indev.c:27:6:lv_port_indev_init	1
+../Core/Src/lv_port_indev.c:6:13:touchpad_read	2
+../Core/Src/lv_port_indev.c:19:6:lv_port_indev_init	1

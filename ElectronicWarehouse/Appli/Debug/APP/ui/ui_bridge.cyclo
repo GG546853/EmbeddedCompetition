@@ -1,0 +1,69 @@
+../APP/ui/eez-flow.h:918:5:eez::Value::Value()	1
+../APP/ui/eez-flow.h:922:2:eez::Value::Value(int)	1
+../APP/ui/eez-flow.h:942:5:eez::Value::Value(int, eez::ValueType)	1
+../APP/ui/eez-flow.h:1006:2:eez::Value::Value(const eez::Value&)	1
+../APP/ui/eez-flow.h:1011:2:eez::Value::~Value()	1
+../APP/ui/eez-flow.h:1014:10:void eez::Value::freeRef()	3
+../APP/ui/eez-flow.h:1021:12:eez::Value& eez::Value::operator=(const eez::Value&)	4
+../APP/ui/eez-flow.h:1097:10:bool eez::Value::isArray() const	4
+../APP/ui/eez-flow.h:1151:6:int eez::Value::getInt() const	2
+../APP/ui/eez-flow.h:1349:14:eez::Value eez::IntegerValue(int32_t)	1
+../APP/ui/eez-flow.h:1353:14:eez::Value eez::StringValue(const char*)	1
+../APP/ui/eez-flow.h:3030:14:utf8_int8_t* utf8cat(utf8_int8_t*, const utf8_int8_t*)	3
+../APP/ui/eez-flow.h:3110:14:utf8_int8_t* utf8cpy(utf8_int8_t*, const utf8_int8_t*)	2
+../APP/ui/eez-flow.h:3177:14:utf8_int8_t* utf8dup(const utf8_int8_t*)	1
+../APP/ui/eez-flow.h:3181:14:utf8_int8_t* utf8dup_ex(const utf8_int8_t*, utf8_int8_t* (*)(utf8_int8_t*, size_t), utf8_int8_t*)	4
+../APP/ui/eez-flow.h:3324:14:utf8_int8_t* utf8ncat(utf8_int8_t*, const utf8_int8_t*, size_t)	5
+../APP/ui/eez-flow.h:3362:14:utf8_int8_t* utf8ncpy(utf8_int8_t*, const utf8_int8_t*, size_t)	10
+../APP/ui/eez-flow.h:3398:14:utf8_int8_t* utf8ndup(const utf8_int8_t*, size_t)	1
+../APP/ui/eez-flow.h:3402:14:utf8_int8_t* utf8ndup_ex(const utf8_int8_t*, size_t, utf8_int8_t* (*)(utf8_int8_t*, size_t), utf8_int8_t*)	7
+../APP/ui/eez-flow.h:3557:30:constexpr size_t utf8size(const utf8_int8_t*)	1
+../APP/ui/eez-flow.h:3561:30:constexpr size_t utf8size_lazy(const utf8_int8_t*)	1
+../APP/ui/eez-flow.h:3565:30:constexpr size_t utf8nsize_lazy(const utf8_int8_t*, size_t)	3
+../APP/ui/eez-flow.h:3811:5:int utf8makevalid(utf8_int8_t*, utf8_int32_t)	13
+../APP/ui/eez-flow.h:3877:1:constexpr utf8_int8_t* utf8codepoint(const utf8_int8_t*, utf8_int32_t*)	4
+../APP/ui/eez-flow.h:3918:30:constexpr size_t utf8codepointsize(utf8_int32_t)	4
+../APP/ui/eez-flow.h:3930:14:utf8_int8_t* utf8catcodepoint(utf8_int8_t*, utf8_int32_t, size_t)	8
+../APP/ui/eez-flow.h:3982:6:void utf8lwr(utf8_int8_t*)	3
+../APP/ui/eez-flow.h:3999:6:void utf8upr(utf8_int8_t*)	3
+../APP/ui/eez-flow.h:4016:36:constexpr utf8_int32_t utf8lwrcodepoint(utf8_int32_t)	97
+../APP/ui/eez-flow.h:4182:36:constexpr utf8_int32_t utf8uprcodepoint(utf8_int32_t)	99
+../APP/ui/structs.h:45:5:CabinetValue::CabinetValue()	1
+../APP/ui/structs.h:49:5:CabinetValue::CabinetValue(eez::Value)	1
+../APP/ui/structs.h:55:17:const char* CabinetValue::name()	1
+../APP/ui/structs.h:58:10:void CabinetValue::name(const char*)	1
+../APP/ui/structs.h:62:9:int CabinetValue::qty()	1
+../APP/ui/structs.h:65:10:void CabinetValue::qty(int)	1
+../APP/ui/structs.h:69:17:const char* CabinetValue::pa()	1
+../APP/ui/structs.h:72:10:void CabinetValue::pa(const char*)	1
+../APP/ui/structs.h:76:17:const char* CabinetValue::spec()	1
+../APP/ui/structs.h:79:10:void CabinetValue::spec(const char*)	1
+../APP/ui/structs.h:83:17:const char* CabinetValue::pc()	1
+../APP/ui/structs.h:86:10:void CabinetValue::pc(const char*)	1
+../APP/ui/structs.h:99:5:LogEntryValue::LogEntryValue(eez::Value)	1
+../APP/ui/structs.h:105:17:const char* LogEntryValue::time()	1
+../APP/ui/structs.h:112:17:const char* LogEntryValue::user()	1
+../APP/ui/structs.h:119:17:const char* LogEntryValue::item_name()	1
+../APP/ui/structs.h:126:9:int LogEntryValue::qty()	1
+../APP/ui/structs.h:133:17:const char* LogEntryValue::type()	1
+../APP/ui/structs.h:140:9:int LogEntryValue::cabinet_id()	1
+../APP/ui/ui_bridge.cpp:6:6:void ui_set_integer(int, int)	1
+../APP/ui/ui_bridge.cpp:10:5:int ui_get_integer(int)	1
+../APP/ui/eez-flow.h:1355:8:eez::ArrayOf<CabinetValue, 81920>::~ArrayOf()	1
+../APP/ui/structs.h:42:8:CabinetValue::~CabinetValue()	1
+../APP/ui/ui_bridge.cpp:14:6:void ui_sync_cabinets(const InventoryItem*, int)	2
+../APP/ui/ui_bridge.cpp:29:6:void ui_load_cabinets(InventoryItem*, int)	4
+../APP/ui/ui_bridge.cpp:45:5:int ui_get_log_count()	2
+../APP/ui/eez-flow.h:1355:8:eez::ArrayOf<LogEntryValue, 81921>::~ArrayOf()	1
+../APP/ui/structs.h:92:8:LogEntryValue::~LogEntryValue()	1
+../APP/ui/ui_bridge.cpp:51:6:void ui_get_log_entry(int, char*, char*, char*, int*, char*, int*)	4
+../APP/ui/eez-flow.h:216:14:static void eez::ObjectAllocator<T>::deallocate(T*) [with T = eez::Ref]	1
+../APP/ui/eez-flow.h:1357:5:eez::ArrayOf<T, ARRAY_TYPE>::ArrayOf(size_t) [with T = CabinetValue; long unsigned int ARRAY_TYPE = 81920]	1
+../APP/ui/eez-flow.h:1369:10:void eez::ArrayOf<T, ARRAY_TYPE>::at(int, const T&) [with T = CabinetValue; long unsigned int ARRAY_TYPE = 81920]	1
+../APP/ui/eez-flow.h:1361:5:eez::ArrayOf<T, ARRAY_TYPE>::operator eez::Value() const [with T = CabinetValue; long unsigned int ARRAY_TYPE = 81920]	1
+../APP/ui/eez-flow.h:1360:5:eez::ArrayOf<T, ARRAY_TYPE>::ArrayOf(eez::Value) [with T = CabinetValue; long unsigned int ARRAY_TYPE = 81920]	1
+../APP/ui/eez-flow.h:1363:12:size_t eez::ArrayOf<T, ARRAY_TYPE>::size() [with T = CabinetValue; long unsigned int ARRAY_TYPE = 81920]	1
+../APP/ui/eez-flow.h:1366:7:T eez::ArrayOf<T, ARRAY_TYPE>::at(int) [with T = CabinetValue; long unsigned int ARRAY_TYPE = 81920]	1
+../APP/ui/eez-flow.h:1360:5:eez::ArrayOf<T, ARRAY_TYPE>::ArrayOf(eez::Value) [with T = LogEntryValue; long unsigned int ARRAY_TYPE = 81921]	1
+../APP/ui/eez-flow.h:1363:12:size_t eez::ArrayOf<T, ARRAY_TYPE>::size() [with T = LogEntryValue; long unsigned int ARRAY_TYPE = 81921]	1
+../APP/ui/eez-flow.h:1366:7:T eez::ArrayOf<T, ARRAY_TYPE>::at(int) [with T = LogEntryValue; long unsigned int ARRAY_TYPE = 81921]	1

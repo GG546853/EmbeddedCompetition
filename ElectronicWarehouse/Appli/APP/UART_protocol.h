@@ -25,6 +25,7 @@
 #define FRAME_TYPE_HEARTBEAT  0x05
 #define FRAME_TYPE_INVENTORY  0x06
 #define FRAME_TYPE_STORE      0x07
+#define FRAME_TYPE_TIME       0x08
 
 uint8_t protocol_build_frame(uint8_t type, const uint8_t *payload, uint8_t len, uint8_t *out);
 

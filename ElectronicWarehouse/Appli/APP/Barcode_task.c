@@ -94,6 +94,7 @@ void Barcode_Task(void *argument)
                                                        : (uint8_t)(28 + dup_idx);
                     history_add(inventory_item.pc, inventory_item.quantity, cab_id);
                     ui_push_history(history_list, history_count);
+                    ui_set_integer(FLOW_GLOBAL_VARIABLE_HISTORY_COUNT, history_count);
                 } else {
                     ui_set_string(FLOW_GLOBAL_VARIABLE_TEMP_NAME, inventory_item.name);
                     ui_set_integer(FLOW_GLOBAL_VARIABLE_TEMP_QTY,  inventory_item.quantity);
@@ -119,6 +120,7 @@ void Barcode_Task(void *argument)
                             history_add(inventory_item.pc, inventory_item.quantity, (uint8_t)cid);
                             ui_set_integer(FLOW_GLOBAL_VARIABLE_CID, -1);
                             ui_push_history(history_list, history_count);
+                            ui_set_integer(FLOW_GLOBAL_VARIABLE_HISTORY_COUNT, history_count);
                             break;
                         }
                         vTaskDelay(pdMS_TO_TICKS(50));

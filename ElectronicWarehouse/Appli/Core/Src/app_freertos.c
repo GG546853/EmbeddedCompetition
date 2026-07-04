@@ -71,7 +71,7 @@ osThreadId_t defaultTaskHandle;
 const osThreadAttr_t defaultTask_attributes = {
   .name = "defaultTask",
   .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 128 * 4
+  .stack_size = 1024 * 4
 };
 
 /* Private function prototypes -----------------------------------------------*/
@@ -203,21 +203,17 @@ void StartDefaultTask(void *argument)
 	//osThreadNew(Electromagnet_Task, (void *)(uintptr_t)0x30, &ElectromagnetTask_attributes);
   for(;;)
   {
-//    printf("[PC] T: ");
-//    for (int i = 0; i < 28; i++) {
-//        if (inventory_item_T[i].pc[0] == '\0')
-//            printf("0 ");
-//        else
-//            printf("%s ", inventory_item_T[i].pc);
-//    }
-//    printf("| D: ");
-//    for (int i = 0; i < 6; i++) {
-//        if (inventory_item_D[i].pc[0] == '\0')
-//            printf("0 ");
-//        else
-//            printf("%s ", inventory_item_D[i].pc);
-//    }
-//    printf("\r\n");
+    printf("[History] %d records:\r\n", history_count);
+    for (int i = 0; i < history_count; i++) {
+        printf("  [%d] t:%s u:%s pc:%s qty:%u act:%s cab:%d\r\n",
+               i,
+               history_list[i].time,
+               history_list[i].user,
+               history_list[i].pc,
+               history_list[i].quantity,
+               history_list[i].action,
+               history_list[i].cabinet_id);
+    }
 
     osDelay(2000);
   }

@@ -161,11 +161,7 @@ extern "C" void action_givetime(lv_event_t * e)
         entry.time(time_str);
     }
 
-    int new_count = count + 1;
-    eez::flow::setGlobalVariable(FLOW_GLOBAL_VARIABLE_HISTORY_COUNT, eez::Value(new_count));
-
-    if (new_count > history_count) {
-        history_count = new_count;
-    }
-    ui_pull_history(history_list, new_count);
+    // HISTORY_COUNT increment moved to Flow step #11
+    history_count = size;
+    ui_pull_history(history_list, history_count);
 }

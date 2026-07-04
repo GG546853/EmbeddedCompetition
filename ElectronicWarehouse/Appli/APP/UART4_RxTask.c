@@ -265,6 +265,7 @@ void handle_store(const uint8_t *payload, uint8_t len)
 
     history_add(pending_item.pc, pending_item.quantity, cab_id);
     ui_push_history(history_list, history_count);
+    ui_set_integer(FLOW_GLOBAL_VARIABLE_HISTORY_COUNT, history_count);
 
     pending_store = 0;
 }

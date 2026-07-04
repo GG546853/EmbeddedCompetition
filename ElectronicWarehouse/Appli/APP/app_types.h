@@ -29,8 +29,19 @@ typedef struct {
     float humidity_th;
     bool Scan_state;
     int Count;
-
+    char User[32];
 } SystemState;
+
+
+typedef struct {
+    char time[32];
+    char action[8];
+    char pc[32];
+    char user[32];
+    uint8_t cabinet_id;
+    uint16_t quantity;
+} HistoryRecord;
+
 
 extern SystemState Cabinet;
 

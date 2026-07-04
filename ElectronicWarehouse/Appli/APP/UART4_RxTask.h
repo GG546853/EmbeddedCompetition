@@ -37,5 +37,6 @@ void on_inventory_app(const InventoryItem *item);
 
 void inventory_store_to_slot(const InventoryItem *item, const char *location);
 void inventory_add_quantity(const InventoryItem *item, const char *location);
+void history_add(const char *pc, uint16_t qty, uint8_t cab_id);
 
 #endif

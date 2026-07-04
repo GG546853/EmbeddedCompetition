@@ -9,6 +9,7 @@
 #include "vars.h"
 #include "ui_bridge.h"
 #include "app_types.h"
+#include <sys/time.h>
 
 
 UBaseType_t g_lv_stack_high_water;  // 启动后剩余栈空间（单位：word，4 字节）

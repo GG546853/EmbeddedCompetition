@@ -3,6 +3,7 @@
 #include "UART4_RxTask.h"
 #include "Outbound_task.h"
 #include "ui_bridge.h"
+#include "vars.h"
 #include <stdio.h>
 #include <string.h>
 #include "FreeRTOS.h"
@@ -19,7 +20,7 @@ osThreadId_t Barcode_TaskHandle;
 const osThreadAttr_t BarcodeTask_attributes = {
   .name = "BarcodeTask",
   .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 512 * 8
+  .stack_size = 1024 * 8
 };
 
 void UART5_RxCallback(uint8_t byte)
@@ -38,7 +39,7 @@ void UART5_IDLE_Callback(void)
 
 void Barcode_Task(void *argument)
 {
-	osDelay(500);
+	osDelay(3500);
     __HAL_UART_ENABLE_IT(&huart5, UART_IT_RXNE);
     __HAL_UART_ENABLE_IT(&huart5, UART_IT_IDLE);
 
@@ -62,13 +63,67 @@ void Barcode_Task(void *argument)
             if (xSemaphoreTake(inventory_sem, pdMS_TO_TICKS(15000)) == pdTRUE) {
                 printf("[Barcode] resp: %s\r\n", uart4_resp_str);
 
-                static int next_t = 0;
-                char loc[4];
-                sprintf(loc, "T%02d", next_t);
-                inventory_store_to_slot(&inventory_item, loc);
-                ui_sync_cabinets(inventory_item_T, 28);
-                uart4_send_store(loc);
-                next_t = (next_t + 1) % 28;
+                int  dup_idx = -1;
+                char dup_type = 0;
+
+                for (int i = 0; i < 28; i++) {
+                    if (inventory_item_T[i].pc[0] != '\0' &&
+                        strcmp(inventory_item_T[i].pc, inventory_item.pc) == 0) {
+                        dup_idx  = i;
+                        dup_type = 'T';
+                        break;
+                    }
+                }
+                if (dup_idx < 0) {
+                    for (int i = 0; i < 6; i++) {
+                        if (inventory_item_D[i].pc[0] != '\0' &&
+                            strcmp(inventory_item_D[i].pc, inventory_item.pc) == 0) {
+                            dup_idx  = i;
+                            dup_type = 'D';
+                            break;
+                        }
+                    }
+                }
+
+                if (dup_idx >= 0) {
+                    char loc[4];
+                    sprintf(loc, "%c%02d", dup_type, dup_idx);
+                    inventory_add_quantity(&inventory_item, loc);
+                    ui_push_inventory(inventory_item_T, 28, inventory_item_D, 6);
+                    uint8_t cab_id = (dup_type == 'T') ? (uint8_t)dup_idx
+                                                       : (uint8_t)(28 + dup_idx);
+                    history_add(inventory_item.pc, inventory_item.quantity, cab_id);
+                    ui_push_history(history_list, history_count);
+                } else {
+                    ui_set_string(FLOW_GLOBAL_VARIABLE_TEMP_NAME, inventory_item.name);
+                    ui_set_integer(FLOW_GLOBAL_VARIABLE_TEMP_QTY,  inventory_item.quantity);
+                    ui_set_string(FLOW_GLOBAL_VARIABLE_TEMP_PC,   inventory_item.pc);
+                    ui_set_string(FLOW_GLOBAL_VARIABLE_TEMP_PA,   inventory_item.pa);
+                    ui_set_string(FLOW_GLOBAL_VARIABLE_TEMP_SPEC, inventory_item.type);
+
+                    ui_set_integer(FLOW_GLOBAL_VARIABLE_CID, -1);
+                    ui_set_integer(FLOW_GLOBAL_VARIABLE_SHOW_SELECT_DIALOG, 1);
+
+                    while (1) {
+                        int cid = ui_get_integer(FLOW_GLOBAL_VARIABLE_CID);
+                        if (cid != -1) {
+                            char loc[4];
+                            if (cid < 28) {
+                                sprintf(loc, "T%02d", cid % 100);
+                            } else {
+                                sprintf(loc, "D%02d", (cid - 28) % 100);
+                            }
+                            inventory_store_to_slot(&inventory_item, loc);
+                            ui_push_inventory(inventory_item_T, 28, inventory_item_D, 6);
+                            uart4_send_store(loc);
+                            history_add(inventory_item.pc, inventory_item.quantity, (uint8_t)cid);
+                            ui_set_integer(FLOW_GLOBAL_VARIABLE_CID, -1);
+                            ui_push_history(history_list, history_count);
+                            break;
+                        }
+                        vTaskDelay(pdMS_TO_TICKS(50));
+                    }
+                }
             } else {
                 printf("[Barcode] UART4 timeout\r\n");
             }

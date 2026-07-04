@@ -13,7 +13,8 @@ const osThreadAttr_t OutboundTask_attributes = {
 InventoryItem inventory_item_T[28];
 InventoryItem inventory_item_D[6];
 
-
+HistoryRecord history_list[32];
+int history_count;
 
 void Outbound_Task(void *argument)
 {

@@ -11,6 +11,7 @@
 #include "Outbound_task.h"
 #include "vars.h"
 #include "ui_bridge.h"
+#include "Outbound_task.h"
 
 osThreadId_t UART4_RxTaskHandle;
 const osThreadAttr_t UART4_RxTask_attributes = {
@@ -20,6 +21,8 @@ const osThreadAttr_t UART4_RxTask_attributes = {
 };
 
 InventoryItem  inventory_item;
+HistoryRecord history_list_t;
+
 char           uart4_resp_str[512];
 volatile uint32_t last_heartbeat_tick;
 volatile uint8_t  esp32_online;
@@ -249,11 +252,19 @@ void handle_store(const uint8_t *payload, uint8_t len)
 
     uint8_t flag = payload[2];
 
+    uint8_t cab_id = (location[0] == 'T') ? (uint8_t)atoi(&location[1])
+                                          : (uint8_t)(28 + atoi(&location[1]));
+
     if (flag == 0x00) {
         inventory_store_to_slot(&pending_item, location);
+        ui_push_inventory(inventory_item_T, 28, inventory_item_D, 6);
     } else if (flag == 0x01) {
         inventory_add_quantity(&pending_item, location);
+        ui_push_inventory(inventory_item_T, 28, inventory_item_D, 6);
     }
+
+    history_add(pending_item.pc, pending_item.quantity, cab_id);
+    ui_push_history(history_list, history_count);
 
     pending_store = 0;
 }
@@ -304,11 +315,23 @@ void inventory_add_quantity(const InventoryItem *item, const char *location)
     }
 }
 
+void history_add(const char *pc, uint16_t qty, uint8_t cab_id)
+{
+    HistoryRecord *r = &history_list[history_count];
+    get_current_time_str(r->time, sizeof(r->time));
+    strcpy(r->action, "put");
+    strcpy(r->pc, pc);
+    strcpy(r->user, Cabinet.User);
+    r->quantity   = qty;
+    r->cabinet_id = cab_id;
+    history_count++;
+}
+
 /* ---- UART4 Receive Task ---- */
 
 void UART4_RxTask(void *argument)
 {
-    osDelay(500);  // wait for LVGL UI init
+    osDelay(3500);  // wait for LVGL UI init
 
     __HAL_UART_ENABLE_IT(&huart4, UART_IT_RXNE);
 

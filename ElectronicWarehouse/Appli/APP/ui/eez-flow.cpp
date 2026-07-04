@@ -10,6 +10,14 @@
  */
 #include "eez-flow.h"
 
+typedef void * osMutexId_t;
+#define osWaitForever 0xFFFFFFFFU
+extern "C" {
+int32_t osMutexAcquire(osMutexId_t mutex_id, uint32_t timeout);
+int32_t osMutexRelease(osMutexId_t mutex_id);
+}
+extern osMutexId_t flow_var_mutex;
+
 // -----------------------------------------------------------------------------
 // core/action.cpp
 // -----------------------------------------------------------------------------
@@ -6276,15 +6284,19 @@ Value getGlobalVariable(uint32_t globalVariableIndex) {
     return getGlobalVariable(g_mainAssets, globalVariableIndex);
 }
 Value getGlobalVariable(Assets *assets, uint32_t globalVariableIndex) {
+    osMutexAcquire(flow_var_mutex, osWaitForever);
+    Value result;
     if (globalVariableIndex < assets->flowDefinition->globalVariables.count) {
-        return g_globalVariables && !assets->external ? g_globalVariables->values[globalVariableIndex] : *assets->flowDefinition->globalVariables[globalVariableIndex];
+        result = g_globalVariables && !assets->external ? g_globalVariables->values[globalVariableIndex] : *assets->flowDefinition->globalVariables[globalVariableIndex];
     }
-    return Value();
+    osMutexRelease(flow_var_mutex);
+    return result;
 }
 void setGlobalVariable(uint32_t globalVariableIndex, const Value &value) {
     setGlobalVariable(g_mainAssets, globalVariableIndex, value);
 }
 void setGlobalVariable(Assets *assets, uint32_t globalVariableIndex, const Value &value) {
+    osMutexAcquire(flow_var_mutex, osWaitForever);
     if (globalVariableIndex < assets->flowDefinition->globalVariables.count) {
         if (g_globalVariables && !assets->external) {
             g_globalVariables->values[globalVariableIndex] = value;
@@ -6292,6 +6304,7 @@ void setGlobalVariable(Assets *assets, uint32_t globalVariableIndex, const Value
             *assets->flowDefinition->globalVariables[globalVariableIndex] = value;
         }
     }
+    osMutexRelease(flow_var_mutex);
 }
 Value getUserProperty(unsigned propertyIndex) {
     Value value;
@@ -6371,7 +6384,7 @@ static void showKeypad(Value label, Value initialValue, Value min, Value max, Un
     EEZ_UNUSED(onCancel);
 }
 static void stopScript() {
-	assert(false);
+
 }
 static void scpiComponentInit() {
 }

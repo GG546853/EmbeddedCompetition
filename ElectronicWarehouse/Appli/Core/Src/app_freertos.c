@@ -34,6 +34,7 @@
 #include "Aht10_task.h"
 #include "tim.h"
 #include "UART4_RxTask.h"
+#include "Outbound_task.h"
 
 #include <stdio.h>
 #include "imx335.h"
@@ -42,6 +43,8 @@
 #include "gt9xxx.h"
 #include "semphr.h"
 #include "app_types.h"
+
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -84,6 +87,10 @@ const osSemaphoreAttr_t cam_frame_sem_attributes = {
 osMutexId_t i2c2_mutex;
 const osMutexAttr_t i2c2_mutex_attributes = {
   .name = "i2c2_mutex"
+};
+osMutexId_t flow_var_mutex;
+const osMutexAttr_t flow_var_mutex_attributes = {
+  .name = "flow_var_mutex"
 };
 /* USER CODE END FunctionPrototypes */
 
@@ -138,6 +145,7 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN RTOS_MUTEX */
   /* add mutexes, ... */
   i2c2_mutex = osMutexNew(&i2c2_mutex_attributes);
+  flow_var_mutex = osMutexNew(&flow_var_mutex_attributes);
   /* USER CODE END RTOS_MUTEX */
 
   /* USER CODE BEGIN RTOS_SEMAPHORES */
@@ -160,17 +168,17 @@ void MX_FREERTOS_Init(void) {
   /* add threads, ... */
 
   //RGBLED_TaskHandle = osThreadNew(RGBLED_Task, (void *)(uintptr_t)0, &RGBLEDTask_attributes);
-  Sensor_TaskHandle = osThreadNew(Sensor_Task, NULL, &SensorTask_attributes);
-  //LV_TaskHandle = osThreadNew(LVGL_Task, NULL, &LVTask_attributes);
-  AITaskHandle = osThreadNew(AI_Task, NULL, &AITask_attributes);
+  //Sensor_TaskHandle = osThreadNew(Sensor_Task, NULL, &SensorTask_attributes);
+  LV_TaskHandle = osThreadNew(LVGL_Task, NULL, &LVTask_attributes);
+  //AITaskHandle = osThreadNew(AI_Task, NULL, &AITask_attributes);
   //Electromagnet_TaskHandle = osThreadNew(Electromagnet_Task, NULL, &ElectromagnetTask_attributes);
-  //Barcode_TaskHandle = osThreadNew(Barcode_Task, NULL, &BarcodeTask_attributes);
+  Barcode_TaskHandle = osThreadNew(Barcode_Task, NULL, &BarcodeTask_attributes);
   //Printer_TaskHandle = osThreadNew(Printer_Task, NULL, &PrinterTask_attributes);
   //Outbound_TaskHandle = osThreadNew(Outbound_Task, NULL, &OutboundTask_attributes);
 
 
   //Aht10_TaskHandle = osThreadNew(Aht10_Task, NULL, &Aht10Task_attributes);
-  //UART4_RxTaskHandle = osThreadNew(UART4_RxTask, NULL, &UART4_RxTask_attributes);
+  UART4_RxTaskHandle = osThreadNew(UART4_RxTask, NULL, &UART4_RxTask_attributes);
   //VL53L1X_TaskHandle = osThreadNew(VL53L1X_Task, NULL, &VL53L1XTask_attributes);
   /* USER CODE END RTOS_THREADS */
 
@@ -189,15 +197,29 @@ void MX_FREERTOS_Init(void) {
 void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN defaultTask */
+	strcpy(Cabinet.User, "ZS");
 	//char now[32];
 	//osThreadNew(RGBLED_Task, (void *)(uintptr_t)0xA800000, &RGBLEDTask_attributes);
 	//osThreadNew(Electromagnet_Task, (void *)(uintptr_t)0x30, &ElectromagnetTask_attributes);
   for(;;)
   {
-	//get_current_time_str(now, sizeof(now));
-	//printf("%s\r\n",now);
-  	HAL_GPIO_TogglePin(GPIOG,GPIO_PIN_10);
-    osDelay(1000);
+//    printf("[PC] T: ");
+//    for (int i = 0; i < 28; i++) {
+//        if (inventory_item_T[i].pc[0] == '\0')
+//            printf("0 ");
+//        else
+//            printf("%s ", inventory_item_T[i].pc);
+//    }
+//    printf("| D: ");
+//    for (int i = 0; i < 6; i++) {
+//        if (inventory_item_D[i].pc[0] == '\0')
+//            printf("0 ");
+//        else
+//            printf("%s ", inventory_item_D[i].pc);
+//    }
+//    printf("\r\n");
+
+    osDelay(2000);
   }
   /* USER CODE END defaultTask */
 }

@@ -14,7 +14,7 @@ const osThreadAttr_t Aht10Task_attributes = {
 
 void Aht10_Task(void *argument)
 {
-	osDelay(500);  // 等待 LVGL UI 初始化完成
+	osDelay(3500);  // 等待 LVGL UI 初始化完成
 
 	if(aht10_init())
 	{

@@ -36,5 +36,5 @@
 ../APP/ui/eez-flow.h:3974:27:utf8islower	8	static
 ../APP/ui/eez-flow.h:3999:6:utf8upr	24	static
 ../APP/ui/eez-flow.h:4349:1:utf8rcodepoint	0	static
-../APP/ui/ui.c:3270:6:ui_init	24	static
-../APP/ui/ui.c:3274:6:ui_tick	8	static
+../APP/ui/ui.c:3250:6:ui_init	24	static
+../APP/ui/ui.c:3254:6:ui_tick	8	static

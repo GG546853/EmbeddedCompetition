@@ -24,6 +24,8 @@ void Sensor_Task(void *argument)
 	  imx335_io_deinit();
 	  printf("[Sensor] Camera init OK, I2C released to touch\r\n");
 
+	  imx335_set_wb_mode(5000);
+
 	  if (imx335_start_capture((uint32_t)g_ltdc_framebuf) != 0) {
 	      printf("[Sensor] start_capture FAILED\r\n");
 	  }

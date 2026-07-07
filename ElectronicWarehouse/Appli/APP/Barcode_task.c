@@ -92,9 +92,6 @@ void Barcode_Task(void *argument)
                     ui_push_inventory(inventory_item_T, 28, inventory_item_D, 6);
                     uint8_t cab_id = (dup_type == 'T') ? (uint8_t)dup_idx
                                                        : (uint8_t)(28 + dup_idx);
-                    history_add(inventory_item.pc, inventory_item.quantity, cab_id);
-                    ui_push_history(history_list, history_count);
-                    ui_set_integer(FLOW_GLOBAL_VARIABLE_HISTORY_COUNT, history_count);
                 } else {
                     ui_set_string(FLOW_GLOBAL_VARIABLE_TEMP_NAME, inventory_item.name);
                     ui_set_integer(FLOW_GLOBAL_VARIABLE_TEMP_QTY,  inventory_item.quantity);
@@ -117,10 +114,7 @@ void Barcode_Task(void *argument)
                             inventory_store_to_slot(&inventory_item, loc);
                             ui_push_inventory(inventory_item_T, 28, inventory_item_D, 6);
                             uart4_send_store(loc);
-                            history_add(inventory_item.pc, inventory_item.quantity, (uint8_t)cid);
                             ui_set_integer(FLOW_GLOBAL_VARIABLE_CID, -1);
-                            ui_push_history(history_list, history_count);
-                            ui_set_integer(FLOW_GLOBAL_VARIABLE_HISTORY_COUNT, history_count);
                             break;
                         }
                         vTaskDelay(pdMS_TO_TICKS(50));

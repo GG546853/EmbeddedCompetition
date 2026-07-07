@@ -1,4 +1,4 @@
-../Core/Src/app_freertos.c:197:6:StartDefaultTask	2
+../Core/Src/app_freertos.c:197:6:StartDefaultTask	1
 ../Core/Src/app_freertos.c:98:6:vApplicationMallocFailedHook	1
 ../Core/Src/app_freertos.c:114:6:vApplicationStackOverflowHook	1
 ../Core/Src/app_freertos.c:124:13:configureTimerForRunTimeStats	1

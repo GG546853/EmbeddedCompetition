@@ -146,22 +146,5 @@ void ui_get_log_entry(int index, char *time, char *user, char *pc,
 
 extern "C" void action_givetime(lv_event_t * e)
 {
-    char time_str[32];
-    get_current_time_str(time_str, sizeof(time_str));
-
-    Value records_val = eez::flow::getGlobalVariable(FLOW_GLOBAL_VARIABLE_HISTORY_RECORDS);
-    if (!records_val.isArray()) return;
-
-    ArrayOfLogEntryValue logs(records_val);
-    int size = (int)logs.size();
-    int count = eez::flow::getGlobalVariable(FLOW_GLOBAL_VARIABLE_HISTORY_COUNT).getInt();
-
-    if (count < size) {
-        LogEntryValue entry = logs.at(count);
-        entry.time(time_str);
-    }
-
-    // HISTORY_COUNT increment moved to Flow step #11
-    history_count = size;
-    ui_pull_history(history_list, history_count);
+    (void)e;
 }

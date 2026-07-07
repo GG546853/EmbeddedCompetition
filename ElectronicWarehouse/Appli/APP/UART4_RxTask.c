@@ -263,10 +263,6 @@ void handle_store(const uint8_t *payload, uint8_t len)
         ui_push_inventory(inventory_item_T, 28, inventory_item_D, 6);
     }
 
-    history_add(pending_item.pc, pending_item.quantity, cab_id);
-    ui_push_history(history_list, history_count);
-    ui_set_integer(FLOW_GLOBAL_VARIABLE_HISTORY_COUNT, history_count);
-
     pending_store = 0;
 }
 
@@ -314,18 +310,6 @@ void inventory_add_quantity(const InventoryItem *item, const char *location)
         printf("[DupStore] +%u -> T%02d (total:%u)\r\n",
                item->quantity, index, inventory_item_T[index].quantity);
     }
-}
-
-void history_add(const char *pc, uint16_t qty, uint8_t cab_id)
-{
-    HistoryRecord *r = &history_list[history_count];
-    get_current_time_str(r->time, sizeof(r->time));
-    strcpy(r->action, "put");
-    strcpy(r->pc, pc);
-    strcpy(r->user, Cabinet.User);
-    r->quantity   = qty;
-    r->cabinet_id = cab_id;
-    history_count++;
 }
 
 /* ---- UART4 Receive Task ---- */

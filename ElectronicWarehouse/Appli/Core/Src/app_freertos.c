@@ -43,7 +43,7 @@
 #include "gt9xxx.h"
 #include "semphr.h"
 #include "app_types.h"
-
+#include "ui_bridge.h"
 
 /* USER CODE END Includes */
 
@@ -71,7 +71,7 @@ osThreadId_t defaultTaskHandle;
 const osThreadAttr_t defaultTask_attributes = {
   .name = "defaultTask",
   .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 1024 * 4
+  .stack_size = 128 * 4
 };
 
 /* Private function prototypes -----------------------------------------------*/
@@ -168,17 +168,17 @@ void MX_FREERTOS_Init(void) {
   /* add threads, ... */
 
   //RGBLED_TaskHandle = osThreadNew(RGBLED_Task, (void *)(uintptr_t)0, &RGBLEDTask_attributes);
-  //Sensor_TaskHandle = osThreadNew(Sensor_Task, NULL, &SensorTask_attributes);
-  LV_TaskHandle = osThreadNew(LVGL_Task, NULL, &LVTask_attributes);
-  //AITaskHandle = osThreadNew(AI_Task, NULL, &AITask_attributes);
+  Sensor_TaskHandle = osThreadNew(Sensor_Task, NULL, &SensorTask_attributes);
+  //LV_TaskHandle = osThreadNew(LVGL_Task, NULL, &LVTask_attributes);
+  AITaskHandle = osThreadNew(AI_Task, NULL, &AITask_attributes);
   //Electromagnet_TaskHandle = osThreadNew(Electromagnet_Task, NULL, &ElectromagnetTask_attributes);
-  Barcode_TaskHandle = osThreadNew(Barcode_Task, NULL, &BarcodeTask_attributes);
+  //Barcode_TaskHandle = osThreadNew(Barcode_Task, NULL, &BarcodeTask_attributes);
   //Printer_TaskHandle = osThreadNew(Printer_Task, NULL, &PrinterTask_attributes);
   //Outbound_TaskHandle = osThreadNew(Outbound_Task, NULL, &OutboundTask_attributes);
 
 
   //Aht10_TaskHandle = osThreadNew(Aht10_Task, NULL, &Aht10Task_attributes);
-  UART4_RxTaskHandle = osThreadNew(UART4_RxTask, NULL, &UART4_RxTask_attributes);
+  //UART4_RxTaskHandle = osThreadNew(UART4_RxTask, NULL, &UART4_RxTask_attributes);
   //VL53L1X_TaskHandle = osThreadNew(VL53L1X_Task, NULL, &VL53L1XTask_attributes);
   /* USER CODE END RTOS_THREADS */
 
@@ -197,23 +197,25 @@ void MX_FREERTOS_Init(void) {
 void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN defaultTask */
+	//osThreadNew(RGBLED_Task, (void *)(uintptr_t)0xfffffff, &RGBLEDTask_attributes);
 	strcpy(Cabinet.User, "ZS");
+  vTaskDelay(pdMS_TO_TICKS(3500));
 	//char now[32];
-	//osThreadNew(RGBLED_Task, (void *)(uintptr_t)0xA800000, &RGBLEDTask_attributes);
+	//osThreadNew(RGBLED_Task, (void *)(uintptr_t)0xfffffff, &RGBLEDTask_attributes);
 	//osThreadNew(Electromagnet_Task, (void *)(uintptr_t)0x30, &ElectromagnetTask_attributes);
   for(;;)
   {
-    printf("[History] %d records:\r\n", history_count);
-    for (int i = 0; i < history_count; i++) {
-        printf("  [%d] t:%s u:%s pc:%s qty:%u act:%s cab:%d\r\n",
-               i,
-               history_list[i].time,
-               history_list[i].user,
-               history_list[i].pc,
-               history_list[i].quantity,
-               history_list[i].action,
-               history_list[i].cabinet_id);
-    }
+//    printf("[History] %d records:\r\n", history_count);
+//    for (int i = 0; i < history_count; i++) {
+//        printf("  [%d] t:%s u:%s pc:%s qty:%u act:%s cab:%d\r\n",
+//               i,
+//               history_list[i].time,
+//               history_list[i].user,
+//               history_list[i].pc,
+//               history_list[i].quantity,
+//               history_list[i].action,
+//               history_list[i].cabinet_id);
+//    }
 
     osDelay(2000);
   }

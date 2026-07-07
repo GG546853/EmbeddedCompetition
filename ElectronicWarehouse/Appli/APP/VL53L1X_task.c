@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include "i2c.h"
 #include "app_types.h"
+#include "rgblcd.h"
+
 osThreadId_t VL53L1X_TaskHandle;
 const osThreadAttr_t VL53L1XTask_attributes = {
   .name = "VL53L1XTask",
@@ -60,6 +62,7 @@ void VL53L1X_Task(void *argument)
                     state_enter_tick = now;
                 } else if (elapsed >= 5000) {
                     Cabinet.System_state = false;
+                    RGBLCD_BL(0);
                 }
             } else {
                 if (proximity_state == 1) {
@@ -67,6 +70,7 @@ void VL53L1X_Task(void *argument)
                     state_enter_tick = now;
                 } else if (elapsed >= 1000) {
                     Cabinet.System_state = true;
+                    RGBLCD_BL(1);
                 }
             }
         }

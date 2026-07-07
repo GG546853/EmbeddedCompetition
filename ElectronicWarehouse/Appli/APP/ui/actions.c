@@ -16,6 +16,8 @@
 #include "vars.h"
 #include "ui_bridge.h"
 #include "UART_protocol.h"
+#include "RGBLED_task.h"
+#include "Electromagnet.h"
 #include <string.h>
 #include <stdlib.h>
 
@@ -90,7 +92,7 @@ void action_action_recognize(lv_event_t * e) {
             osThreadTerminate(Sensor_TaskHandle);
             Sensor_TaskHandle = NULL;
         }
-
+        osThreadNew(ElectromagnetLock_Task, NULL, &ElectromagnetLockTask_attributes);
         HAL_LTDC_DisableColorKeying(&hltdc, 1);
         HAL_LTDC_Reload(&hltdc, LTDC_RELOAD_IMMEDIATE);
         rgblcd_clear(BLUE);
@@ -154,6 +156,12 @@ void action_iobutton(lv_event_t * e) {
         uart4_report_outbound(loc, (uint16_t)(-qty));
     }
 
+    if (cabinet <= 27) {
+        RGBLED_Flash(1u << (27 - cabinet));
+    } else {
+        Electromagnet_Open((uint8_t)(1u << (cabinet - 28)));
+    }
+
     const char *pc = (cabinet <= 27) ? inventory_item_T[cabinet].pc
                                      : inventory_item_D[cabinet - 28].pc;
     HistoryRecord *r = &history_list[history_count];
@@ -168,6 +176,9 @@ void action_iobutton(lv_event_t * e) {
     ui_push_history(history_list, history_count);
 
     ui_push_inventory(inventory_item_T, 28, inventory_item_D, 6);
+
+    ui_set_integer(FLOW_GLOBAL_VARIABLE_DASH_LS,
+        ui_get_integer(FLOW_GLOBAL_VARIABLE_DASH_LS) + qty);
 }
 
 

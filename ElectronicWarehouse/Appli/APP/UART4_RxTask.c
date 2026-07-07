@@ -258,9 +258,21 @@ void handle_store(const uint8_t *payload, uint8_t len)
     if (flag == 0x00) {
         inventory_store_to_slot(&pending_item, location);
         ui_push_inventory(inventory_item_T, 28, inventory_item_D, 6);
+        ui_set_integer(FLOW_GLOBAL_VARIABLE_DASH_CTG,
+            ui_get_integer(FLOW_GLOBAL_VARIABLE_DASH_CTG) + 1);
+        ui_set_integer(FLOW_GLOBAL_VARIABLE_DASH_LS,
+            ui_get_integer(FLOW_GLOBAL_VARIABLE_DASH_LS) + pending_item.quantity);
     } else if (flag == 0x01) {
         inventory_add_quantity(&pending_item, location);
         ui_push_inventory(inventory_item_T, 28, inventory_item_D, 6);
+        ui_set_integer(FLOW_GLOBAL_VARIABLE_DASH_LS,
+            ui_get_integer(FLOW_GLOBAL_VARIABLE_DASH_LS) + pending_item.quantity);
+    }
+
+    if (cab_id <= 27) {
+        RGBLED_Flash(1u << (27 - cab_id));
+    } else {
+        Electromagnet_Open((uint8_t)(1u << (cab_id - 28)));
     }
 
     HistoryRecord *r = &history_list[history_count];
@@ -299,7 +311,17 @@ void handle_miniapp_outbound(const uint8_t *payload, uint8_t len)
         return;
     }
 
+    uint8_t cab_id = (type == 'T') ? slot : (uint8_t)(slot + 28);
+    if (cab_id <= 27) {
+        RGBLED_Flash(1u << (27 - cab_id));
+    } else {
+        Electromagnet_Open((uint8_t)(1u << (cab_id - 28)));
+    }
+
     ui_push_inventory(inventory_item_T, 28, inventory_item_D, 6);
+
+    ui_set_integer(FLOW_GLOBAL_VARIABLE_DASH_LS,
+        ui_get_integer(FLOW_GLOBAL_VARIABLE_DASH_LS) - (int)qty);
 }
 
 void inventory_store_to_slot(const InventoryItem *item, const char *location)

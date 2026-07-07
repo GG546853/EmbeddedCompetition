@@ -263,11 +263,43 @@ void handle_store(const uint8_t *payload, uint8_t len)
         ui_push_inventory(inventory_item_T, 28, inventory_item_D, 6);
     }
 
-    history_add(pending_item.pc, pending_item.quantity, cab_id);
+    HistoryRecord *r = &history_list[history_count];
+    get_current_time_str(r->time, sizeof(r->time));
+    strncpy(r->action, "put", sizeof(r->action));
+    strncpy(r->pc, pending_item.pc, sizeof(r->pc));
+    strncpy(r->user, Cabinet.User, sizeof(r->user));
+    r->cabinet_id = cab_id;
+    r->quantity   = pending_item.quantity;
+    history_count++;
+    uart4_send_history(r);
     ui_push_history(history_list, history_count);
-    ui_set_integer(FLOW_GLOBAL_VARIABLE_HISTORY_COUNT, history_count);
 
     pending_store = 0;
+}
+
+void handle_miniapp_outbound(const uint8_t *payload, uint8_t len)
+{
+    if (len < 4) return;
+
+    char    type = (char)payload[0];
+    uint8_t slot = payload[1];
+    uint16_t qty = ((uint16_t)payload[2] << 8) | payload[3];
+
+    if (type == 'T') {
+        if (slot >= 28) return;
+        if (inventory_item_T[slot].pc[0] == '\0') return;
+        if (inventory_item_T[slot].quantity < qty) return;
+        inventory_item_T[slot].quantity -= qty;
+    } else if (type == 'D') {
+        if (slot >= 6) return;
+        if (inventory_item_D[slot].pc[0] == '\0') return;
+        if (inventory_item_D[slot].quantity < qty) return;
+        inventory_item_D[slot].quantity -= qty;
+    } else {
+        return;
+    }
+
+    ui_push_inventory(inventory_item_T, 28, inventory_item_D, 6);
 }
 
 void inventory_store_to_slot(const InventoryItem *item, const char *location)
@@ -314,18 +346,6 @@ void inventory_add_quantity(const InventoryItem *item, const char *location)
         printf("[DupStore] +%u -> T%02d (total:%u)\r\n",
                item->quantity, index, inventory_item_T[index].quantity);
     }
-}
-
-void history_add(const char *pc, uint16_t qty, uint8_t cab_id)
-{
-    HistoryRecord *r = &history_list[history_count];
-    get_current_time_str(r->time, sizeof(r->time));
-    strcpy(r->action, "put");
-    strcpy(r->pc, pc);
-    strcpy(r->user, Cabinet.User);
-    r->quantity   = qty;
-    r->cabinet_id = cab_id;
-    history_count++;
 }
 
 /* ---- UART4 Receive Task ---- */

@@ -29,6 +29,7 @@ void handle_heartbeat(const uint8_t *payload, uint8_t len);
 void handle_inventory(const uint8_t *payload, uint8_t len);
 void handle_time(const uint8_t *payload, uint8_t len);
 void handle_store(const uint8_t *payload, uint8_t len);
+void handle_miniapp_outbound(const uint8_t *payload, uint8_t len);
 void get_current_time_str(char *buf, int bufsize);
 
 /* Inventory source callbacks (user implements) */
@@ -37,6 +38,5 @@ void on_inventory_app(const InventoryItem *item);
 
 void inventory_store_to_slot(const InventoryItem *item, const char *location);
 void inventory_add_quantity(const InventoryItem *item, const char *location);
-void history_add(const char *pc, uint16_t qty, uint8_t cab_id);
 
 #endif

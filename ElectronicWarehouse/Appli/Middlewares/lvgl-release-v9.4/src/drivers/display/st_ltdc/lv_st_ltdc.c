@@ -184,9 +184,9 @@ static void flush_cb(lv_display_t * disp, const lv_area_t * area, uint8_t * px_m
             DMA2D->OOR = disp_width - area_width;
             DMA2D->NLR = (area_width << DMA2D_NLR_PL_Pos) | (area_height << DMA2D_NLR_NL_Pos);
             extern osMutexId_t dma2d_mutex;
-              if (dma2d_mutex != NULL) {
-                  osMutexAcquire(dma2d_mutex, osWaitForever);
-              }
+            if (dma2d_mutex != NULL) {
+                osMutexAcquire(dma2d_mutex, osWaitForever);
+            }
             g_data.dma2d_interrupt_owner = layer_idx + 1;
             SCB_CleanDCache_by_Addr((uint32_t *)px_map, area_width * area_height * px_size);
             DMA2D->CR = DMA2D_CR_START | DMA2D_CR_TCIE | (0x1U << DMA2D_CR_MODE_Pos); /* memory-to-memory with PFC */

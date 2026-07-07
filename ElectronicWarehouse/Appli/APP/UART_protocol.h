@@ -2,6 +2,7 @@
 #define __UART_PROTOCOL_H
 
 #include <stdint.h>
+#include "app_types.h"
 
 
 #define FRAME_SYNC           0xA5
@@ -16,6 +17,7 @@
 #define FRAME_TYPE_INBOUND   0x17
 #define FRAME_TYPE_BARCODE   0x18
 #define FRAME_TYPE_RPT_STORE  0x19
+#define FRAME_TYPE_HISTORY    0x1A
 
 /* ESP32 -> STM32 */
 #define FRAME_TYPE_LED        0x01
@@ -26,6 +28,7 @@
 #define FRAME_TYPE_INVENTORY  0x06
 #define FRAME_TYPE_STORE      0x07
 #define FRAME_TYPE_TIME       0x08
+#define FRAME_TYPE_MINIOUT    0x09
 
 uint8_t protocol_build_frame(uint8_t type, const uint8_t *payload, uint8_t len, uint8_t *out);
 
@@ -60,5 +63,8 @@ void uart4_send_outbound(const char *info);
 void uart4_send_inbound(const char *info);
 void uart4_send_barcode(const uint8_t *data, uint8_t len);
 void uart4_send_store(const char *location);
+void uart4_report_outbound(const char *loc, uint16_t qty);
+void uart4_report_inbound(const char *loc, uint16_t qty);
+void uart4_send_history(const HistoryRecord *r);
 
 #endif

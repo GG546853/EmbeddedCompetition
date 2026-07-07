@@ -50,6 +50,7 @@ uint8_t imx335_get_capture(uint32_t address);                                   
 uint8_t imx335_start_capture(uint32_t address);                                 /* 启动IMX335采集图像 */
 void imx335_stop_capture(void);                                                 /* 停止IMX335采集图像 */
 uint32_t imx335_get_capture_frame_count(void);                                  /* 获取IMX335采集帧数 */
+uint8_t imx335_set_wb_mode(uint32_t color_temp);                                 /* 设置IMX335白平衡模式（0=自动, 2856=A, 4000=TL84, 5000=D50, 6500=D65） */
 uint8_t imx335_isp_background_process(void);                                    /* IMX335 ISP后台处理函数 */
 void imx335_dcmipp_pipe_frame_cb(DCMIPP_HandleTypeDef *hdcmipp, uint32_t pipe); /* IMX335 DCMIPP pipe 帧事件回调函数 */
 void imx335_dcmipp_pipe_vsync_cb(DCMIPP_HandleTypeDef *hdcmipp, uint32_t pipe); /* IMX335 DCMIPP pipe Vsync事件回调函数 */

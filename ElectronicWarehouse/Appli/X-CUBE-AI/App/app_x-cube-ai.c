@@ -565,8 +565,11 @@ static uint8_t crop_temp_buf[CROP_TEMP_SIZE]
  /*                        Face Gallery (Module 4)                              */
  /* -------------------------------------------------------------------------- */
 
- static face_entry_t face_gallery[FACE_GALLERY_MAX];
- static uint32_t     face_gallery_count;
+ static face_entry_t face_gallery[FACE_GALLERY_MAX] = {
+     { .embedding = {0.2024f, -0.0268f, 0.2197f, 0.0028f, 0.2456f, 0.1009f, -0.0739f, 0.0380f},
+       .name = "zs" },
+ };
+ static uint32_t     face_gallery_count = 1;
 
  /* ---------- Multi-shot enrollment state ---------- */
 

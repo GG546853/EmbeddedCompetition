@@ -9,8 +9,8 @@
 ../APP/UART4_RxTask.c:231:6:on_inventory_stm32	1
 ../APP/UART4_RxTask.c:236:6:on_inventory_app	1
 ../APP/UART4_RxTask.c:161:6:handle_inventory	11
-../APP/UART4_RxTask.c:273:6:inventory_store_to_slot	5
-../APP/UART4_RxTask.c:292:6:inventory_add_quantity	7
-../APP/UART4_RxTask.c:319:6:history_add	1
+../APP/UART4_RxTask.c:280:6:handle_miniapp_outbound	10
+../APP/UART4_RxTask.c:305:6:inventory_store_to_slot	5
+../APP/UART4_RxTask.c:324:6:inventory_add_quantity	7
 ../APP/UART4_RxTask.c:242:6:handle_store	6
-../APP/UART4_RxTask.c:333:6:UART4_RxTask	3
+../APP/UART4_RxTask.c:353:6:UART4_RxTask	3

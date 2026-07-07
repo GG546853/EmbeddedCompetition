@@ -24,6 +24,10 @@ extern uint8_t g_ltdc_framebuf[480 * 800 * 3];
 #define RGB888(r, g, b)  (((uint32_t)(r) << 16) | ((uint32_t)(g) << 8) | (uint32_t)(b))
 
 volatile int g_trigger_identify = 0;
+volatile int g_identify_done  = 0;
+volatile int g_identify_match = 0;
+char         g_identify_name[FACE_NAME_MAX];
+float        g_identify_dist;
 
 
 static void fill_rect(int x, int y, int w, int h, uint8_t r, uint8_t g, uint8_t b)
@@ -242,14 +246,15 @@ static void run_reid_pipeline(ai_result_t *result)
         }
     }
     else if (reid_pending == REID_IDENTIFY) {
-        char name[FACE_NAME_MAX];
-        float dist;
-        int idx = ai_face_identify(embedding, name, &dist);
+        int idx = ai_face_identify(embedding, g_identify_name, &g_identify_dist);
         if (idx >= 0) {
-            printf("[REID] Matched: '%s' (dist=%.3f)\r\n", name, dist);
+            g_identify_match = 1;
+            printf("[REID] Matched: '%s' (dist=%.3f)\r\n", g_identify_name, g_identify_dist);
         } else {
-            printf("[REID] No match (dist=%.3f)\r\n", dist);
+            g_identify_match = 0;
+            printf("[REID] No match (dist=%.3f)\r\n", g_identify_dist);
         }
+        g_identify_done = 1;
     }
 
     if (reid_pending == REID_IDENTIFY)
@@ -322,7 +327,7 @@ void AI_Task(void *argument)
         	g_trigger_identify = 0;
         	reid_pending = REID_IDENTIFY;
         }
-
+        HAL_GPIO_WritePin(GPIOG,GPIO_PIN_10,0);
         vTaskDelay(pdMS_TO_TICKS(1));
     }
 }

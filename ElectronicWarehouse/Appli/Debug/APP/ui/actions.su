@@ -36,3 +36,6 @@
 ../APP/ui/eez-flow.h:4016:36:utf8lwrcodepoint	16	static
 ../APP/ui/eez-flow.h:4182:36:utf8uprcodepoint	16	static
 ../APP/ui/eez-flow.h:4349:1:utf8rcodepoint	24	static
+../APP/ui/actions.c:10:6:action_printer	16	static
+../APP/ui/actions.c:13:6:action_action_stop_camera	16	static
+../APP/ui/actions.c:16:6:action_action_recognize	16	static

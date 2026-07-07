@@ -6371,7 +6371,6 @@ static void showKeypad(Value label, Value initialValue, Value min, Value max, Un
     EEZ_UNUSED(onCancel);
 }
 static void stopScript() {
-	assert(false);
 }
 static void scpiComponentInit() {
 }

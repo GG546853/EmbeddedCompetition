@@ -45,7 +45,8 @@ MEMORY
 {
   ROM    (xrw)    : ORIGIN = 0x70100400,   LENGTH = 31743K
   RAM    (xrw)    : ORIGIN = 0x34000000,   LENGTH = 1024K
-  EXTRAM (rw)     : ORIGIN = 0x90000000,   LENGTH = 32M  
+  EXTRAM (rw)     : ORIGIN = 0x90000000,   LENGTH = 2M      /* NPU activations + crop buf */
+  EXTRAM_FB (rw)  : ORIGIN = 0x90200000,   LENGTH = 30M     /* LCD framebuffer */
 }
 /* Sections */
 SECTIONS
@@ -57,6 +58,14 @@ SECTIONS
     *(.EXTRAM)
     . = ALIGN(8);
   } >EXTRAM
+
+  /* LCD framebuffer in HyperRAM, past NPU fc activation zone */
+  .ltdc_fb (NOLOAD):
+  {
+    . = ALIGN(32);
+    *(.ltdc_fb)
+    . = ALIGN(32);
+  } >EXTRAM_FB
   /* The startup code into "RAM" Ram type memory */
   .isr_vector :
   {

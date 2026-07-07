@@ -1,9 +1,8 @@
+../APP/ui/ui_bridge.cpp:44:13:void copy_cab_to_item(InventoryItem*, CabinetValue)	2
 ../APP/ui/eez-flow.h:1097:10:bool eez::Value::isArray() const	1
 ../APP/ui/eez-flow.h:1014:10:void eez::Value::freeRef()	3
 ../APP/ui/eez-flow.h:1021:12:eez::Value& eez::Value::operator=(const eez::Value&)	4
 ../APP/ui/eez-flow.h:1006:2:eez::Value::Value(const eez::Value&)	1
-../APP/ui/eez-flow.h:1151:6:int eez::Value::getInt() const	2
-../APP/ui/ui_bridge.cpp:44:13:void copy_cab_to_item(InventoryItem*, CabinetValue)	1
 ../APP/ui/eez-flow.h:1353:14:eez::Value eez::StringValue(const char*)	1
 ../APP/ui/ui_bridge.cpp:36:13:void copy_item_to_cab(CabinetValue&, const InventoryItem*)	1
 ../APP/ui/eez-flow.h:3030:14:utf8_int8_t* utf8cat(utf8_int8_t*, const utf8_int8_t*)	3
@@ -22,7 +21,6 @@
 ../APP/ui/eez-flow.h:4182:36:constexpr utf8_int32_t utf8uprcodepoint(utf8_int32_t)	71
 ../APP/ui/eez-flow.h:3999:6:void utf8upr(utf8_int8_t*)	5
 ../APP/ui/structs.h:45:5:CabinetValue::CabinetValue()	1
-../APP/ui/structs.h:108:10:void LogEntryValue::time(const char*)	1
 ../APP/ui/ui_bridge.cpp:20:6:void ui_set_integer(int, int)	1
 ../APP/ui/ui_bridge.cpp:24:5:int ui_get_integer(int)	1
 ../APP/ui/ui_bridge.cpp:28:6:void ui_set_string(int, const char*)	1
@@ -30,8 +28,7 @@
 ../APP/ui/ui_bridge.cpp:52:6:void ui_push_inventory(const InventoryItem*, int, const InventoryItem*, int)	3
 ../APP/ui/ui_bridge.cpp:70:6:void ui_pull_inventory(InventoryItem*, int, InventoryItem*, int)	6
 ../APP/ui/ui_bridge.cpp:86:6:void ui_push_history(const HistoryRecord*, int)	2
+../APP/ui/ui_bridge.cpp:101:5:int ui_pull_history(HistoryRecord*, int)	5
 ../APP/ui/ui_bridge.cpp:121:5:int ui_get_log_count()	2
-../APP/ui/eez-flow.h:1366:7:T eez::ArrayOf<T, ARRAY_TYPE>::at(int) [with T = LogEntryValue; long unsigned int ARRAY_TYPE = 81921]	1
-../APP/ui/ui_bridge.cpp:101:5:int ui_pull_history(HistoryRecord*, int)	3
-../APP/ui/ui_bridge.cpp:128:6:void ui_get_log_entry(int, char*, char*, char*, int*, char*, int*)	3
-../APP/ui/ui_bridge.cpp:147:17:void action_givetime(lv_event_t*)	4
+../APP/ui/ui_bridge.cpp:128:6:void ui_get_log_entry(int, char*, char*, char*, int*, char*, int*)	5
+../APP/ui/ui_bridge.cpp:147:17:void action_givetime(lv_event_t*)	1

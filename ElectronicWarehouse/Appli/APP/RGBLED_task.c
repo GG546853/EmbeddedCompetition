@@ -34,7 +34,7 @@ void RGBLED_Task(void *argument)
     uint32_t bitmap = (uint32_t)(uintptr_t)argument;
 
     SK9822_Init();
-    SK9822_SetByBitmap(bitmap, 255, 0, 0, 10);
+    SK9822_SetByBitmap(bitmap, 255, 0, 0, 5);
     vTaskDelay(pdMS_TO_TICKS(6000));
     SK9822_SetAll(0, 0, 0, 0);
     SK9822_Transmit();

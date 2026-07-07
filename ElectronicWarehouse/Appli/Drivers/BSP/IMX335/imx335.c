@@ -189,6 +189,44 @@ uint32_t imx335_get_capture_frame_count(void)
 }
 
 /**
+ * @brief   设置IMX335白平衡模式（自动/固定色温）
+ * @param   color_temp: 色温值
+ *   @arg  0:  自动白平衡（AWB）
+ *   @arg  2856:  A（白炽灯/暖黄）
+ *   @arg  4000:  TL84（荧光灯/中性白）
+ *   @arg  5000:  D50（正午日光/标准白）
+ *   @arg  6500:  D65（阴天日光/偏冷）
+ * @retval  设置结果
+ * @arg     0: 设置成功
+ * @arg     1: 设置失败
+ */
+uint8_t imx335_set_wb_mode(uint32_t color_temp)
+{
+    if (color_temp == 0)
+    {
+        /* 自动白平衡模式 */
+        if (ISP_SetWBRefMode(&imx335_hisp, 1, 0) != ISP_OK)
+        {
+            printf("[IMX335] Set WB Auto FAILED\r\n");
+            return 1;
+        }
+        printf("[IMX335] WB Mode: Auto\r\n");
+    }
+    else
+    {
+        /* 手动固定色温模式 */
+        if (ISP_SetWBRefMode(&imx335_hisp, 0, color_temp) != ISP_OK)
+        {
+            printf("[IMX335] Set WB %lu K FAILED\r\n", color_temp);
+            return 1;
+        }
+        printf("[IMX335] WB Mode: %lu K\r\n", color_temp);
+    }
+
+    return 0;
+}
+
+/**
  * @brief   IMX335 ISP后台处理函数
  * @param   无
  * @retval  处理结果

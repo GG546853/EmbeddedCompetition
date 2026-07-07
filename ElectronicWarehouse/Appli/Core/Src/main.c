@@ -183,7 +183,7 @@ int main(void)
   //MX_XSPI1_Init();
   MX_LTDC_Init();
   MX_USART1_UART_Init();
-  //MX_XSPI2_Init();
+ // MX_XSPI2_Init();
   MX_CACHEAXI_Init();
   MX_RAMCFG_Init();
   MX_UART7_Init();

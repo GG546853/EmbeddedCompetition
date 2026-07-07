@@ -72,6 +72,7 @@ extern void handle_heartbeat(const uint8_t *payload, uint8_t len);
 extern void handle_inventory(const uint8_t *payload, uint8_t len);
 extern void handle_time(const uint8_t *payload, uint8_t len);
 extern void handle_store(const uint8_t *payload, uint8_t len);
+extern void handle_miniapp_outbound(const uint8_t *payload, uint8_t len);
 
 static const FrameDispatchEntry dispatch_table[] = {
     { FRAME_TYPE_LED,        handle_led },
@@ -82,6 +83,7 @@ static const FrameDispatchEntry dispatch_table[] = {
     { FRAME_TYPE_INVENTORY,  handle_inventory },
     { FRAME_TYPE_STORE,      handle_store },
     { FRAME_TYPE_TIME,       handle_time },
+    { FRAME_TYPE_MINIOUT,    handle_miniapp_outbound },
 };
 
 void uart4_dispatch_frame(uint8_t type, const uint8_t *payload, uint8_t len)
@@ -158,4 +160,35 @@ void uart4_send_store(const char *location)
 {
     uint8_t len = (uint8_t)strlen(location);
     uart4_send_frame(FRAME_TYPE_RPT_STORE, (const uint8_t *)location, len);
+}
+
+void uart4_report_outbound(const char *loc, uint16_t qty)
+{
+    char buf[16];
+    snprintf(buf, sizeof(buf), "%s: %u", loc, qty);
+    uart4_send_outbound(buf);
+}
+
+void uart4_report_inbound(const char *loc, uint16_t qty)
+{
+    char buf[16];
+    snprintf(buf, sizeof(buf), "%s: %u", loc, qty);
+    uart4_send_inbound(buf);
+}
+
+void uart4_send_history(const HistoryRecord *r)
+{
+    uint8_t buf[128];
+    int pos = 0;
+
+    memcpy(&buf[pos], r->time,   strlen(r->time) + 1);   pos += strlen(r->time) + 1;
+    memcpy(&buf[pos], r->action, strlen(r->action) + 1); pos += strlen(r->action) + 1;
+    memcpy(&buf[pos], r->pc,     strlen(r->pc) + 1);     pos += strlen(r->pc) + 1;
+    memcpy(&buf[pos], r->user,   strlen(r->user) + 1);   pos += strlen(r->user) + 1;
+
+    buf[pos++] = r->cabinet_id;
+    buf[pos++] = (uint8_t)(r->quantity >> 8);
+    buf[pos++] = (uint8_t)(r->quantity & 0xFF);
+
+    uart4_send_frame(FRAME_TYPE_HISTORY, buf, (uint8_t)pos);
 }

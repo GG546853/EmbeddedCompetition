@@ -34,7 +34,7 @@ uint32_t g_back_color = 0xFFFFFF;
 _rgblcd_dev rgblcddev;
 
 /* LTDC single RGB888 framebuffer in HyperRAM */
-uint8_t g_ltdc_framebuf[480 * 800 * 3] __attribute__((section(".EXTRAM"), aligned(32)));
+uint8_t g_ltdc_framebuf[480 * 800 * 3] __attribute__((section(".ltdc_fb"), aligned(32)));
 /* 函数声明 */
 static uint16_t rgblcd_panelid_read(void);
 static uint8_t rgblcd_ltdc_clk_set(uint32_t clock);

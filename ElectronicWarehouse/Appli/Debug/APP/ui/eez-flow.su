@@ -635,240 +635,240 @@ C:\ST\STM32CubeIDE_1.19.0\STM32CubeIDE\plugins\com.st.stm32cube.ide.mcu.external
 ../APP/ui/eez-flow.cpp:6349:13:void eez::flow::replacePage(int16_t, uint32_t, uint32_t, uint32_t)	24	static
 ../APP/ui/eez-flow.cpp:6355:13:void eez::flow::showKeyboard(eez::Value, eez::Value, eez::Value, eez::Value, bool, void (*)(char*), void (*)())	24	static
 ../APP/ui/eez-flow.cpp:6364:13:void eez::flow::showKeypad(eez::Value, eez::Value, eez::Value, eez::Value, eez::Unit, void (*)(float), void (*)())	24	static
-../APP/ui/eez-flow.cpp:6373:13:void eez::flow::stopScript()	8	static
-../APP/ui/eez-flow.cpp:6376:13:void eez::flow::scpiComponentInit()	4	static
-../APP/ui/eez-flow.cpp:6378:13:void eez::flow::startToDebuggerMessage()	4	static
-../APP/ui/eez-flow.cpp:6380:13:void eez::flow::writeDebuggerBuffer(const char*, uint32_t)	16	static
-../APP/ui/eez-flow.cpp:6384:13:void eez::flow::finishToDebuggerMessage()	4	static
-../APP/ui/eez-flow.cpp:6386:13:void eez::flow::onDebuggerInputAvailable()	4	static
-../APP/ui/eez-flow.cpp:6397:18:lv_obj_t* eez::flow::getLvglObjectFromIndex(int32_t)	16	static
-../APP/ui/eez-flow.cpp:6401:20:lv_group_t* eez::flow::getLvglGroupFromIndex(int32_t)	16	static
-../APP/ui/eez-flow.cpp:6405:16:int32_t eez::flow::getLvglScreenByName(const char*)	16	static
-../APP/ui/eez-flow.cpp:6409:16:int32_t eez::flow::getLvglObjectByName(const char*)	16	static
-../APP/ui/eez-flow.cpp:6413:16:int32_t eez::flow::getLvglGroupByName(const char*)	16	static
-../APP/ui/eez-flow.cpp:6417:16:int32_t eez::flow::getLvglStyleByName(const char*)	16	static
-../APP/ui/eez-flow.cpp:6421:20:const void* eez::flow::getLvglImageByName(const char*)	16	static
-../APP/ui/eez-flow.cpp:6425:20:const void* eez::flow::getLvglFontByName(const char*)	16	static
-../APP/ui/eez-flow.cpp:6429:20:const char* eez::flow::getLvglObjectNameFromIndex(int32_t)	16	static
-../APP/ui/eez-flow.cpp:6433:13:void eez::flow::executeLvglAction(int)	16	static
-../APP/ui/eez-flow.cpp:6436:13:void eez::flow::lvglObjAddStyle(lv_obj_t*, int32_t)	16	static
-../APP/ui/eez-flow.cpp:6440:13:void eez::flow::lvglObjRemoveStyle(lv_obj_t*, int32_t)	16	static
-../APP/ui/eez-flow.cpp:6444:13:void eez::flow::lvglSetColorTheme(const char*)	16	static
-../APP/ui/eez-flow.cpp:6461:15:double eez::flow::getDateNowDefaultImplementation()	32	static
-../APP/ui/eez-flow.cpp:6504:18:lv_obj_t* getLvglObjectFromIndex(int32_t)	16	static
-../APP/ui/eez-flow.cpp:6510:20:lv_group_t* getLvglGroupFromIndex(int32_t)	16	static
-../APP/ui/eez-flow.cpp:6516:16:int32_t getLvglScreenByName(const char*)	24	static
-../APP/ui/eez-flow.cpp:6524:16:int32_t getLvglObjectByName(const char*)	24	static
-../APP/ui/eez-flow.cpp:6532:16:int32_t getLvglGroupByName(const char*)	24	static
-../APP/ui/eez-flow.cpp:6540:16:int32_t getLvglStyleByName(const char*)	24	static
-../APP/ui/eez-flow.cpp:6548:20:const void* getLvglImageByName(const char*)	24	static
-../APP/ui/eez-flow.cpp:6556:20:const void* getLvglFontByName(const char*)	24	static
-../APP/ui/eez-flow.cpp:6564:20:const char* getLvglObjectNameFromIndex(int32_t)	16	static
-../APP/ui/eez-flow.cpp:6571:13:void executeLvglAction(int)	16	static
-../APP/ui/eez-flow.cpp:6574:19:void eez_flow_init_themes(const char**, size_t, void (*)(uint32_t), uint32_t*, size_t)	24	static
-../APP/ui/eez-flow.cpp:6581:6:void eez_flow_init_fonts(const ext_font_desc_t*, size_t)	16	static
-../APP/ui/eez-flow.cpp:6585:6:void eez_flow_set_create_screen_func(void (*)(int))	16	static
-../APP/ui/eez-flow.cpp:6588:6:void eez_flow_set_delete_screen_func(void (*)(int))	16	static
-../APP/ui/eez-flow.cpp:6591:6:void eez_flow_set_theme(const char*)	24	static
-../APP/ui/eez-flow.cpp:6607:20:int16_t eez_flow_get_current_screen()	4	static
-../APP/ui/eez-flow.cpp:6610:13:bool isScreenCreated(int)	16	static
-../APP/ui/eez-flow.cpp:6613:13:void createScreen(int)	16	static
-../APP/ui/eez-flow.cpp:6618:13:void deleteScreen(int)	16	static
-../APP/ui/eez-flow.cpp:6623:17:void eez_flow_set_screen(int16_t, lv_screen_load_anim_t, uint32_t, uint32_t)	32	static
-../APP/ui/eez-flow.cpp:6627:17:void eez_flow_push_screen(int16_t, lv_screen_load_anim_t, uint32_t, uint32_t)	40	static
-../APP/ui/eez-flow.cpp:6637:17:void eez_flow_pop_screen(lv_screen_load_anim_t, uint32_t, uint32_t)	32	static
-../APP/ui/eez-flow.cpp:6643:6:void eez_flow_create_screen(int16_t)	24	static
-../APP/ui/eez-flow.cpp:6647:6:void eez_flow_delete_screen(int16_t)	24	static
-../APP/ui/eez-flow.cpp:6651:6:bool eez_flow_is_screen_created(int16_t)	24	static
-../APP/ui/eez-flow.cpp:6655:13:void on_screen_unloaded(lv_event_t*)	24	static
-../APP/ui/eez-flow.cpp:6661:6:void eez_flow_delete_screen_on_unload(int)	16	static
-../APP/ui/eez-flow.cpp:6669:17:void eez_flow_init(const uint8_t*, uint32_t, lv_obj_t**, size_t, const ext_img_desc_t*, size_t, void (**)(lv_event_t*))	24	static
-../APP/ui/eez-flow.cpp:6695:17:void eez_flow_init_styles(void (*)(lv_obj_t*, int32_t), void (*)(lv_obj_t*, int32_t))	16	static
-../APP/ui/eez-flow.cpp:6702:6:void eez_flow_init_groups(lv_group_t**, size_t)	16	static
-../APP/ui/eez-flow.cpp:6706:6:void eez_flow_init_screen_names(const char**, size_t)	16	static
-../APP/ui/eez-flow.cpp:6710:6:void eez_flow_init_object_names(const char**, size_t)	16	static
-../APP/ui/eez-flow.cpp:6714:6:void eez_flow_init_group_names(const char**, size_t)	16	static
-../APP/ui/eez-flow.cpp:6718:6:void eez_flow_init_style_names(const char**, size_t)	16	static
-../APP/ui/eez-flow.cpp:6722:17:void eez_flow_tick()	8	static
-../APP/ui/eez-flow.cpp:6725:17:bool eez_flow_is_stopped()	8	static
-../APP/ui/eez-flow.cpp:6731:6:void replacePageHook(int16_t, uint32_t, uint32_t, uint32_t)	40	static
-../APP/ui/eez-flow.cpp:6742:17:void flowOnPageLoaded(unsigned int)	16	static
-../APP/ui/eez-flow.cpp:6745:17:void flowPropagateValue(void*, unsigned int, unsigned int)	24	static
-../APP/ui/eez-flow.cpp:6748:17:void flowPropagateValueInt32(void*, unsigned int, unsigned int, int32_t)	40	static
-../APP/ui/eez-flow.cpp:6751:17:void flowPropagateValueUint32(void*, unsigned int, unsigned int, uint32_t)	40	static
-../APP/ui/eez-flow.cpp:6754:19:void flowPropagateValueLVGLEvent(void*, unsigned int, unsigned int, lv_event_t*)	112	static
-../APP/ui/eez-flow.cpp:6805:24:const char* _evalTextProperty(void*, unsigned int, unsigned int, const char*, const char*, int)	96	static
-../APP/ui/eez-flow.cpp:6813:20:int32_t _evalIntegerProperty(void*, unsigned int, unsigned int, const char*, const char*, int)	112	static
-../APP/ui/eez-flow.cpp:6826:21:uint32_t _evalUnsignedIntegerProperty(void*, unsigned int, unsigned int, const char*, const char*, int)	112	static
-../APP/ui/eez-flow.cpp:6839:17:bool _evalBooleanProperty(void*, unsigned int, unsigned int, const char*, const char*, int)	112	static
-../APP/ui/eez-flow.cpp:6852:13:const char* _evalStringArrayPropertyAndJoin(void*, unsigned int, unsigned int, const char*, const char*, const char*, int)	112	static
-../APP/ui/eez-flow.cpp:6877:17:void _assignStringProperty(void*, unsigned int, unsigned int, const char*, const char*, const char*, int)	120	static
-../APP/ui/eez-flow.cpp:6886:17:void _assignIntegerProperty(void*, unsigned int, unsigned int, int32_t, const char*, const char*, int)	120	static
-../APP/ui/eez-flow.cpp:6895:17:void _assignBooleanProperty(void*, unsigned int, unsigned int, bool, const char*, const char*, int)	120	static
-../APP/ui/eez-flow.cpp:6904:18:float getTimelinePosition(void*)	16	static
-../APP/ui/eez-flow.cpp:6907:7:void* getFlowState(void*, unsigned int)	24	static
-../APP/ui/eez-flow.cpp:6917:6:void deletePageFlowState(unsigned int)	16	static
-../APP/ui/eez-flow.cpp:6920:16:int compareRollerOptions(lv_roller_t*, const char*, const char*, lv_roller_mode_t)	32	static
-../APP/ui/eez-flow.cpp:6943:10:uint32_t eez_flow_get_selected_theme_index()	4	static
-../APP/ui/eez-flow.cpp:6946:10:uint32_t eez_flow_get_theme_color(uint32_t)	16	static
-../APP/ui/eez-flow.cpp:6960:7:eez::Value eez::flow::op_add(const eez::Value&, const eez::Value&)	280	static
-../APP/ui/eez-flow.cpp:7011:7:eez::Value eez::flow::op_sub(const eez::Value&, const eez::Value&)	88	static
-../APP/ui/eez-flow.cpp:7037:7:eez::Value eez::flow::op_mul(const eez::Value&, const eez::Value&)	88	static
-../APP/ui/eez-flow.cpp:7063:7:eez::Value eez::flow::op_div(const eez::Value&, const eez::Value&)	72	static
-../APP/ui/eez-flow.cpp:7096:7:eez::Value eez::flow::op_mod(const eez::Value&, const eez::Value&)	88	static
-../APP/ui/eez-flow.cpp:7129:7:eez::Value eez::flow::op_left_shift(const eez::Value&, const eez::Value&)	72	static
-../APP/ui/eez-flow.cpp:7149:7:eez::Value eez::flow::op_right_shift(const eez::Value&, const eez::Value&)	72	static
-../APP/ui/eez-flow.cpp:7169:7:eez::Value eez::flow::op_binary_and(const eez::Value&, const eez::Value&)	80	static
-../APP/ui/eez-flow.cpp:7189:7:eez::Value eez::flow::op_binary_or(const eez::Value&, const eez::Value&)	80	static
-../APP/ui/eez-flow.cpp:7209:7:eez::Value eez::flow::op_binary_xor(const eez::Value&, const eez::Value&)	80	static
-../APP/ui/eez-flow.cpp:7229:13:bool eez::flow::is_equal(const eez::Value&, const eez::Value&)	88	static
-../APP/ui/eez-flow.cpp:7272:13:bool eez::flow::is_less(const eez::Value&, const eez::Value&)	72	static
-../APP/ui/eez-flow.cpp:7285:13:bool eez::flow::is_great(const eez::Value&, const eez::Value&)	16	static
-../APP/ui/eez-flow.cpp:7288:7:eez::Value eez::flow::op_eq(const eez::Value&, const eez::Value&)	24	static
-../APP/ui/eez-flow.cpp:7297:7:eez::Value eez::flow::op_neq(const eez::Value&, const eez::Value&)	24	static
-../APP/ui/eez-flow.cpp:7306:7:eez::Value eez::flow::op_less(const eez::Value&, const eez::Value&)	24	static
-../APP/ui/eez-flow.cpp:7315:7:eez::Value eez::flow::op_great(const eez::Value&, const eez::Value&)	24	static
-../APP/ui/eez-flow.cpp:7324:7:eez::Value eez::flow::op_less_eq(const eez::Value&, const eez::Value&)	24	static
-../APP/ui/eez-flow.cpp:7333:7:eez::Value eez::flow::op_great_eq(const eez::Value&, const eez::Value&)	24	static
-../APP/ui/eez-flow.cpp:7342:13:void eez::flow::do_OPERATION_TYPE_ADD(EvalStack&)	80	static
-../APP/ui/eez-flow.cpp:7351:13:void eez::flow::do_OPERATION_TYPE_SUB(EvalStack&)	80	static
-../APP/ui/eez-flow.cpp:7360:13:void eez::flow::do_OPERATION_TYPE_MUL(EvalStack&)	80	static
-../APP/ui/eez-flow.cpp:7369:13:void eez::flow::do_OPERATION_TYPE_DIV(EvalStack&)	80	static
-../APP/ui/eez-flow.cpp:7378:13:void eez::flow::do_OPERATION_TYPE_MOD(EvalStack&)	80	static
-../APP/ui/eez-flow.cpp:7387:13:void eez::flow::do_OPERATION_TYPE_LEFT_SHIFT(EvalStack&)	80	static
-../APP/ui/eez-flow.cpp:7396:13:void eez::flow::do_OPERATION_TYPE_RIGHT_SHIFT(EvalStack&)	80	static
-../APP/ui/eez-flow.cpp:7405:13:void eez::flow::do_OPERATION_TYPE_BINARY_AND(EvalStack&)	80	static
-../APP/ui/eez-flow.cpp:7414:13:void eez::flow::do_OPERATION_TYPE_BINARY_OR(EvalStack&)	80	static
-../APP/ui/eez-flow.cpp:7423:13:void eez::flow::do_OPERATION_TYPE_BINARY_XOR(EvalStack&)	80	static
-../APP/ui/eez-flow.cpp:7432:13:void eez::flow::do_OPERATION_TYPE_EQUAL(EvalStack&)	64	static
-../APP/ui/eez-flow.cpp:7437:13:void eez::flow::do_OPERATION_TYPE_NOT_EQUAL(EvalStack&)	64	static
-../APP/ui/eez-flow.cpp:7442:13:void eez::flow::do_OPERATION_TYPE_LESS(EvalStack&)	64	static
-../APP/ui/eez-flow.cpp:7447:13:void eez::flow::do_OPERATION_TYPE_GREATER(EvalStack&)	64	static
-../APP/ui/eez-flow.cpp:7452:13:void eez::flow::do_OPERATION_TYPE_LESS_OR_EQUAL(EvalStack&)	64	static
-../APP/ui/eez-flow.cpp:7457:13:void eez::flow::do_OPERATION_TYPE_GREATER_OR_EQUAL(EvalStack&)	64	static
-../APP/ui/eez-flow.cpp:7462:13:void eez::flow::do_OPERATION_TYPE_LOGICAL_AND(EvalStack&)	120	static
-../APP/ui/eez-flow.cpp:7479:13:void eez::flow::do_OPERATION_TYPE_LOGICAL_OR(EvalStack&)	120	static
-../APP/ui/eez-flow.cpp:7496:13:void eez::flow::do_OPERATION_TYPE_UNARY_PLUS(EvalStack&)	176	static
-../APP/ui/eez-flow.cpp:7524:13:void eez::flow::do_OPERATION_TYPE_UNARY_MINUS(EvalStack&)	176	static
-../APP/ui/eez-flow.cpp:7552:13:void eez::flow::do_OPERATION_TYPE_BINARY_ONE_COMPLEMENT(EvalStack&)	144	static
-../APP/ui/eez-flow.cpp:7572:13:void eez::flow::do_OPERATION_TYPE_NOT(EvalStack&)	88	static
-../APP/ui/eez-flow.cpp:7586:13:void eez::flow::do_OPERATION_TYPE_CONDITIONAL(EvalStack&)	104	static
-../APP/ui/eez-flow.cpp:7602:13:void eez::flow::do_OPERATION_TYPE_SYSTEM_GET_TICK(EvalStack&)	32	static
-../APP/ui/eez-flow.cpp:7605:13:void eez::flow::do_OPERATION_TYPE_FLOW_INDEX(EvalStack&)	120	static
-../APP/ui/eez-flow.cpp:7623:13:void eez::flow::do_OPERATION_TYPE_FLOW_IS_PAGE_ACTIVE(EvalStack&)	40	static
-../APP/ui/eez-flow.cpp:7627:13:void eez::flow::do_OPERATION_TYPE_FLOW_PAGE_TIMELINE_POSITION(EvalStack&)	32	static
-../APP/ui/eez-flow.cpp:7630:13:void eez::flow::do_OPERATION_TYPE_FLOW_MAKE_ARRAY_VALUE(EvalStack&)	200	static
-../APP/ui/eez-flow.cpp:7669:13:void eez::flow::do_OPERATION_TYPE_FLOW_LANGUAGES(EvalStack&)	72	static
-../APP/ui/eez-flow.cpp:7678:13:void eez::flow::do_OPERATION_TYPE_FLOW_TRANSLATE(EvalStack&)	112	static
-../APP/ui/eez-flow.cpp:7697:13:void eez::flow::do_OPERATION_TYPE_FLOW_THEMES(EvalStack&)	72	static
-../APP/ui/eez-flow.cpp:7706:13:void eez::flow::do_OPERATION_TYPE_FLOW_GET_THEME_COLOR(EvalStack&)	64	static
-../APP/ui/eez-flow.cpp:7716:13:void eez::flow::do_OPERATION_TYPE_FLOW_PARSE_INTEGER(EvalStack&)	88	static
-../APP/ui/eez-flow.cpp:7730:13:void eez::flow::do_OPERATION_TYPE_FLOW_PARSE_FLOAT(EvalStack&)	88	static
-../APP/ui/eez-flow.cpp:7744:13:void eez::flow::do_OPERATION_TYPE_FLOW_PARSE_DOUBLE(EvalStack&)	88	static
-../APP/ui/eez-flow.cpp:7758:13:void eez::flow::do_OPERATION_TYPE_FLOW_TO_INTEGER(EvalStack&)	88	static
-../APP/ui/eez-flow.cpp:7772:13:void eez::flow::do_OPERATION_TYPE_FLOW_GET_BITMAP_INDEX(EvalStack&)	32	static
-../APP/ui/eez-flow.cpp:7775:13:void eez::flow::do_OPERATION_TYPE_FLOW_GET_BITMAP_AS_DATA_URL(EvalStack&)	32	static
-../APP/ui/eez-flow.cpp:7778:13:void eez::flow::do_OPERATION_TYPE_DATE_NOW(EvalStack&)	40	static
-../APP/ui/eez-flow.cpp:7781:13:void eez::flow::do_OPERATION_TYPE_DATE_TO_STRING(EvalStack&)	216	static
-../APP/ui/eez-flow.cpp:7799:13:void eez::flow::do_OPERATION_TYPE_DATE_TO_LOCALE_STRING(EvalStack&)	216	static
-../APP/ui/eez-flow.cpp:7817:13:void eez::flow::do_OPERATION_TYPE_DATE_FROM_STRING(EvalStack&)	96	static
-../APP/ui/eez-flow.cpp:7831:13:void eez::flow::do_OPERATION_TYPE_DATE_GET_YEAR(EvalStack&)	88	static
-../APP/ui/eez-flow.cpp:7843:13:void eez::flow::do_OPERATION_TYPE_DATE_GET_MONTH(EvalStack&)	88	static
-../APP/ui/eez-flow.cpp:7855:13:void eez::flow::do_OPERATION_TYPE_DATE_GET_DAY(EvalStack&)	88	static
-../APP/ui/eez-flow.cpp:7867:13:void eez::flow::do_OPERATION_TYPE_DATE_GET_HOURS(EvalStack&)	88	static
-../APP/ui/eez-flow.cpp:7879:13:void eez::flow::do_OPERATION_TYPE_DATE_GET_MINUTES(EvalStack&)	88	static
-../APP/ui/eez-flow.cpp:7891:13:void eez::flow::do_OPERATION_TYPE_DATE_GET_SECONDS(EvalStack&)	88	static
-../APP/ui/eez-flow.cpp:7903:13:void eez::flow::do_OPERATION_TYPE_DATE_GET_MILLISECONDS(EvalStack&)	88	static
-../APP/ui/eez-flow.cpp:7915:13:void eez::flow::do_OPERATION_TYPE_DATE_MAKE(EvalStack&)	456	static
-../APP/ui/eez-flow.cpp:7991:13:void eez::flow::do_OPERATION_TYPE_MATH_SIN(EvalStack&)	136	static
-../APP/ui/eez-flow.cpp:8015:13:void eez::flow::do_OPERATION_TYPE_MATH_COS(EvalStack&)	136	static
-../APP/ui/eez-flow.cpp:8039:13:void eez::flow::do_OPERATION_TYPE_MATH_POW(EvalStack&)	296	static
-../APP/ui/eez-flow.cpp:8088:13:void eez::flow::do_OPERATION_TYPE_MATH_LOG(EvalStack&)	136	static
-../APP/ui/eez-flow.cpp:8112:13:void eez::flow::do_OPERATION_TYPE_MATH_LOG10(EvalStack&)	136	static
-../APP/ui/eez-flow.cpp:8136:13:void eez::flow::do_OPERATION_TYPE_MATH_ABS(EvalStack&)	176	static
-../APP/ui/eez-flow.cpp:8168:13:void eez::flow::do_OPERATION_TYPE_MATH_FLOOR(EvalStack&)	104	static
-../APP/ui/eez-flow.cpp:8188:13:void eez::flow::do_OPERATION_TYPE_MATH_CEIL(EvalStack&)	104	static
-../APP/ui/eez-flow.cpp:8208:14:float eez::flow::roundN(float, unsigned int)	24	static
-../APP/ui/eez-flow.cpp:8212:15:double eez::flow::roundN(double, unsigned int)	32	static
-../APP/ui/eez-flow.cpp:8216:13:void eez::flow::do_OPERATION_TYPE_MATH_ROUND(EvalStack&)	160	static
-../APP/ui/eez-flow.cpp:8248:13:void eez::flow::do_OPERATION_TYPE_MATH_MIN(EvalStack&)	96	static
-../APP/ui/eez-flow.cpp:8263:13:void eez::flow::do_OPERATION_TYPE_MATH_MAX(EvalStack&)	96	static
-../APP/ui/eez-flow.cpp:8278:13:void eez::flow::do_OPERATION_TYPE_STRING_LENGTH(EvalStack&)	96	static
-../APP/ui/eez-flow.cpp:8292:13:void eez::flow::do_OPERATION_TYPE_STRING_SUBSTRING(EvalStack&)	264	static
-../APP/ui/eez-flow.cpp:8351:13:void eez::flow::do_OPERATION_TYPE_STRING_FIND(EvalStack&)	176	static
-../APP/ui/eez-flow.cpp:8403:15:size_t eez::flow::do_string_format(FormatType, const eez::Value&, char*, size_t, const char*)	40	static
-../APP/ui/eez-flow.cpp:8426:13:void eez::flow::do_OPERATION_TYPE_STRING_FORMAT(EvalStack&)	216	static
-../APP/ui/eez-flow.cpp:8514:13:void eez::flow::do_OPERATION_TYPE_STRING_FORMAT_PREFIX(EvalStack&)	144	static
-../APP/ui/eez-flow.cpp:8537:13:void eez::flow::do_OPERATION_TYPE_STRING_PAD_START(EvalStack&)	264	static
-../APP/ui/eez-flow.cpp:8587:13:void eez::flow::do_OPERATION_TYPE_STRING_SPLIT(EvalStack&)	184	static
-../APP/ui/eez-flow.cpp:8631:13:void eez::flow::do_OPERATION_TYPE_STRING_FROM_CODE_POINT(EvalStack&)	112	static
-../APP/ui/eez-flow.cpp:8649:13:void eez::flow::do_OPERATION_TYPE_STRING_CODE_POINT_AT(EvalStack&)	112	static
-../APP/ui/eez-flow.cpp:8673:13:void eez::flow::do_OPERATION_TYPE_ARRAY_LENGTH(EvalStack&)	112	static
-../APP/ui/eez-flow.cpp:8691:13:void eez::flow::do_OPERATION_TYPE_ARRAY_SLICE(EvalStack&)	264	static
-../APP/ui/eez-flow.cpp:8752:13:void eez::flow::do_OPERATION_TYPE_ARRAY_ALLOCATE(EvalStack&)	88	static
-../APP/ui/eez-flow.cpp:8767:13:void eez::flow::do_OPERATION_TYPE_ARRAY_APPEND(EvalStack&)	136	static
-../APP/ui/eez-flow.cpp:8791:13:void eez::flow::do_OPERATION_TYPE_ARRAY_INSERT(EvalStack&)	200	static
-../APP/ui/eez-flow.cpp:8834:13:void eez::flow::do_OPERATION_TYPE_ARRAY_REMOVE(EvalStack&)	184	static
-../APP/ui/eez-flow.cpp:8870:13:void eez::flow::do_OPERATION_TYPE_ARRAY_CLONE(EvalStack&)	72	static
-../APP/ui/eez-flow.cpp:8879:13:void eez::flow::do_OPERATION_TYPE_LVGL_METER_TICK_INDEX(EvalStack&)	32	static
-../APP/ui/eez-flow.cpp:8882:13:void eez::flow::do_OPERATION_TYPE_LVGL_COLOR_DARKEN(EvalStack&)	144	static
-../APP/ui/eez-flow.cpp:8897:13:void eez::flow::do_OPERATION_TYPE_LVGL_COLOR_LIGHTEN(EvalStack&)	144	static
-../APP/ui/eez-flow.cpp:8912:13:void eez::flow::do_OPERATION_TYPE_CRYPTO_SHA256(EvalStack&)	32	static
-../APP/ui/eez-flow.cpp:8915:13:void eez::flow::do_OPERATION_TYPE_BLOB_ALLOCATE(EvalStack&)	88	static
-../APP/ui/eez-flow.cpp:8930:13:void eez::flow::do_OPERATION_TYPE_BLOB_TO_STRING(EvalStack&)	32	static
-../APP/ui/eez-flow.cpp:8933:13:void eez::flow::do_OPERATION_TYPE_JSON_GET(EvalStack&)	32	static
-../APP/ui/eez-flow.cpp:8936:13:void eez::flow::do_OPERATION_TYPE_JSON_CLONE(EvalStack&)	32	static
-../APP/ui/eez-flow.cpp:8939:13:void eez::flow::do_OPERATION_TYPE_EVENT_GET_CODE(EvalStack&)	96	static
-../APP/ui/eez-flow.cpp:8948:13:void eez::flow::do_OPERATION_TYPE_EVENT_GET_CURRENT_TARGET(EvalStack&)	96	static
-../APP/ui/eez-flow.cpp:8957:13:void eez::flow::do_OPERATION_TYPE_EVENT_GET_TARGET(EvalStack&)	96	static
-../APP/ui/eez-flow.cpp:8966:13:void eez::flow::do_OPERATION_TYPE_EVENT_GET_USER_DATA(EvalStack&)	96	static
-../APP/ui/eez-flow.cpp:8975:13:void eez::flow::do_OPERATION_TYPE_EVENT_GET_KEY(EvalStack&)	96	static
-../APP/ui/eez-flow.cpp:8984:13:void eez::flow::do_OPERATION_TYPE_EVENT_GET_GESTURE_DIR(EvalStack&)	96	static
-../APP/ui/eez-flow.cpp:8993:13:void eez::flow::do_OPERATION_TYPE_EVENT_GET_ROTARY_DIFF(EvalStack&)	96	static
-../APP/ui/eez-flow.cpp:9109:13:bool eez::flow::isInputEmpty(const eez::Value&)	16	static
-../APP/ui/eez-flow.cpp:9112:14:eez::Value eez::flow::getEmptyInputValue()	16	static
-../APP/ui/eez-flow.cpp:9117:6:void eez::flow::initGlobalVariables(eez::Assets*)	56	static
-../APP/ui/eez-flow.cpp:9133:13:bool eez::flow::isComponentReadyToRun(FlowState*, unsigned int)	72	static
-../APP/ui/eez-flow.cpp:9184:13:bool eez::flow::pingComponent(FlowState*, unsigned int, int, int, int)	32	static
+../APP/ui/eez-flow.cpp:6373:13:void eez::flow::stopScript()	4	static
+../APP/ui/eez-flow.cpp:6375:13:void eez::flow::scpiComponentInit()	4	static
+../APP/ui/eez-flow.cpp:6377:13:void eez::flow::startToDebuggerMessage()	4	static
+../APP/ui/eez-flow.cpp:6379:13:void eez::flow::writeDebuggerBuffer(const char*, uint32_t)	16	static
+../APP/ui/eez-flow.cpp:6383:13:void eez::flow::finishToDebuggerMessage()	4	static
+../APP/ui/eez-flow.cpp:6385:13:void eez::flow::onDebuggerInputAvailable()	4	static
+../APP/ui/eez-flow.cpp:6396:18:lv_obj_t* eez::flow::getLvglObjectFromIndex(int32_t)	16	static
+../APP/ui/eez-flow.cpp:6400:20:lv_group_t* eez::flow::getLvglGroupFromIndex(int32_t)	16	static
+../APP/ui/eez-flow.cpp:6404:16:int32_t eez::flow::getLvglScreenByName(const char*)	16	static
+../APP/ui/eez-flow.cpp:6408:16:int32_t eez::flow::getLvglObjectByName(const char*)	16	static
+../APP/ui/eez-flow.cpp:6412:16:int32_t eez::flow::getLvglGroupByName(const char*)	16	static
+../APP/ui/eez-flow.cpp:6416:16:int32_t eez::flow::getLvglStyleByName(const char*)	16	static
+../APP/ui/eez-flow.cpp:6420:20:const void* eez::flow::getLvglImageByName(const char*)	16	static
+../APP/ui/eez-flow.cpp:6424:20:const void* eez::flow::getLvglFontByName(const char*)	16	static
+../APP/ui/eez-flow.cpp:6428:20:const char* eez::flow::getLvglObjectNameFromIndex(int32_t)	16	static
+../APP/ui/eez-flow.cpp:6432:13:void eez::flow::executeLvglAction(int)	16	static
+../APP/ui/eez-flow.cpp:6435:13:void eez::flow::lvglObjAddStyle(lv_obj_t*, int32_t)	16	static
+../APP/ui/eez-flow.cpp:6439:13:void eez::flow::lvglObjRemoveStyle(lv_obj_t*, int32_t)	16	static
+../APP/ui/eez-flow.cpp:6443:13:void eez::flow::lvglSetColorTheme(const char*)	16	static
+../APP/ui/eez-flow.cpp:6460:15:double eez::flow::getDateNowDefaultImplementation()	32	static
+../APP/ui/eez-flow.cpp:6503:18:lv_obj_t* getLvglObjectFromIndex(int32_t)	16	static
+../APP/ui/eez-flow.cpp:6509:20:lv_group_t* getLvglGroupFromIndex(int32_t)	16	static
+../APP/ui/eez-flow.cpp:6515:16:int32_t getLvglScreenByName(const char*)	24	static
+../APP/ui/eez-flow.cpp:6523:16:int32_t getLvglObjectByName(const char*)	24	static
+../APP/ui/eez-flow.cpp:6531:16:int32_t getLvglGroupByName(const char*)	24	static
+../APP/ui/eez-flow.cpp:6539:16:int32_t getLvglStyleByName(const char*)	24	static
+../APP/ui/eez-flow.cpp:6547:20:const void* getLvglImageByName(const char*)	24	static
+../APP/ui/eez-flow.cpp:6555:20:const void* getLvglFontByName(const char*)	24	static
+../APP/ui/eez-flow.cpp:6563:20:const char* getLvglObjectNameFromIndex(int32_t)	16	static
+../APP/ui/eez-flow.cpp:6570:13:void executeLvglAction(int)	16	static
+../APP/ui/eez-flow.cpp:6573:19:void eez_flow_init_themes(const char**, size_t, void (*)(uint32_t), uint32_t*, size_t)	24	static
+../APP/ui/eez-flow.cpp:6580:6:void eez_flow_init_fonts(const ext_font_desc_t*, size_t)	16	static
+../APP/ui/eez-flow.cpp:6584:6:void eez_flow_set_create_screen_func(void (*)(int))	16	static
+../APP/ui/eez-flow.cpp:6587:6:void eez_flow_set_delete_screen_func(void (*)(int))	16	static
+../APP/ui/eez-flow.cpp:6590:6:void eez_flow_set_theme(const char*)	24	static
+../APP/ui/eez-flow.cpp:6606:20:int16_t eez_flow_get_current_screen()	4	static
+../APP/ui/eez-flow.cpp:6609:13:bool isScreenCreated(int)	16	static
+../APP/ui/eez-flow.cpp:6612:13:void createScreen(int)	16	static
+../APP/ui/eez-flow.cpp:6617:13:void deleteScreen(int)	16	static
+../APP/ui/eez-flow.cpp:6622:17:void eez_flow_set_screen(int16_t, lv_screen_load_anim_t, uint32_t, uint32_t)	32	static
+../APP/ui/eez-flow.cpp:6626:17:void eez_flow_push_screen(int16_t, lv_screen_load_anim_t, uint32_t, uint32_t)	40	static
+../APP/ui/eez-flow.cpp:6636:17:void eez_flow_pop_screen(lv_screen_load_anim_t, uint32_t, uint32_t)	32	static
+../APP/ui/eez-flow.cpp:6642:6:void eez_flow_create_screen(int16_t)	24	static
+../APP/ui/eez-flow.cpp:6646:6:void eez_flow_delete_screen(int16_t)	24	static
+../APP/ui/eez-flow.cpp:6650:6:bool eez_flow_is_screen_created(int16_t)	24	static
+../APP/ui/eez-flow.cpp:6654:13:void on_screen_unloaded(lv_event_t*)	24	static
+../APP/ui/eez-flow.cpp:6660:6:void eez_flow_delete_screen_on_unload(int)	16	static
+../APP/ui/eez-flow.cpp:6668:17:void eez_flow_init(const uint8_t*, uint32_t, lv_obj_t**, size_t, const ext_img_desc_t*, size_t, void (**)(lv_event_t*))	24	static
+../APP/ui/eez-flow.cpp:6694:17:void eez_flow_init_styles(void (*)(lv_obj_t*, int32_t), void (*)(lv_obj_t*, int32_t))	16	static
+../APP/ui/eez-flow.cpp:6701:6:void eez_flow_init_groups(lv_group_t**, size_t)	16	static
+../APP/ui/eez-flow.cpp:6705:6:void eez_flow_init_screen_names(const char**, size_t)	16	static
+../APP/ui/eez-flow.cpp:6709:6:void eez_flow_init_object_names(const char**, size_t)	16	static
+../APP/ui/eez-flow.cpp:6713:6:void eez_flow_init_group_names(const char**, size_t)	16	static
+../APP/ui/eez-flow.cpp:6717:6:void eez_flow_init_style_names(const char**, size_t)	16	static
+../APP/ui/eez-flow.cpp:6721:17:void eez_flow_tick()	8	static
+../APP/ui/eez-flow.cpp:6724:17:bool eez_flow_is_stopped()	8	static
+../APP/ui/eez-flow.cpp:6730:6:void replacePageHook(int16_t, uint32_t, uint32_t, uint32_t)	40	static
+../APP/ui/eez-flow.cpp:6741:17:void flowOnPageLoaded(unsigned int)	16	static
+../APP/ui/eez-flow.cpp:6744:17:void flowPropagateValue(void*, unsigned int, unsigned int)	24	static
+../APP/ui/eez-flow.cpp:6747:17:void flowPropagateValueInt32(void*, unsigned int, unsigned int, int32_t)	40	static
+../APP/ui/eez-flow.cpp:6750:17:void flowPropagateValueUint32(void*, unsigned int, unsigned int, uint32_t)	40	static
+../APP/ui/eez-flow.cpp:6753:19:void flowPropagateValueLVGLEvent(void*, unsigned int, unsigned int, lv_event_t*)	112	static
+../APP/ui/eez-flow.cpp:6804:24:const char* _evalTextProperty(void*, unsigned int, unsigned int, const char*, const char*, int)	96	static
+../APP/ui/eez-flow.cpp:6812:20:int32_t _evalIntegerProperty(void*, unsigned int, unsigned int, const char*, const char*, int)	112	static
+../APP/ui/eez-flow.cpp:6825:21:uint32_t _evalUnsignedIntegerProperty(void*, unsigned int, unsigned int, const char*, const char*, int)	112	static
+../APP/ui/eez-flow.cpp:6838:17:bool _evalBooleanProperty(void*, unsigned int, unsigned int, const char*, const char*, int)	112	static
+../APP/ui/eez-flow.cpp:6851:13:const char* _evalStringArrayPropertyAndJoin(void*, unsigned int, unsigned int, const char*, const char*, const char*, int)	112	static
+../APP/ui/eez-flow.cpp:6876:17:void _assignStringProperty(void*, unsigned int, unsigned int, const char*, const char*, const char*, int)	120	static
+../APP/ui/eez-flow.cpp:6885:17:void _assignIntegerProperty(void*, unsigned int, unsigned int, int32_t, const char*, const char*, int)	120	static
+../APP/ui/eez-flow.cpp:6894:17:void _assignBooleanProperty(void*, unsigned int, unsigned int, bool, const char*, const char*, int)	120	static
+../APP/ui/eez-flow.cpp:6903:18:float getTimelinePosition(void*)	16	static
+../APP/ui/eez-flow.cpp:6906:7:void* getFlowState(void*, unsigned int)	24	static
+../APP/ui/eez-flow.cpp:6916:6:void deletePageFlowState(unsigned int)	16	static
+../APP/ui/eez-flow.cpp:6919:16:int compareRollerOptions(lv_roller_t*, const char*, const char*, lv_roller_mode_t)	32	static
+../APP/ui/eez-flow.cpp:6942:10:uint32_t eez_flow_get_selected_theme_index()	4	static
+../APP/ui/eez-flow.cpp:6945:10:uint32_t eez_flow_get_theme_color(uint32_t)	16	static
+../APP/ui/eez-flow.cpp:6959:7:eez::Value eez::flow::op_add(const eez::Value&, const eez::Value&)	280	static
+../APP/ui/eez-flow.cpp:7010:7:eez::Value eez::flow::op_sub(const eez::Value&, const eez::Value&)	88	static
+../APP/ui/eez-flow.cpp:7036:7:eez::Value eez::flow::op_mul(const eez::Value&, const eez::Value&)	88	static
+../APP/ui/eez-flow.cpp:7062:7:eez::Value eez::flow::op_div(const eez::Value&, const eez::Value&)	72	static
+../APP/ui/eez-flow.cpp:7095:7:eez::Value eez::flow::op_mod(const eez::Value&, const eez::Value&)	88	static
+../APP/ui/eez-flow.cpp:7128:7:eez::Value eez::flow::op_left_shift(const eez::Value&, const eez::Value&)	72	static
+../APP/ui/eez-flow.cpp:7148:7:eez::Value eez::flow::op_right_shift(const eez::Value&, const eez::Value&)	72	static
+../APP/ui/eez-flow.cpp:7168:7:eez::Value eez::flow::op_binary_and(const eez::Value&, const eez::Value&)	80	static
+../APP/ui/eez-flow.cpp:7188:7:eez::Value eez::flow::op_binary_or(const eez::Value&, const eez::Value&)	80	static
+../APP/ui/eez-flow.cpp:7208:7:eez::Value eez::flow::op_binary_xor(const eez::Value&, const eez::Value&)	80	static
+../APP/ui/eez-flow.cpp:7228:13:bool eez::flow::is_equal(const eez::Value&, const eez::Value&)	88	static
+../APP/ui/eez-flow.cpp:7271:13:bool eez::flow::is_less(const eez::Value&, const eez::Value&)	72	static
+../APP/ui/eez-flow.cpp:7284:13:bool eez::flow::is_great(const eez::Value&, const eez::Value&)	16	static
+../APP/ui/eez-flow.cpp:7287:7:eez::Value eez::flow::op_eq(const eez::Value&, const eez::Value&)	24	static
+../APP/ui/eez-flow.cpp:7296:7:eez::Value eez::flow::op_neq(const eez::Value&, const eez::Value&)	24	static
+../APP/ui/eez-flow.cpp:7305:7:eez::Value eez::flow::op_less(const eez::Value&, const eez::Value&)	24	static
+../APP/ui/eez-flow.cpp:7314:7:eez::Value eez::flow::op_great(const eez::Value&, const eez::Value&)	24	static
+../APP/ui/eez-flow.cpp:7323:7:eez::Value eez::flow::op_less_eq(const eez::Value&, const eez::Value&)	24	static
+../APP/ui/eez-flow.cpp:7332:7:eez::Value eez::flow::op_great_eq(const eez::Value&, const eez::Value&)	24	static
+../APP/ui/eez-flow.cpp:7341:13:void eez::flow::do_OPERATION_TYPE_ADD(EvalStack&)	80	static
+../APP/ui/eez-flow.cpp:7350:13:void eez::flow::do_OPERATION_TYPE_SUB(EvalStack&)	80	static
+../APP/ui/eez-flow.cpp:7359:13:void eez::flow::do_OPERATION_TYPE_MUL(EvalStack&)	80	static
+../APP/ui/eez-flow.cpp:7368:13:void eez::flow::do_OPERATION_TYPE_DIV(EvalStack&)	80	static
+../APP/ui/eez-flow.cpp:7377:13:void eez::flow::do_OPERATION_TYPE_MOD(EvalStack&)	80	static
+../APP/ui/eez-flow.cpp:7386:13:void eez::flow::do_OPERATION_TYPE_LEFT_SHIFT(EvalStack&)	80	static
+../APP/ui/eez-flow.cpp:7395:13:void eez::flow::do_OPERATION_TYPE_RIGHT_SHIFT(EvalStack&)	80	static
+../APP/ui/eez-flow.cpp:7404:13:void eez::flow::do_OPERATION_TYPE_BINARY_AND(EvalStack&)	80	static
+../APP/ui/eez-flow.cpp:7413:13:void eez::flow::do_OPERATION_TYPE_BINARY_OR(EvalStack&)	80	static
+../APP/ui/eez-flow.cpp:7422:13:void eez::flow::do_OPERATION_TYPE_BINARY_XOR(EvalStack&)	80	static
+../APP/ui/eez-flow.cpp:7431:13:void eez::flow::do_OPERATION_TYPE_EQUAL(EvalStack&)	64	static
+../APP/ui/eez-flow.cpp:7436:13:void eez::flow::do_OPERATION_TYPE_NOT_EQUAL(EvalStack&)	64	static
+../APP/ui/eez-flow.cpp:7441:13:void eez::flow::do_OPERATION_TYPE_LESS(EvalStack&)	64	static
+../APP/ui/eez-flow.cpp:7446:13:void eez::flow::do_OPERATION_TYPE_GREATER(EvalStack&)	64	static
+../APP/ui/eez-flow.cpp:7451:13:void eez::flow::do_OPERATION_TYPE_LESS_OR_EQUAL(EvalStack&)	64	static
+../APP/ui/eez-flow.cpp:7456:13:void eez::flow::do_OPERATION_TYPE_GREATER_OR_EQUAL(EvalStack&)	64	static
+../APP/ui/eez-flow.cpp:7461:13:void eez::flow::do_OPERATION_TYPE_LOGICAL_AND(EvalStack&)	120	static
+../APP/ui/eez-flow.cpp:7478:13:void eez::flow::do_OPERATION_TYPE_LOGICAL_OR(EvalStack&)	120	static
+../APP/ui/eez-flow.cpp:7495:13:void eez::flow::do_OPERATION_TYPE_UNARY_PLUS(EvalStack&)	176	static
+../APP/ui/eez-flow.cpp:7523:13:void eez::flow::do_OPERATION_TYPE_UNARY_MINUS(EvalStack&)	176	static
+../APP/ui/eez-flow.cpp:7551:13:void eez::flow::do_OPERATION_TYPE_BINARY_ONE_COMPLEMENT(EvalStack&)	144	static
+../APP/ui/eez-flow.cpp:7571:13:void eez::flow::do_OPERATION_TYPE_NOT(EvalStack&)	88	static
+../APP/ui/eez-flow.cpp:7585:13:void eez::flow::do_OPERATION_TYPE_CONDITIONAL(EvalStack&)	104	static
+../APP/ui/eez-flow.cpp:7601:13:void eez::flow::do_OPERATION_TYPE_SYSTEM_GET_TICK(EvalStack&)	32	static
+../APP/ui/eez-flow.cpp:7604:13:void eez::flow::do_OPERATION_TYPE_FLOW_INDEX(EvalStack&)	120	static
+../APP/ui/eez-flow.cpp:7622:13:void eez::flow::do_OPERATION_TYPE_FLOW_IS_PAGE_ACTIVE(EvalStack&)	40	static
+../APP/ui/eez-flow.cpp:7626:13:void eez::flow::do_OPERATION_TYPE_FLOW_PAGE_TIMELINE_POSITION(EvalStack&)	32	static
+../APP/ui/eez-flow.cpp:7629:13:void eez::flow::do_OPERATION_TYPE_FLOW_MAKE_ARRAY_VALUE(EvalStack&)	200	static
+../APP/ui/eez-flow.cpp:7668:13:void eez::flow::do_OPERATION_TYPE_FLOW_LANGUAGES(EvalStack&)	72	static
+../APP/ui/eez-flow.cpp:7677:13:void eez::flow::do_OPERATION_TYPE_FLOW_TRANSLATE(EvalStack&)	112	static
+../APP/ui/eez-flow.cpp:7696:13:void eez::flow::do_OPERATION_TYPE_FLOW_THEMES(EvalStack&)	72	static
+../APP/ui/eez-flow.cpp:7705:13:void eez::flow::do_OPERATION_TYPE_FLOW_GET_THEME_COLOR(EvalStack&)	64	static
+../APP/ui/eez-flow.cpp:7715:13:void eez::flow::do_OPERATION_TYPE_FLOW_PARSE_INTEGER(EvalStack&)	88	static
+../APP/ui/eez-flow.cpp:7729:13:void eez::flow::do_OPERATION_TYPE_FLOW_PARSE_FLOAT(EvalStack&)	88	static
+../APP/ui/eez-flow.cpp:7743:13:void eez::flow::do_OPERATION_TYPE_FLOW_PARSE_DOUBLE(EvalStack&)	88	static
+../APP/ui/eez-flow.cpp:7757:13:void eez::flow::do_OPERATION_TYPE_FLOW_TO_INTEGER(EvalStack&)	88	static
+../APP/ui/eez-flow.cpp:7771:13:void eez::flow::do_OPERATION_TYPE_FLOW_GET_BITMAP_INDEX(EvalStack&)	32	static
+../APP/ui/eez-flow.cpp:7774:13:void eez::flow::do_OPERATION_TYPE_FLOW_GET_BITMAP_AS_DATA_URL(EvalStack&)	32	static
+../APP/ui/eez-flow.cpp:7777:13:void eez::flow::do_OPERATION_TYPE_DATE_NOW(EvalStack&)	40	static
+../APP/ui/eez-flow.cpp:7780:13:void eez::flow::do_OPERATION_TYPE_DATE_TO_STRING(EvalStack&)	216	static
+../APP/ui/eez-flow.cpp:7798:13:void eez::flow::do_OPERATION_TYPE_DATE_TO_LOCALE_STRING(EvalStack&)	216	static
+../APP/ui/eez-flow.cpp:7816:13:void eez::flow::do_OPERATION_TYPE_DATE_FROM_STRING(EvalStack&)	96	static
+../APP/ui/eez-flow.cpp:7830:13:void eez::flow::do_OPERATION_TYPE_DATE_GET_YEAR(EvalStack&)	88	static
+../APP/ui/eez-flow.cpp:7842:13:void eez::flow::do_OPERATION_TYPE_DATE_GET_MONTH(EvalStack&)	88	static
+../APP/ui/eez-flow.cpp:7854:13:void eez::flow::do_OPERATION_TYPE_DATE_GET_DAY(EvalStack&)	88	static
+../APP/ui/eez-flow.cpp:7866:13:void eez::flow::do_OPERATION_TYPE_DATE_GET_HOURS(EvalStack&)	88	static
+../APP/ui/eez-flow.cpp:7878:13:void eez::flow::do_OPERATION_TYPE_DATE_GET_MINUTES(EvalStack&)	88	static
+../APP/ui/eez-flow.cpp:7890:13:void eez::flow::do_OPERATION_TYPE_DATE_GET_SECONDS(EvalStack&)	88	static
+../APP/ui/eez-flow.cpp:7902:13:void eez::flow::do_OPERATION_TYPE_DATE_GET_MILLISECONDS(EvalStack&)	88	static
+../APP/ui/eez-flow.cpp:7914:13:void eez::flow::do_OPERATION_TYPE_DATE_MAKE(EvalStack&)	456	static
+../APP/ui/eez-flow.cpp:7990:13:void eez::flow::do_OPERATION_TYPE_MATH_SIN(EvalStack&)	136	static
+../APP/ui/eez-flow.cpp:8014:13:void eez::flow::do_OPERATION_TYPE_MATH_COS(EvalStack&)	136	static
+../APP/ui/eez-flow.cpp:8038:13:void eez::flow::do_OPERATION_TYPE_MATH_POW(EvalStack&)	296	static
+../APP/ui/eez-flow.cpp:8087:13:void eez::flow::do_OPERATION_TYPE_MATH_LOG(EvalStack&)	136	static
+../APP/ui/eez-flow.cpp:8111:13:void eez::flow::do_OPERATION_TYPE_MATH_LOG10(EvalStack&)	136	static
+../APP/ui/eez-flow.cpp:8135:13:void eez::flow::do_OPERATION_TYPE_MATH_ABS(EvalStack&)	176	static
+../APP/ui/eez-flow.cpp:8167:13:void eez::flow::do_OPERATION_TYPE_MATH_FLOOR(EvalStack&)	104	static
+../APP/ui/eez-flow.cpp:8187:13:void eez::flow::do_OPERATION_TYPE_MATH_CEIL(EvalStack&)	104	static
+../APP/ui/eez-flow.cpp:8207:14:float eez::flow::roundN(float, unsigned int)	24	static
+../APP/ui/eez-flow.cpp:8211:15:double eez::flow::roundN(double, unsigned int)	32	static
+../APP/ui/eez-flow.cpp:8215:13:void eez::flow::do_OPERATION_TYPE_MATH_ROUND(EvalStack&)	160	static
+../APP/ui/eez-flow.cpp:8247:13:void eez::flow::do_OPERATION_TYPE_MATH_MIN(EvalStack&)	96	static
+../APP/ui/eez-flow.cpp:8262:13:void eez::flow::do_OPERATION_TYPE_MATH_MAX(EvalStack&)	96	static
+../APP/ui/eez-flow.cpp:8277:13:void eez::flow::do_OPERATION_TYPE_STRING_LENGTH(EvalStack&)	96	static
+../APP/ui/eez-flow.cpp:8291:13:void eez::flow::do_OPERATION_TYPE_STRING_SUBSTRING(EvalStack&)	264	static
+../APP/ui/eez-flow.cpp:8350:13:void eez::flow::do_OPERATION_TYPE_STRING_FIND(EvalStack&)	176	static
+../APP/ui/eez-flow.cpp:8402:15:size_t eez::flow::do_string_format(FormatType, const eez::Value&, char*, size_t, const char*)	40	static
+../APP/ui/eez-flow.cpp:8425:13:void eez::flow::do_OPERATION_TYPE_STRING_FORMAT(EvalStack&)	216	static
+../APP/ui/eez-flow.cpp:8513:13:void eez::flow::do_OPERATION_TYPE_STRING_FORMAT_PREFIX(EvalStack&)	144	static
+../APP/ui/eez-flow.cpp:8536:13:void eez::flow::do_OPERATION_TYPE_STRING_PAD_START(EvalStack&)	264	static
+../APP/ui/eez-flow.cpp:8586:13:void eez::flow::do_OPERATION_TYPE_STRING_SPLIT(EvalStack&)	184	static
+../APP/ui/eez-flow.cpp:8630:13:void eez::flow::do_OPERATION_TYPE_STRING_FROM_CODE_POINT(EvalStack&)	112	static
+../APP/ui/eez-flow.cpp:8648:13:void eez::flow::do_OPERATION_TYPE_STRING_CODE_POINT_AT(EvalStack&)	112	static
+../APP/ui/eez-flow.cpp:8672:13:void eez::flow::do_OPERATION_TYPE_ARRAY_LENGTH(EvalStack&)	112	static
+../APP/ui/eez-flow.cpp:8690:13:void eez::flow::do_OPERATION_TYPE_ARRAY_SLICE(EvalStack&)	264	static
+../APP/ui/eez-flow.cpp:8751:13:void eez::flow::do_OPERATION_TYPE_ARRAY_ALLOCATE(EvalStack&)	88	static
+../APP/ui/eez-flow.cpp:8766:13:void eez::flow::do_OPERATION_TYPE_ARRAY_APPEND(EvalStack&)	136	static
+../APP/ui/eez-flow.cpp:8790:13:void eez::flow::do_OPERATION_TYPE_ARRAY_INSERT(EvalStack&)	200	static
+../APP/ui/eez-flow.cpp:8833:13:void eez::flow::do_OPERATION_TYPE_ARRAY_REMOVE(EvalStack&)	184	static
+../APP/ui/eez-flow.cpp:8869:13:void eez::flow::do_OPERATION_TYPE_ARRAY_CLONE(EvalStack&)	72	static
+../APP/ui/eez-flow.cpp:8878:13:void eez::flow::do_OPERATION_TYPE_LVGL_METER_TICK_INDEX(EvalStack&)	32	static
+../APP/ui/eez-flow.cpp:8881:13:void eez::flow::do_OPERATION_TYPE_LVGL_COLOR_DARKEN(EvalStack&)	144	static
+../APP/ui/eez-flow.cpp:8896:13:void eez::flow::do_OPERATION_TYPE_LVGL_COLOR_LIGHTEN(EvalStack&)	144	static
+../APP/ui/eez-flow.cpp:8911:13:void eez::flow::do_OPERATION_TYPE_CRYPTO_SHA256(EvalStack&)	32	static
+../APP/ui/eez-flow.cpp:8914:13:void eez::flow::do_OPERATION_TYPE_BLOB_ALLOCATE(EvalStack&)	88	static
+../APP/ui/eez-flow.cpp:8929:13:void eez::flow::do_OPERATION_TYPE_BLOB_TO_STRING(EvalStack&)	32	static
+../APP/ui/eez-flow.cpp:8932:13:void eez::flow::do_OPERATION_TYPE_JSON_GET(EvalStack&)	32	static
+../APP/ui/eez-flow.cpp:8935:13:void eez::flow::do_OPERATION_TYPE_JSON_CLONE(EvalStack&)	32	static
+../APP/ui/eez-flow.cpp:8938:13:void eez::flow::do_OPERATION_TYPE_EVENT_GET_CODE(EvalStack&)	96	static
+../APP/ui/eez-flow.cpp:8947:13:void eez::flow::do_OPERATION_TYPE_EVENT_GET_CURRENT_TARGET(EvalStack&)	96	static
+../APP/ui/eez-flow.cpp:8956:13:void eez::flow::do_OPERATION_TYPE_EVENT_GET_TARGET(EvalStack&)	96	static
+../APP/ui/eez-flow.cpp:8965:13:void eez::flow::do_OPERATION_TYPE_EVENT_GET_USER_DATA(EvalStack&)	96	static
+../APP/ui/eez-flow.cpp:8974:13:void eez::flow::do_OPERATION_TYPE_EVENT_GET_KEY(EvalStack&)	96	static
+../APP/ui/eez-flow.cpp:8983:13:void eez::flow::do_OPERATION_TYPE_EVENT_GET_GESTURE_DIR(EvalStack&)	96	static
+../APP/ui/eez-flow.cpp:8992:13:void eez::flow::do_OPERATION_TYPE_EVENT_GET_ROTARY_DIFF(EvalStack&)	96	static
+../APP/ui/eez-flow.cpp:9108:13:bool eez::flow::isInputEmpty(const eez::Value&)	16	static
+../APP/ui/eez-flow.cpp:9111:14:eez::Value eez::flow::getEmptyInputValue()	16	static
+../APP/ui/eez-flow.cpp:9116:6:void eez::flow::initGlobalVariables(eez::Assets*)	56	static
+../APP/ui/eez-flow.cpp:9132:13:bool eez::flow::isComponentReadyToRun(FlowState*, unsigned int)	72	static
+../APP/ui/eez-flow.cpp:9183:13:bool eez::flow::pingComponent(FlowState*, unsigned int, int, int, int)	32	static
 ../APP/ui/eez-flow.h:1924:8:eez::flow::FlowState::FlowState()	16	static
-../APP/ui/eez-flow.cpp:9190:19:eez::flow::FlowState* eez::flow::initFlowState(eez::Assets*, int, FlowState*, int, const eez::Value&)	112	static
-../APP/ui/eez-flow.cpp:9267:12:eez::flow::FlowState* eez::flow::initActionFlowState(int, FlowState*, int, const eez::Value&)	40	static
-../APP/ui/eez-flow.cpp:9274:12:eez::flow::FlowState* eez::flow::initPageFlowState(eez::Assets*, int, FlowState*, int)	56	static
-../APP/ui/eez-flow.cpp:9281:6:void eez::flow::incRefCounterForFlowState(FlowState*)	24	static
-../APP/ui/eez-flow.cpp:9290:6:void eez::flow::decRefCounterForFlowState(FlowState*)	24	static
-../APP/ui/eez-flow.cpp:9299:6:bool eez::flow::canFreeFlowState(FlowState*)	16	static
+../APP/ui/eez-flow.cpp:9189:19:eez::flow::FlowState* eez::flow::initFlowState(eez::Assets*, int, FlowState*, int, const eez::Value&)	112	static
+../APP/ui/eez-flow.cpp:9266:12:eez::flow::FlowState* eez::flow::initActionFlowState(int, FlowState*, int, const eez::Value&)	40	static
+../APP/ui/eez-flow.cpp:9273:12:eez::flow::FlowState* eez::flow::initPageFlowState(eez::Assets*, int, FlowState*, int)	56	static
+../APP/ui/eez-flow.cpp:9280:6:void eez::flow::incRefCounterForFlowState(FlowState*)	24	static
+../APP/ui/eez-flow.cpp:9289:6:void eez::flow::decRefCounterForFlowState(FlowState*)	24	static
+../APP/ui/eez-flow.cpp:9298:6:bool eez::flow::canFreeFlowState(FlowState*)	16	static
 ../APP/ui/eez-flow.h:1924:8:eez::flow::FlowState::~FlowState()	16	static
-../APP/ui/eez-flow.cpp:9308:6:void eez::flow::freeFlowState(FlowState*)	40	static
-../APP/ui/eez-flow.cpp:9353:6:void eez::flow::freeAllChildrenFlowStates(FlowState*)	24	static
-../APP/ui/eez-flow.cpp:9362:6:void eez::flow::deallocateComponentExecutionState(FlowState*, unsigned int)	24	static
-../APP/ui/eez-flow.cpp:9374:6:void eez::flow::resetSequenceInputs(FlowState*)	48	static
-../APP/ui/eez-flow.cpp:9392:6:void eez::flow::propagateValue(FlowState*, unsigned int, unsigned int, const eez::Value&)	72	static
-../APP/ui/eez-flow.cpp:9412:6:void eez::flow::propagateValue(FlowState*, unsigned int, unsigned int)	32	static
-../APP/ui/eez-flow.cpp:9416:6:void eez::flow::propagateValueThroughSeqout(FlowState*, unsigned int)	24	static
-../APP/ui/eez-flow.cpp:9425:6:void eez::flow::assignValue(FlowState*, int, eez::Value&, const eez::Value&)	400	static
-../APP/ui/eez-flow.cpp:9502:6:void eez::flow::clearInputValue(FlowState*, int)	40	static
-../APP/ui/eez-flow.cpp:9506:6:void eez::flow::startAsyncExecution(FlowState*, int)	16	static
-../APP/ui/eez-flow.cpp:9513:6:void eez::flow::endAsyncExecution(FlowState*, int)	24	static
-../APP/ui/eez-flow.cpp:9531:6:void eez::flow::onEvent(FlowState*, FlowEvent, eez::Value)	64	static
-../APP/ui/eez-flow.cpp:9552:13:bool eez::flow::findCatchErrorComponent(FlowState*, FlowState*&, int&)	32	static
-../APP/ui/eez-flow.cpp:9571:6:void eez::flow::throwError(FlowState*, int, const char*)	120	static
-../APP/ui/eez-flow.cpp:9621:13:const char* eez::flow::FlowError::getMessage(char*, size_t, int, int) const	72	static
-../APP/ui/eez-flow.cpp:9714:6:void eez::flow::throwError(FlowState*, int, const FlowError&)	552	static
-../APP/ui/eez-flow.cpp:9719:6:void eez::flow::enableThrowError(bool)	16	static
-../APP/ui/eez-flow.cpp:9743:6:void eez::flow::queueReset()	4	static
-../APP/ui/eez-flow.cpp:9750:8:size_t eez::flow::getQueueSize()	4	static
-../APP/ui/eez-flow.cpp:9762:8:size_t eez::flow::getMaxQueueSize()	4	static
-../APP/ui/eez-flow.cpp:9765:6:bool eez::flow::addToQueue(FlowState*, unsigned int, int, int, int, bool)	40	static
-../APP/ui/eez-flow.cpp:9786:6:bool eez::flow::peekNextTaskFromQueue(FlowState*&, unsigned int&, bool&)	24	static
-../APP/ui/eez-flow.cpp:9795:6:void eez::flow::removeNextTaskFromQueue()	16	static
-../APP/ui/eez-flow.cpp:9806:6:bool eez::flow::isInQueue(FlowState*, unsigned int)	24	static
-../APP/ui/eez-flow.cpp:9822:6:void eez::flow::removeTasksFromQueueForFlowState(FlowState*)	24	static
-../APP/ui/eez-flow.cpp:9857:16:eez::flow::WatchListNode* eez::flow::watchListAdd(FlowState*, unsigned int)	24	static
-../APP/ui/eez-flow.cpp:9874:6:void eez::flow::watchListRemove(WatchListNode*)	16	static
-../APP/ui/eez-flow.cpp:9888:6:void eez::flow::visitWatchList()	16	static
-../APP/ui/eez-flow.cpp:9903:6:void eez::flow::watchListReset()	16	static
-../APP/ui/eez-flow.cpp:9910:6:void eez::flow::removeWatchesForFlowState(FlowState*)	24	static
-../APP/ui/eez-flow.cpp:9919:10:unsigned int eez::flow::getWatchListSize()	4	static
+../APP/ui/eez-flow.cpp:9307:6:void eez::flow::freeFlowState(FlowState*)	40	static
+../APP/ui/eez-flow.cpp:9352:6:void eez::flow::freeAllChildrenFlowStates(FlowState*)	24	static
+../APP/ui/eez-flow.cpp:9361:6:void eez::flow::deallocateComponentExecutionState(FlowState*, unsigned int)	24	static
+../APP/ui/eez-flow.cpp:9373:6:void eez::flow::resetSequenceInputs(FlowState*)	48	static
+../APP/ui/eez-flow.cpp:9391:6:void eez::flow::propagateValue(FlowState*, unsigned int, unsigned int, const eez::Value&)	72	static
+../APP/ui/eez-flow.cpp:9411:6:void eez::flow::propagateValue(FlowState*, unsigned int, unsigned int)	32	static
+../APP/ui/eez-flow.cpp:9415:6:void eez::flow::propagateValueThroughSeqout(FlowState*, unsigned int)	24	static
+../APP/ui/eez-flow.cpp:9424:6:void eez::flow::assignValue(FlowState*, int, eez::Value&, const eez::Value&)	400	static
+../APP/ui/eez-flow.cpp:9501:6:void eez::flow::clearInputValue(FlowState*, int)	40	static
+../APP/ui/eez-flow.cpp:9505:6:void eez::flow::startAsyncExecution(FlowState*, int)	16	static
+../APP/ui/eez-flow.cpp:9512:6:void eez::flow::endAsyncExecution(FlowState*, int)	24	static
+../APP/ui/eez-flow.cpp:9530:6:void eez::flow::onEvent(FlowState*, FlowEvent, eez::Value)	64	static
+../APP/ui/eez-flow.cpp:9551:13:bool eez::flow::findCatchErrorComponent(FlowState*, FlowState*&, int&)	32	static
+../APP/ui/eez-flow.cpp:9570:6:void eez::flow::throwError(FlowState*, int, const char*)	120	static
+../APP/ui/eez-flow.cpp:9620:13:const char* eez::flow::FlowError::getMessage(char*, size_t, int, int) const	72	static
+../APP/ui/eez-flow.cpp:9713:6:void eez::flow::throwError(FlowState*, int, const FlowError&)	552	static
+../APP/ui/eez-flow.cpp:9718:6:void eez::flow::enableThrowError(bool)	16	static
+../APP/ui/eez-flow.cpp:9742:6:void eez::flow::queueReset()	4	static
+../APP/ui/eez-flow.cpp:9749:8:size_t eez::flow::getQueueSize()	4	static
+../APP/ui/eez-flow.cpp:9761:8:size_t eez::flow::getMaxQueueSize()	4	static
+../APP/ui/eez-flow.cpp:9764:6:bool eez::flow::addToQueue(FlowState*, unsigned int, int, int, int, bool)	40	static
+../APP/ui/eez-flow.cpp:9785:6:bool eez::flow::peekNextTaskFromQueue(FlowState*&, unsigned int&, bool&)	24	static
+../APP/ui/eez-flow.cpp:9794:6:void eez::flow::removeNextTaskFromQueue()	16	static
+../APP/ui/eez-flow.cpp:9805:6:bool eez::flow::isInQueue(FlowState*, unsigned int)	24	static
+../APP/ui/eez-flow.cpp:9821:6:void eez::flow::removeTasksFromQueueForFlowState(FlowState*)	24	static
+../APP/ui/eez-flow.cpp:9856:16:eez::flow::WatchListNode* eez::flow::watchListAdd(FlowState*, unsigned int)	24	static
+../APP/ui/eez-flow.cpp:9873:6:void eez::flow::watchListRemove(WatchListNode*)	16	static
+../APP/ui/eez-flow.cpp:9887:6:void eez::flow::visitWatchList()	16	static
+../APP/ui/eez-flow.cpp:9902:6:void eez::flow::watchListReset()	16	static
+../APP/ui/eez-flow.cpp:9909:6:void eez::flow::removeWatchesForFlowState(FlowState*)	24	static
+../APP/ui/eez-flow.cpp:9918:10:unsigned int eez::flow::getWatchListSize()	4	static
 ../APP/ui/eez-flow.h:216:14:static void eez::ObjectAllocator<T>::deallocate(T*) [with T = eez::Ref]	16	static
 ../APP/ui/eez-flow.h:1508:14:T* eez::AssetsPtr<T>::operator->() [with T = eez::Colors]	16	static
 ../APP/ui/eez-flow.h:1522:14:T* eez::ListOfAssetsPtr<T>::operator[](uint32_t) [with T = eez::Theme]	16	static
@@ -1052,8 +1052,8 @@ C:\ST\STM32CubeIDE_1.19.0\STM32CubeIDE\plugins\com.st.stm32cube.ide.mcu.external
 ../APP/ui/eez-flow.h:1300:8:virtual eez::PropertyRef::~PropertyRef()	16	static
 ../APP/ui/eez-flow.h:1291:8:eez::LVGLEventRef::~LVGLEventRef()	16	static
 ../APP/ui/eez-flow.h:1291:8:virtual eez::LVGLEventRef::~LVGLEventRef()	16	static
-../APP/ui/eez-flow.cpp:9923:1:void __static_initialization_and_destruction_0()	8	static
+../APP/ui/eez-flow.cpp:9922:1:void __static_initialization_and_destruction_0()	8	static
 ../APP/ui/eez-flow.h:2167:8:eez::flow::EvalStack::~EvalStack()	24	static
-../APP/ui/eez-flow.cpp:9923:1:void __static_initialization_and_destruction_1()	8	static
-../APP/ui/eez-flow.cpp:9923:1:cpp)	8	static
-../APP/ui/eez-flow.cpp:9923:1:cpp)	8	static
+../APP/ui/eez-flow.cpp:9922:1:void __static_initialization_and_destruction_1()	8	static
+../APP/ui/eez-flow.cpp:9922:1:cpp)	8	static
+../APP/ui/eez-flow.cpp:9922:1:cpp)	8	static

@@ -18,14 +18,6 @@
     "ui_font_chinese18.c",
     "ui_font_chinese24.c",
     "ui_font_chinese8.c",
-    "ui_image_p_iamge.c",
-    "ui_image_page_activity.c",
-    "ui_image_page_dashboard.c",
-    "ui_image_page_inventory.c",
-    "ui_image_page_printfer.c",
-    "ui_image_page_search.c",
-    "ui_image_page_uimode.c",
-    "ui_image_page_wms.c",
     "vars.h"
   ]
 }

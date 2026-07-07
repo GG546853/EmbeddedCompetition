@@ -321,3 +321,98 @@ _Min_Heap_Size = 0x10000;   // 0x800 (2KB) → 0x10000 (64KB)
 | `Core/Inc/FreeRTOSConfig.h` | `configTOTAL_HEAP_SIZE=128KB` |
 | `APP/LV_task.c` | `stack_size` 增大到 `4096*24` |
 | `STM32N647X0HXQ_ROMxspi2_RAMxspi1.ld` | `_Min_Heap_Size=64KB` |
+
+---
+
+# 注册人脸时屏幕雪花问题（2026-07-07）⚠️ 未解决
+
+## 现象
+
+串口输入 `register zs` 后，屏幕覆盖一层雪花（随机彩色噪点），但雪花后方能看到人影晃动和人脸检测框移动。雪花只在人脸注册（`network_fc` 推理）期间出现，推理完成后恢复。
+
+## 根因分析
+
+`network_fc`（人脸识别模型）NPU 推理时将中间激活数据写入 HyperRAM，起始地址 0x90000000，实际写入量约 1.531 MB（止于 0x90188000）。LCD 显存 `g_ltdc_framebuf`（800×480×3 = 1.15 MB）原本也在 0x90000000，被 NPU 完整覆盖。
+
+```
+NPU fc 激活区:  0x90000000 ─────────── 0x90188000 (1.53 MB)
+g_ltdc_framebuf: 0x90000000 ───── 0x90119400 (1.15 MB)  ← 被覆盖
+crop_temp_buf:          0x90119400 ───── 0x901C2000 (0.69 MB)
+```
+
+LTDC 持续从 0x90000000 读取数据显示，NPU 写入的激活数据被 LTDC 当作像素数据显示，呈现为雪花。雪花中能看到人影是因为 DCMIPP PIPE1 持续向同一地址写入新帧，局部覆盖了被破坏的区域。
+
+### 为什么不改 AI 模型
+
+`network_fc` 的 NPU 内存池定义在 `Model/my_mpools/stm32n6_net_fc.mpool`，HyperRAM offset = 0x90000000。重新生成模型需要 NPU 编译器，且会影响模型推理性能。选择改 linker 布局来避开冲突。
+
+## 尝试的修复
+
+### 修改 1：rgblcd.c — 显存换段
+
+`Drivers/BSP/RGBLCD/rgblcd.c:37`：
+```c
+// 改前
+uint8_t g_ltdc_framebuf[480 * 800 * 3] __attribute__((section(".EXTRAM"), aligned(32)));
+// 改后
+uint8_t g_ltdc_framebuf[480 * 800 * 3] __attribute__((section(".ltdc_fb"), aligned(32)));
+```
+
+### 修改 2：linker script — 独立显存区域
+
+`STM32N647X0HXQ_ROMxspi2_RAMxspi1.ld`：
+
+MEMORY 拆分：
+```c
+// 改前
+EXTRAM (rw) : ORIGIN = 0x90000000, LENGTH = 32M
+
+// 改后
+EXTRAM    (rw) : ORIGIN = 0x90000000, LENGTH = 2M    // NPU activations + crop buf
+EXTRAM_FB (rw) : ORIGIN = 0x90200000, LENGTH = 30M   // LCD framebuffer
+```
+
+SECTIONS 增加：
+```c
+.ltdc_fb (NOLOAD):
+{
+  . = ALIGN(32);
+  *(.ltdc_fb)
+  . = ALIGN(32);
+} >EXTRAM_FB
+```
+
+### 修改 3：imx335.c/h — 固定白平衡函数
+
+`Drivers/BSP/IMX335/imx335.c` 新增 `imx335_set_wb_mode()`：
+- 传 0 → AWB 自动模式
+- 传 2856/4000/5000/6500 → 固定色温（A / TL84 / D50 / D65）
+
+`Drivers/BSP/IMX335/imx335.h` 添加声明。
+
+### 修改 4：Sensor_task.c — 固定 D50 色温
+
+在 `imx335_init()` 成功后、`imx335_io_deinit()` 前调用 `imx335_set_wb_mode(5000)`，解决 ISP AWB 算法收敛锁死导致的色调不响应问题。
+
+## 编译结果
+
+Release 配置编译通过，map 确认布局正确：
+
+```
+.ltdc_fb  0x90200000  0x119400  ./Drivers/BSP/RGBLCD/rgblcd.o
+          0x90200000            g_ltdc_framebuf
+```
+
+Debug 配置的 `rgblcd.o` 未重新编译（map 仍显示旧布局），需 `make clean` 后重编。
+
+## 测试结果
+
+Release 烧录后，注册人脸时**雪花依旧存在**。显存已确认移到 0x90200000，但问题未消失，说明还有**其他来源**在破坏显存。
+
+## 待排查方向
+
+- [ ] NPU fc 推理是否实际写入范围超出 `fc_analyze.md` 报告的 0x90188000
+- [ ] DCMIPP PIPE1 与 DMA2D crop 在同一 HyperRAM 总线上竞争带宽，导致 LTDC 读不到完整帧
+- [ ] NPU cache writeback 是否波及 0x90200000 区间
+- [ ] `network_f`（人脸检测）运行时是否有未记录的 HyperRAM 写入
+- [ ] 尝试将 `.ltdc_fb` 放到更远地址（如 0x90800000）排除 NPU 范围不确定性

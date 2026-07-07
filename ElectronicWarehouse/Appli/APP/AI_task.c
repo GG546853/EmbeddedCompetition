@@ -322,7 +322,7 @@ void AI_Task(void *argument)
         	g_trigger_identify = 0;
         	reid_pending = REID_IDENTIFY;
         }
-
+        HAL_GPIO_WritePin(GPIOG,GPIO_PIN_10,0);
         vTaskDelay(pdMS_TO_TICKS(1));
     }
 }

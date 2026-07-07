@@ -20,11 +20,11 @@ void Sensor_Task(void *argument)
 		  __NOP();
 	  }
 
+	  imx335_set_wb_mode(6500);
+
 	  /* 摄像头 I2C 只用一次，释放 PD14 给触摸屏硬件 I2C2，PC2 置高释放 */
 	  imx335_io_deinit();
 	  printf("[Sensor] Camera init OK, I2C released to touch\r\n");
-
-	  imx335_set_wb_mode(5000);
 
 	  if (imx335_start_capture((uint32_t)g_ltdc_framebuf) != 0) {
 	      printf("[Sensor] start_capture FAILED\r\n");

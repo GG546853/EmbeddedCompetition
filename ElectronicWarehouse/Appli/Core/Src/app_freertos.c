@@ -205,6 +205,7 @@ void StartDefaultTask(void *argument)
 	//osThreadNew(Electromagnet_Task, (void *)(uintptr_t)0x30, &ElectromagnetTask_attributes);
   for(;;)
   {
+	  HAL_GPIO_WritePin(GPIOG,GPIO_PIN_10,1);
 //    printf("[History] %d records:\r\n", history_count);
 //    for (int i = 0; i < history_count; i++) {
 //        printf("  [%d] t:%s u:%s pc:%s qty:%u act:%s cab:%d\r\n",

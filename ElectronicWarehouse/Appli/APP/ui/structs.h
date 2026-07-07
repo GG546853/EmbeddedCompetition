@@ -12,12 +12,14 @@ using namespace eez;
 
 enum FlowStructures {
     FLOW_STRUCTURE_CABINET = 16384,
-    FLOW_STRUCTURE_LOG_ENTRY = 16385
+    FLOW_STRUCTURE_LOG_ENTRY = 16385,
+    FLOW_STRUCTURE_LSW = 16386
 };
 
 enum FlowArrayOfStructures {
     FLOW_ARRAY_OF_STRUCTURE_CABINET = 81920,
-    FLOW_ARRAY_OF_STRUCTURE_LOG_ENTRY = 81921
+    FLOW_ARRAY_OF_STRUCTURE_LOG_ENTRY = 81921,
+    FLOW_ARRAY_OF_STRUCTURE_LSW = 81922
 };
 
 enum CabinetFlowStructureFields {
@@ -37,6 +39,13 @@ enum LogEntryFlowStructureFields {
     FLOW_STRUCTURE_LOG_ENTRY_FIELD_ACTION = 4,
     FLOW_STRUCTURE_LOG_ENTRY_FIELD_CABINET_ID = 5,
     FLOW_STRUCTURE_LOG_ENTRY_NUM_FIELDS
+};
+
+enum LSWFlowStructureFields {
+    FLOW_STRUCTURE_LSW_FIELD_NAME = 0,
+    FLOW_STRUCTURE_LSW_FIELD_CNUM = 1,
+    FLOW_STRUCTURE_LSW_FIELD_STOCK = 2,
+    FLOW_STRUCTURE_LSW_NUM_FIELDS
 };
 
 struct CabinetValue {
@@ -146,5 +155,41 @@ struct LogEntryValue {
 };
 
 typedef ArrayOf<LogEntryValue, FLOW_ARRAY_OF_STRUCTURE_LOG_ENTRY> ArrayOfLogEntryValue;
+struct LSWValue {
+    Value value;
+    
+    LSWValue() {
+        value = Value::makeArrayRef(FLOW_STRUCTURE_LSW_NUM_FIELDS, FLOW_STRUCTURE_LSW, 0);
+    }
+    
+    LSWValue(Value value) : value(value) {}
+    
+    operator Value() const { return value; }
+    
+    operator bool() const { return value.isArray(); }
+    
+    const char *name() {
+        return value.getArray()->values[FLOW_STRUCTURE_LSW_FIELD_NAME].getString();
+    }
+    void name(const char *name) {
+        value.getArray()->values[FLOW_STRUCTURE_LSW_FIELD_NAME] = StringValue(name);
+    }
+    
+    int CNUM() {
+        return value.getArray()->values[FLOW_STRUCTURE_LSW_FIELD_CNUM].getInt();
+    }
+    void CNUM(int CNUM) {
+        value.getArray()->values[FLOW_STRUCTURE_LSW_FIELD_CNUM] = IntegerValue(CNUM);
+    }
+    
+    int STOCK() {
+        return value.getArray()->values[FLOW_STRUCTURE_LSW_FIELD_STOCK].getInt();
+    }
+    void STOCK(int STOCK) {
+        value.getArray()->values[FLOW_STRUCTURE_LSW_FIELD_STOCK] = IntegerValue(STOCK);
+    }
+};
+
+typedef ArrayOf<LSWValue, FLOW_ARRAY_OF_STRUCTURE_LSW> ArrayOfLSWValue;
 
 #endif /*EEZ_LVGL_UI_STRUCTS_H*/

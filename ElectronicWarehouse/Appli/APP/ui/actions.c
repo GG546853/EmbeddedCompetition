@@ -15,3 +15,6 @@ void action_action_stop_camera(lv_event_t * e) {
 
 void action_action_recognize(lv_event_t * e) {
 }
+
+void action_iobutton(lv_event_t * e) {
+}

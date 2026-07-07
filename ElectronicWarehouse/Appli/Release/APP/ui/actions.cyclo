@@ -39,3 +39,4 @@
 ../APP/ui/actions.c:10:6:action_printer	1
 ../APP/ui/actions.c:13:6:action_action_stop_camera	1
 ../APP/ui/actions.c:16:6:action_action_recognize	1
+../APP/ui/actions.c:19:6:action_iobutton	1

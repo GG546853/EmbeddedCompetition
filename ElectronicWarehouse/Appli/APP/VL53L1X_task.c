@@ -51,8 +51,8 @@ void VL53L1X_Task(void *argument)
     for (;;) {
         if (vl53l1x_is_data_ready(&ready) == 0 && ready) {
             vl53l1x_read_distance(&Cabinet.distance_mm);
+            printf("[VL53L1X] distance: %u mm\r\n", Cabinet.distance_mm);
             vl53l1x_clear_interrupt();
-
             uint32_t now = xTaskGetTickCount();
             uint32_t elapsed = (now - state_enter_tick) * portTICK_PERIOD_MS;
 

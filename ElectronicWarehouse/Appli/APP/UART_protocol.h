@@ -29,6 +29,7 @@
 #define FRAME_TYPE_STORE      0x07
 #define FRAME_TYPE_TIME       0x08
 #define FRAME_TYPE_MINIOUT    0x09
+#define FRAME_TYPE_QTY_ALERT  0x0A
 
 uint8_t protocol_build_frame(uint8_t type, const uint8_t *payload, uint8_t len, uint8_t *out);
 

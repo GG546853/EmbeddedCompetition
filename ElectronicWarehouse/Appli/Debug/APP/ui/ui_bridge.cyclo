@@ -29,32 +29,36 @@
 ../APP/ui/eez-flow.h:3999:6:void utf8upr(utf8_int8_t*)	3
 ../APP/ui/eez-flow.h:4016:36:constexpr utf8_int32_t utf8lwrcodepoint(utf8_int32_t)	97
 ../APP/ui/eez-flow.h:4182:36:constexpr utf8_int32_t utf8uprcodepoint(utf8_int32_t)	99
-../APP/ui/structs.h:45:5:CabinetValue::CabinetValue()	1
-../APP/ui/structs.h:49:5:CabinetValue::CabinetValue(eez::Value)	1
-../APP/ui/structs.h:55:17:const char* CabinetValue::name()	1
-../APP/ui/structs.h:58:10:void CabinetValue::name(const char*)	1
-../APP/ui/structs.h:62:17:const char* CabinetValue::pc()	1
-../APP/ui/structs.h:65:10:void CabinetValue::pc(const char*)	1
-../APP/ui/structs.h:69:9:int CabinetValue::qty()	1
-../APP/ui/structs.h:72:10:void CabinetValue::qty(int)	1
-../APP/ui/structs.h:76:17:const char* CabinetValue::pa()	1
-../APP/ui/structs.h:79:10:void CabinetValue::pa(const char*)	1
-../APP/ui/structs.h:83:17:const char* CabinetValue::spec()	1
-../APP/ui/structs.h:86:10:void CabinetValue::spec(const char*)	1
-../APP/ui/structs.h:95:5:LogEntryValue::LogEntryValue()	1
-../APP/ui/structs.h:99:5:LogEntryValue::LogEntryValue(eez::Value)	1
-../APP/ui/structs.h:105:17:const char* LogEntryValue::time()	1
-../APP/ui/structs.h:108:10:void LogEntryValue::time(const char*)	1
-../APP/ui/structs.h:112:17:const char* LogEntryValue::user()	1
-../APP/ui/structs.h:115:10:void LogEntryValue::user(const char*)	1
-../APP/ui/structs.h:119:17:const char* LogEntryValue::pc()	1
-../APP/ui/structs.h:122:10:void LogEntryValue::pc(const char*)	1
-../APP/ui/structs.h:126:9:int LogEntryValue::qty()	1
-../APP/ui/structs.h:129:10:void LogEntryValue::qty(int)	1
-../APP/ui/structs.h:133:17:const char* LogEntryValue::action()	1
-../APP/ui/structs.h:136:10:void LogEntryValue::action(const char*)	1
-../APP/ui/structs.h:140:9:int LogEntryValue::cabinet_id()	1
-../APP/ui/structs.h:143:10:void LogEntryValue::cabinet_id(int)	1
+../APP/ui/structs.h:54:5:CabinetValue::CabinetValue()	1
+../APP/ui/structs.h:58:5:CabinetValue::CabinetValue(eez::Value)	1
+../APP/ui/structs.h:64:17:const char* CabinetValue::name()	1
+../APP/ui/structs.h:67:10:void CabinetValue::name(const char*)	1
+../APP/ui/structs.h:71:17:const char* CabinetValue::pc()	1
+../APP/ui/structs.h:74:10:void CabinetValue::pc(const char*)	1
+../APP/ui/structs.h:78:9:int CabinetValue::qty()	1
+../APP/ui/structs.h:81:10:void CabinetValue::qty(int)	1
+../APP/ui/structs.h:85:17:const char* CabinetValue::pa()	1
+../APP/ui/structs.h:88:10:void CabinetValue::pa(const char*)	1
+../APP/ui/structs.h:92:17:const char* CabinetValue::spec()	1
+../APP/ui/structs.h:95:10:void CabinetValue::spec(const char*)	1
+../APP/ui/structs.h:104:5:LogEntryValue::LogEntryValue()	1
+../APP/ui/structs.h:108:5:LogEntryValue::LogEntryValue(eez::Value)	1
+../APP/ui/structs.h:114:17:const char* LogEntryValue::time()	1
+../APP/ui/structs.h:117:10:void LogEntryValue::time(const char*)	1
+../APP/ui/structs.h:121:17:const char* LogEntryValue::user()	1
+../APP/ui/structs.h:124:10:void LogEntryValue::user(const char*)	1
+../APP/ui/structs.h:128:17:const char* LogEntryValue::pc()	1
+../APP/ui/structs.h:131:10:void LogEntryValue::pc(const char*)	1
+../APP/ui/structs.h:135:9:int LogEntryValue::qty()	1
+../APP/ui/structs.h:138:10:void LogEntryValue::qty(int)	1
+../APP/ui/structs.h:142:17:const char* LogEntryValue::action()	1
+../APP/ui/structs.h:145:10:void LogEntryValue::action(const char*)	1
+../APP/ui/structs.h:149:9:int LogEntryValue::cabinet_id()	1
+../APP/ui/structs.h:152:10:void LogEntryValue::cabinet_id(int)	1
+../APP/ui/structs.h:161:5:LSWValue::LSWValue()	1
+../APP/ui/structs.h:174:10:void LSWValue::name(const char*)	1
+../APP/ui/structs.h:181:10:void LSWValue::CNUM(int)	1
+../APP/ui/structs.h:188:10:void LSWValue::STOCK(int)	1
 ../APP/ui/ui_bridge.cpp:20:6:void ui_set_integer(int, int)	1
 ../APP/ui/ui_bridge.cpp:24:5:int ui_get_integer(int)	1
 ../APP/ui/ui_bridge.cpp:28:6:void ui_set_string(int, const char*)	1
@@ -62,16 +66,19 @@
 ../APP/ui/ui_bridge.cpp:36:13:void copy_item_to_cab(CabinetValue&, const InventoryItem*)	1
 ../APP/ui/ui_bridge.cpp:44:13:void copy_cab_to_item(InventoryItem*, CabinetValue)	1
 ../APP/ui/eez-flow.h:1355:8:eez::ArrayOf<CabinetValue, 81920>::~ArrayOf()	1
-../APP/ui/structs.h:42:8:CabinetValue::~CabinetValue()	1
+../APP/ui/structs.h:51:8:CabinetValue::~CabinetValue()	1
 ../APP/ui/ui_bridge.cpp:52:6:void ui_push_inventory(const InventoryItem*, int, const InventoryItem*, int)	3
 ../APP/ui/ui_bridge.cpp:70:6:void ui_pull_inventory(InventoryItem*, int, InventoryItem*, int)	6
 ../APP/ui/eez-flow.h:1355:8:eez::ArrayOf<LogEntryValue, 81921>::~ArrayOf()	1
-../APP/ui/structs.h:92:8:LogEntryValue::~LogEntryValue()	1
+../APP/ui/structs.h:101:8:LogEntryValue::~LogEntryValue()	1
 ../APP/ui/ui_bridge.cpp:86:6:void ui_push_history(const HistoryRecord*, int)	2
 ../APP/ui/ui_bridge.cpp:101:5:int ui_pull_history(HistoryRecord*, int)	4
 ../APP/ui/ui_bridge.cpp:121:5:int ui_get_log_count()	2
 ../APP/ui/ui_bridge.cpp:128:6:void ui_get_log_entry(int, char*, char*, char*, int*, char*, int*)	4
-../APP/ui/ui_bridge.cpp:147:17:void action_givetime(lv_event_t*)	1
+../APP/ui/eez-flow.h:1355:8:eez::ArrayOf<LSWValue, 81922>::~ArrayOf()	1
+../APP/ui/structs.h:158:8:LSWValue::~LSWValue()	1
+../APP/ui/ui_bridge.cpp:147:6:void ui_push_alarm(const AlarmRecord*, int)	2
+../APP/ui/ui_bridge.cpp:161:17:void action_givetime(lv_event_t*)	1
 ../APP/ui/eez-flow.h:216:14:static void eez::ObjectAllocator<T>::deallocate(T*) [with T = eez::Ref]	1
 ../APP/ui/eez-flow.h:1357:5:eez::ArrayOf<T, ARRAY_TYPE>::ArrayOf(size_t) [with T = CabinetValue; long unsigned int ARRAY_TYPE = 81920]	1
 ../APP/ui/eez-flow.h:1369:10:void eez::ArrayOf<T, ARRAY_TYPE>::at(int, const T&) [with T = CabinetValue; long unsigned int ARRAY_TYPE = 81920]	1
@@ -85,3 +92,6 @@
 ../APP/ui/eez-flow.h:1360:5:eez::ArrayOf<T, ARRAY_TYPE>::ArrayOf(eez::Value) [with T = LogEntryValue; long unsigned int ARRAY_TYPE = 81921]	1
 ../APP/ui/eez-flow.h:1363:12:size_t eez::ArrayOf<T, ARRAY_TYPE>::size() [with T = LogEntryValue; long unsigned int ARRAY_TYPE = 81921]	1
 ../APP/ui/eez-flow.h:1366:7:T eez::ArrayOf<T, ARRAY_TYPE>::at(int) [with T = LogEntryValue; long unsigned int ARRAY_TYPE = 81921]	1
+../APP/ui/eez-flow.h:1357:5:eez::ArrayOf<T, ARRAY_TYPE>::ArrayOf(size_t) [with T = LSWValue; long unsigned int ARRAY_TYPE = 81922]	1
+../APP/ui/eez-flow.h:1369:10:void eez::ArrayOf<T, ARRAY_TYPE>::at(int, const T&) [with T = LSWValue; long unsigned int ARRAY_TYPE = 81922]	1
+../APP/ui/eez-flow.h:1361:5:eez::ArrayOf<T, ARRAY_TYPE>::operator eez::Value() const [with T = LSWValue; long unsigned int ARRAY_TYPE = 81922]	1

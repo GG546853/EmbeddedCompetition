@@ -22,6 +22,7 @@ const osThreadAttr_t UART4_RxTask_attributes = {
 
 InventoryItem  inventory_item;
 HistoryRecord history_list_t;
+extern AlarmRecord alarm_list[1];
 
 char           uart4_resp_str[512];
 volatile uint32_t last_heartbeat_tick;
@@ -85,6 +86,9 @@ void handle_alert(const uint8_t *payload, uint8_t len)
     } else if (sub_type == 0x01) {
         Cabinet.humidity_th    = val;
     }
+
+    ui_set_integer(FLOW_GLOBAL_VARIABLE_DASH_TS,
+        ui_get_integer(FLOW_GLOBAL_VARIABLE_DASH_TS) + 1);
 }
 
 void handle_heartbeat(const uint8_t *payload, uint8_t len)
@@ -322,6 +326,25 @@ void handle_miniapp_outbound(const uint8_t *payload, uint8_t len)
 
     ui_set_integer(FLOW_GLOBAL_VARIABLE_DASH_LS,
         ui_get_integer(FLOW_GLOBAL_VARIABLE_DASH_LS) - (int)qty);
+}
+
+void handle_qty_alert(const uint8_t *payload, uint8_t len)
+{
+    /* parse pc\0 cab(1B) qty(2B BE) */
+    uint16_t pos = 0;
+    while (pos < len && payload[pos] != '\0') pos++;
+    if (pos + 3 >= len) return;
+    pos++;
+
+    uint8_t  cab = payload[pos];
+    uint16_t qty = ((uint16_t)payload[pos + 1] << 8) | payload[pos + 2];
+
+    strncpy(alarm_list[0].pc, (const char *)payload, sizeof(alarm_list[0].pc) - 1);
+    alarm_list[0].pc[sizeof(alarm_list[0].pc) - 1] = '\0';
+    alarm_list[0].cabinet_id = cab;
+    alarm_list[0].quantity    = qty;
+
+    ui_push_alarm(alarm_list, 1);
 }
 
 void inventory_store_to_slot(const InventoryItem *item, const char *location)

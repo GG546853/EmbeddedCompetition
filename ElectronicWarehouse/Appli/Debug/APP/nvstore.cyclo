@@ -3,9 +3,9 @@
 ../APP/nvstore.c:39:13:slot_is_valid	7
 ../APP/nvstore.c:59:17:find_best_slot	6
 ../APP/nvstore.c:78:17:find_target_slot	6
-../APP/nvstore.c:97:23:erase_and_write	3
-../APP/nvstore.c:122:16:NVStore_Init	2
-../APP/nvstore.c:131:16:NVStore_LoadInventory	3
-../APP/nvstore.c:150:16:NVStore_SaveInventory	2
-../APP/nvstore.c:190:16:NVStore_LoadFaceGallery	3
-../APP/nvstore.c:211:16:NVStore_SaveFaceGallery	2
+../APP/nvstore.c:100:23:erase_and_write	5
+../APP/nvstore.c:135:16:NVStore_Init	2
+../APP/nvstore.c:144:16:NVStore_LoadInventory	3
+../APP/nvstore.c:163:16:NVStore_SaveInventory	2
+../APP/nvstore.c:203:16:NVStore_LoadFaceGallery	3
+../APP/nvstore.c:224:16:NVStore_SaveFaceGallery	2

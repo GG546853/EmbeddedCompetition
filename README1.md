@@ -728,3 +728,505 @@ exit:
 2. **互斥锁**：摄像头 I2C 和触摸屏 I2C 互斥，不会出现"摄像头正用 I2C 时 HAL 超时"或"I2C2 正通信时被中途关时钟"的情况
 3. **SDA 不复用**：摄像头 SDA 在 PC2，触摸屏 SDA 在 PD4，硬件上已隔离。只有 SCL（PD14）需要分时切换
 4. **每次通信后释放**：摄像头只在需要时短暂占用 PD14，通信完立刻归还，触摸屏响应不受影响
+
+---
+
+## 问题 7：NVStore NOR Flash 数据持久化
+
+### 背景
+
+EEPROM（2Kb）太小，无法存储 ~6KB 物料数据（`inventory_item_T[28]` + `inventory_item_D[6]`）+ ~5KB 人脸底库（`face_gallery[FACE_GALLERY_MAX=10]`）。NOR Flash（MX25UM25645G，32MB）在 `0x71E00000`-`0x72000000` 有约 2MB 空闲空间。
+
+### 存储布局
+
+```
+0x71E00000  +-----------------------------+
+            | INVENTORY SLOT A    (8 KB)  |  2 × 4KB Sector
+0x71E02000  +-----------------------------+
+            | INVENTORY SLOT B    (8 KB)  |
+0x71E04000  +-----------------------------+
+            | FACE GALLERY SLOT A (8 KB)  |
+0x71E06000  +-----------------------------+
+            | FACE GALLERY SLOT B (8 KB)  |
+0x71E08000  +-----------------------------+
+            | (free: ~1.97 MB)            |
+0x72000000  +-----------------------------+
+```
+
+### 每槽数据结构（A/B 双槽，各 8KB）
+
+```
+Offset  大小   字段
+------  ----   ----
+0x00    4      Magic:  0x4E565453 ("NVTS")
+0x04    4      Type:   0x494E564E ("INVN") 或 0x46414345 ("FACE")
+0x08    4      Version: 单调递增版本号
+0x0C    4      PayloadSize
+0x10    4      CRC32（只对 Payload 计算，不包含 Header）
+0x14    N      Payload
+```
+
+### A/B 双槽 + 版本号可靠性机制
+
+**写入时**：
+1. 读取两槽 Header，找到有效版本号
+2. 选择版本号较低的一槽（或无效槽）作为目标
+3. 先擦除目标槽，再写入新版本数据（version = 当前最高版本 + 1）
+4. 任意时刻掉电，至少有一槽完好 → 上电后 CRC 校验选出有效槽
+
+**上电时**：
+1. 扫描两槽 Header，校验 Magic → Type → PayloadSize 范围 → CRC32
+2. 选取 Version 最高的有效槽加载到 SRAM
+3. 若两槽均无效，返回 `NVSTORE_ERROR_NODATA`，保留 SRAM 中的编译期初值
+
+### API
+
+```c
+NVStore_Status NVStore_Init(NORFlash_ObjectTypeDef *flashObj);
+NVStore_Status NVStore_LoadInventory(void);
+NVStore_Status NVStore_SaveInventory(void);
+NVStore_Status NVStore_LoadFaceGallery(void);
+NVStore_Status NVStore_SaveFaceGallery(void);
+```
+
+### 问题 7.1：NVStore_LoadFaceGallery() 栈溢出 HardFault
+
+**现象**：首次上电调用 `NVStore_LoadFaceGallery()` 时 HardFault。
+
+**根因**：函数内部的 `face_entry_t entries[FACE_GALLERY_MAX]`（5280 字节）是本地自动变量，分配在 main 栈上。main 栈大小仅 `_Min_Stack_Size = 0x800`（2KB），5280 字节远超 2KB，直接栈溢出。函数在 `main()` 中 RTOS 启动前被调用。
+
+**修复**：为 `NVStore_LoadFaceGallery()` 和 `NVStore_SaveFaceGallery()` 中的大数组加上 `static` 关键字，从栈迁移到 BSS 段。
+
+```c
+// 修改前（栈上，HardFault）
+face_entry_t entries[FACE_GALLERY_MAX];
+
+// 修改后（BSS，安全）
+static face_entry_t entries[FACE_GALLERY_MAX];
+```
+
+### 问题 7.2：SaveFaceGallery 返回 -2 + PRECISERR HardFault
+
+**现象**：串口 `[TEST] SaveFaceGallery = -2`（`NVSTORE_ERROR_ERASE`），随后进入 HardFault，故障分析器报 **PRECISERR（精确的数据访问冲突）**。
+
+**输出含义**：
+
+| 返回值 | 含义 |
+|--------|------|
+| 0 | `NVSTORE_OK` — 写入成功 |
+| -1 | `NVSTORE_ERROR_INIT` — NORFlash 未初始化 |
+| -2 | `NVSTORE_ERROR_ERASE` — 擦除失败 |
+| -3 | `NVSTORE_ERROR_WRITE` — 写入失败 |
+| -4 | `NVSTORE_ERROR_CRC` — CRC 校验失败 |
+| -5 | `NVSTORE_ERROR_NODATA` — 无有效数据 |
+| -6 | `NVSTORE_ERROR_PARAM` — 参数错误 |
+
+**根因**：Memory-Mapped 模式激活时执行间接擦除/写入命令导致 XSPI 总线冲突。擦除命令部分执行后 Flash 进入异常状态。saveface 返回后 AI 任务通过 MM 端口读取 NN 权重 → 总线错误 → HardFault。
+
+**XSPI 双端口架构**：
+- Port1（间接命令端口）：用于 `NORFlash_EraseSector` / `NORFlash_Write`
+- Port2（内存映射端口）：用于 XIP 取指令和 MM 模式读取数据
+
+两个端口共享同一组物理引脚。MM 模式激活时，Port2 持续占用总线，Port1 的间接命令会被干扰。
+
+**修复**：在 `erase_and_write()` 中，通过 `SCB->VTOR` 运行时检测当前是 LRUN（SRAM 0x34000000）还是 XIP（NOR Flash）模式：
+
+```c
+__attribute__((section(".RamFunc")))  // 关键函数放在 SRAM 执行
+static NVStore_Status erase_and_write(uint32_t addr, uint32_t erase_size,
+                                      const uint8_t *data, uint32_t data_len)
+{
+    NVStore_Status status = NVSTORE_OK;
+    int lrun = ((SCB->VTOR & 0xFF000000) == 0x34000000);
+
+    __disable_irq();
+
+    if (lrun) {
+        NORFlash_DisableMemoryMappedMode(nv_flash);  // LRUN：安全关闭 MM
+    }
+    // XIP：RamFunc + __disable_irq() 已保证无 Flash 指令取指，不关 MM
+
+    if (NORFlash_EraseSector(nv_flash, addr, erase_size) != NORFlash_OK) {
+        status = NVSTORE_ERROR_ERASE; goto exit;
+    }
+    if (NORFlash_Write(nv_flash, addr, data, data_len) != NORFlash_OK) {
+        status = NVSTORE_ERROR_WRITE;
+    }
+
+exit:
+    if (lrun) {
+        NORFlash_EnableMemoryMappedMode(nv_flash);  // LRUN：恢复 MM
+    }
+    __enable_irq();
+    return status;
+}
+```
+
+**为什么 RELEASE（XIP）模式安全**：
+- 擦写函数已放入 `.RamFunc` 段，运行时从 SRAM 执行，不访问 NOR Flash
+- `__disable_irq()` 阻止中断服务程序取指令时访问 Flash
+- 双重保证下，擦写期间无人访问 Port2 → 间接命令安全
+- 因此 XIP 模式下无需关闭 MM 模式
+
+### 问题 7.3：.RamFunc 段链接脚本修改 & LRUN 适配
+
+**XIP 链接脚本修改**（`STM32N647X0HXQ_ROMxspi2_RAMxspi1.ld`）：
+- 从 `.text` 中删除 `*(.RamFunc)` / `*(.RamFunc*)`
+- 新增独立段 `>RAM AT> ROM`（LMA 在 Flash，VMA 在 SRAM，启动时由 `main.c` 拷贝）
+
+**LRUN 链接脚本修改**（`STM32N647X0HXQ_LRUN_RAMxspi1.ld`）：
+- 同样修改，但使用 `>RAM`（LMA=VMA，无需拷贝）
+- `main.c` 中通过 `if (&_siramfunc != &_sramfunc)` 判断是否需拷贝，LRUN 下 LMA=VMA 自动跳过
+
+### 涉及文件
+
+| 文件 | 操作 | 说明 |
+|------|------|------|
+| `Appli/APP/nvstore.h` | 新建 | API 头文件 |
+| `Appli/APP/nvstore.c` | 新建 | 完整实现（~257 行） |
+| `Appli/STM32N647X0HXQ_ROMxspi2_RAMxspi1.ld` | 修改 | 新增 `.RamFunc` 段 `>RAM AT> ROM` |
+| `Appli/STM32N647X0HXQ_LRUN_RAMxspi1.ld` | 修改 | 新增 `.RamFunc` 段 `>RAM` |
+| `Appli/Core/Src/main.c` | 修改 | RamFunc 拷贝 + NVStore 初始化 + Load |
+| `Appli/APP/AI_task.c` | 修改 | 测试串口命令（saveface/loadface/clearface） |
+| `Appli/X-CUBE-AI/App/app_x-cube-ai.c` | 修改 | 新增 `ai_face_gallery_export/import` |
+| `Appli/X-CUBE-AI/App/app_x-cube-ai.h` | 修改 | 导出声明 |
+
+### 验证流程
+
+1. **DEBUG 模式编译**：确认 NVStore_Init/Load/Save 功能正常
+2. **串口测试**：
+   - `saveface` → 应返回 0（OK）
+   - `loadface` → 应返回 0 并打印已存储的人脸列表
+   - `clearface` → 清空 RAM 中的 gallery
+3. **掉电测试**：`register <name>` 录入人脸 → `saveface` → 断电 → 上电 → `loadface` → `gallery` 确认数据恢复
+4. **首次上电**：清空 NOR Flash 数据区域，确认 Load 返回 NODATA，使用编译期默认值
+
+### 问题 7.4：RELEASE 模式下发 saveface 命令后程序死锁（XIP 核心冲突）
+
+#### 现象
+
+- **DEBUG/LRUN 模式**：`saveface` / `saveinv` 正常，返回 0，读写 NOR Flash 均成功
+- **RELEASE/XIP 模式**：NVStore 初始化成功（打印 `Init failed` 不出现），但一发 `saveface` 串口命令，系统立刻死锁——串口无任何输出，屏幕冻结
+
+#### 调试过程
+
+**1. 早期错误（已修正）**：
+
+- **NORFlashObject 在 `#ifdef DEBUG` 内** → `nv_flash` 为 NULL → SaveFaceGallery 返回 -1。移到 `#ifdef` 外解决。
+- **RELEASE 路径调用 NORFlash_XSPI_Init() 等函数** → 内部调用 `HAL_XSPI_Abort()` 写 XSPI2 CR 寄存器 → 干扰正在进行的 XIP 读取 → 启动时即死锁。改为纯数据赋值（不写硬件寄存器）解决。
+
+**2. 核心死锁问题**：
+
+`erase_and_write` 虽然标了 `__attribute__((section(".RamFunc")))` 放在 SRAM 执行，但它的**调用链内部**依然有大量函数在 NOR Flash 里：
+
+```
+erase_and_write()               ← .RamFunc（SRAM ✓）
+  → NORFlash_EraseSector()      ← .text（Flash ✗）
+    → NORFlash_WaitBusy()       ← .text（Flash ✗）
+    → NORFlash_EnableWrite()    ← .text（Flash ✗）
+      → NORFlash_XSPI_*()       ← .text（Flash ✗）
+        → HAL_XSPI_Command()    ← .text（Flash ✗）
+        → HAL_XSPI_AutoPolling()← .text（Flash ✗）
+        → XSPI_WaitFlagState...()← .text（Flash ✗）
+```
+
+发完 Erase (0x21) 或 Program (0x12) 命令后，MX25UM25645G 进入 **busy 状态**。Flash 芯片在 busy 期间只响应 Read Status Register (0x05) 命令，**其他所有命令（包括内存映射读 0xEE）均被忽略**。CPU 执行下一条指令时，取指触发 AXI 读 → 发 0xEE → Flash 不响应 → **AXI 总线永远等不到数据 → CPU 死锁**。
+
+#### 根因本质
+
+**XIP（eXecute In Place）+ Flash 擦写 = 死锁**，除非满足以下两个条件：
+
+| 条件 | 含义 |
+|------|------|
+| 1. 擦写期间的 100% 指令都在 SRAM 执行 | 不能有任何一个函数调用落到 Flash |
+| 2. 擦写期间禁止中断 | ISR 可能也在 Flash 里 |
+
+MX25UM25645G **不支持 Read-While-Write（RWW）**——不能一边擦除/编程一边读取。XSPI2 的 Port1（间接命令）和 Port2（内存映射读取）共享同一组物理 IO 引脚，无法同时操作。
+
+**这并非 STM32N6 或我们代码特有的问题，而是所有 XIP NOR Flash 系统做在线更新的通用约束。**
+
+#### 解决方案：直写 XSPI2 寄存器
+
+在 `erase_and_write` 的 XIP 路径中，**所有 Flash 操作通过直接写 XSPI2 硬件寄存器完成**，不调用任何 Flash 中的函数。整个擦写序列在一条 SRAM 中的函数里完成，CPU 取指 100% 走 SRAM。
+
+**架构**：
+
+```
+erase_and_write()                       ← .RamFunc（SRAM）
+  │
+  ├─ LRUN 分支 ─→ HAL/NORFlash 函数调用（安全：代码在 SRAM）
+  │
+  └─ XIP 分支  ─→ 全部直接写 XSPI2 寄存器（零 Flash 函数调用）
+       │
+       ├─ xip_wait_ready()      ← .RamFunc   自动轮询 RDSR 等 WIP=0
+       ├─ xip_send_cmd_instr()  ← .RamFunc   发仅指令命令（WREN 0x06）
+       └─ xip_send_cmd_addr()   ← .RamFunc   发指令+地址命令（SER 0x21）
+```
+
+**XSPI2 寄存器布局**（基址 `XSPI2` / `XSPI2_BASE_S`）：
+
+| 寄存器 | 偏移 | 关键位域 |
+|--------|------|---------|
+| CR | 0x000 | EN[0], ABORT[1], FMODE[29:28], APMS[22], PMM[23], MSEL[31:30] |
+| SR | 0x020 | TEF[0], TCF[1], SMF[3], BUSY[5] |
+| FCR | 0x024 | CTEF[0], CTCF[1], CSMF[3]（写 1 清除对应 SR 标志） |
+| DLR | 0x040 | 数据长度 - 1 |
+| AR | 0x048 | 目标地址 |
+| DR | 0x050 | 数据寄存器（逐字节写） |
+| PSMKR | 0x080 | 自动轮询掩码 |
+| PSMAR | 0x088 | 自动轮询匹配值 |
+| PIR | 0x090 | 自动轮询间隔 |
+| CCR | 0x100 | IMODE[2:0], IDTR[3], ISIZE[5:4], ADMODE[10:8], ADDTR[11], ADSIZE[13:12], DMODE[26:24], DDTR[27], DQSE[29] |
+| TCR | 0x108 | DCYC[4:0], SSHIFT[30] |
+| IR | 0x110 | 指令值（8D8D8D 模式为 16 位：CMD«8 | ~CMD） |
+| WCCR | 0x180 | 写路径 CCR（MM 模式用） |
+| WTCR | 0x188 | 写路径 TCR |
+| WIR | 0x190 | 写路径 IR |
+
+**FMODE 功能模式**：
+
+| FMODE | 模式 | 说明 |
+|-------|------|------|
+| 0 | 间接写入 | 用于 WREN / Erase / Program 命令 |
+| 1 | 间接读取 | 一般不用 |
+| 2 | 自动轮询 | 用于 RDSR 等待 WIP=0 |
+| 3 | 内存映射 | 用于 XIP 正常取指 |
+
+**8D-8D-8D DTR 模式的 CCR 寄存器值**：
+
+| 数据阶段 | CCR 值 | 组成 |
+|---------|--------|------|
+| 仅指令 | `0x0000003F` | IMODE=7(8线), IDTR=1, ISIZE=3(16位) |
+| 指令+地址 | `0x00003F3F` | + ADMODE=7, ADDTR=1, ADSIZE=3(32位) |
+| 指令+地址+数据（写） | `0x0F003F3F` | + DMODE=7, DDTR=1, DQSE=0 |
+| 指令+地址+数据（读） | `0x2F003F3F` | + DMODE=7, DDTR=1, DQSE=1 |
+
+**8D8D8D 指令编码（16 位 DTR = 指令字节«8 | ~指令字节）**：
+
+| 命令 | 编码 | 用途 |
+|------|------|------|
+| 0x05 | `0x05FA` | Read Status Register |
+| 0x06 | `0x06F9` | Write Enable |
+| 0x21 | `0x21DE` | Sector Erase (4KB) |
+| 0x12 | `0x12ED` | Page Program (256B) |
+| 0xEE | `0xEE11` | Memory-Mapped Read（恢复 XIP 用） |
+
+#### 擦写操作完整序列（XIP 路径）
+
+**步骤 0：退出 MM 模式**
+```
+保存 save_ccr/ir/tcr/wccr/wir/wtcr ← xspi->CCR/IR/TCR/WCCR/WIR/WTCR
+__DSB()                              // 确保无待处理 AXI 事务
+CR = (CR & ~FMODE) | EN              // FMODE=0（间接写入），保持 EN=1
+等 BUSY=0                            // 确保 XSPI 空闲
+```
+
+**步骤 1-3 对每个扇区重复（8KB = 2 × 4KB）**：
+```
+┌─ 自动轮询等 Flash Ready ─────────────────────────────────┐
+│ CCR=0x2F003F3F, TCR=4, IR=0x05FA, AR=0, DLR=0             │
+│ PSMKR=0x01, PSMAR=0x00, PIR=0x10                           │
+│ FMODE=2（自动轮询）, APMS=1, PMM=0（AND 匹配）              │
+│ 写 AR=0 触发 → 等 SMF=1 → FCR 清 SMF                       │
+├─ Write Enable ────────────────────────────────────────────┤
+│ CCR=0x0000003F, TCR=0, IR=0x06F9                            │
+│ FMODE=0（间接写入）→ 等 BUSY=0 → 等 TCF=1 → FCR 清 TCF     │
+├─ Sector Erase ────────────────────────────────────────────┤
+│ CCR=0x00003F3F, TCR=0, IR=0x21DE, AR=addr                  │
+│ FMODE=0 → 等 BUSY=0 → 等 TCF=1 → FCR 清 TCF                │
+└────────────────────────────────────────────────────────────┘
+```
+
+**步骤 4：等待最后一个扇区擦除完成**
+
+自动轮询（同上，等 WIP=0）。
+
+**步骤 5-7 对每个页重复（最多 32 页 × 256B = 8KB）**：
+```
+┌─ Write Enable（同上）─────────────────────────────────────┐
+├─ Page Program ────────────────────────────────────────────┤
+│ CCR=0x0F003F3F, TCR=0, IR=0x12ED, AR=addr, DLR=len-1      │
+│ FMODE=0 → 逐字节写 DR → 等 BUSY=0 → 等 TCF=1 → FCR 清 TCF │
+├─ 自动轮询等 Program 完成（同上）───────────────────────────┤
+└────────────────────────────────────────────────────────────┘
+```
+
+**步骤 8：恢复 MM 模式**
+```
+CCR=save_ccr, TCR=save_tcr, IR=save_ir
+WCCR=save_wccr, WTCR=save_wtcr, WIR=save_wir
+CR = (CR & ~FMODE) | (3 << FMODE_Pos) | EN   // FMODE=3
+__DSB()
+```
+
+**关键设计决策**：
+
+1. **读写配置分别保存恢复**：读路径（CCR/TCR/IR）被间接命令覆盖，需保存。写路径（WCCR/WTCR/WIR）不碰但为安全也保存。
+2. **Page Program 不用 DQS**：CCR=0x0F003F3F（DQSE=0），因为写数据不需要 DQS 信号。
+3. **自动轮询用 DQS**：CCR=0x2F003F3F（DQSE=1），因为读状态寄存器需要 DQS。
+4. **超时用 volatile 忙等循环**：不能调用 `HAL_GetTick()`（在 Flash 里），用 volatile countdown + NOP。800MHz 下 ~6 cycles/iter ≈ 7.5ns/iter，600M iterations ≈ 4.5s。Sector Erase 最坏 5s（MX25UM25645G 手册），设 800M iterations ≈ 6s 留余量。
+5. **写 DR 逐字节**：`*((__IO uint8_t *)&xspi->DR) = byte`，与 HAL 行为一致。
+
+#### 全部修改文件
+
+| 文件 | 改动 | 说明 |
+|------|------|------|
+| `Appli/APP/nvstore.c` | **核心修改** | 新增 3 个 `.RamFunc` 寄存器级辅助函数 + 重写 `erase_and_write` 的 XIP 分支 |
+| `Appli/APP/nvstore.h` | 新建 | API 头文件（地址宏、状态枚举、函数声明） |
+| `Appli/STM32N647X0HXQ_ROMxspi2_RAMxspi1.ld` | 修改 | 新增 `.RamFunc` 段 `>RAM AT> ROM` |
+| `Appli/STM32N647X0HXQ_LRUN_RAMxspi1.ld` | 修改 | 新增 `.RamFunc` 段 `>RAM` |
+| `Appli/Core/Src/main.c` | 修改 | NORFlashObject 全局化、RELEASE 路径纯数据初始化、RamFunc 拷贝、NVStore Init + Load |
+
+#### 参考资料
+
+- **ST 社区**：STM32N6 XSPI + NOR Flash XIP 擦写讨论
+  - `https://community.st.com/t5/stm32-mcus-products/stm32n6-i3c-mixed-communication-no-signal/td-p/770793` — I3C 问题（同平台已知外设缺陷，0 回复）
+  - 搜索关键词：`STM32 XIP NOR Flash write from SRAM RamFunc` / `XSPI memory-mapped write conflict`
+- **MX25UM25645G 数据手册**：
+  - 不支持 Read-While-Write（RWW）
+  - Sector Erase (0x21): 典型 0.3s，最大 5s
+  - Page Program (0x12): 典型 0.6ms，最大 5ms
+  - 8D-8D-8D DTR 模式指令编码：16 位 = CMD«8 | ~CMD
+- **STM32N6 参考手册（RM0486）**：XSPI 章节 — CR/SR/FCR/CCR/TCR/IR/DLR/AR/DR 寄存器定义
+  - FMODE[29:28]：00=间接写入, 10=自动轮询, 11=内存映射
+  - APMS[22]：自动轮询匹配停止
+  - PMM[23]：轮询匹配模式（0=AND, 1=OR）
+- **ST AN4760**：Quad-SPI interface on STM32 microcontrollers — 虽然针对 QSPI 但 XSPI 兼容，FMODE/auto-polling 原理相同
+- **ARM Cortex-M55 Generic User Guide**：`__DSB()` / `__disable_irq()` / `SCB->VTOR` 用法
+
+### 经验教训
+
+1. **main 栈只有 2KB**：RTOS 启动前在 `main()` 中调用的函数不能使用大局部变量。`static` 数组在 BSS 中不受栈大小限制。
+2. **XSPI 双端口总线冲突**：Memory-Mapped 模式启用时，间接命令（Erase/Write）会被 Port2 的 AXI 事务干扰。LRUN 模式必须关闭 MM，XIP 模式必须退到间接模式（FMODE=0/2）。
+3. **RamFunc 不仅函数本身要在 SRAM——整条调用链都必须**：只把顶层函数标 `.RamFunc` 不够，它调用的每一个子函数、子子函数都要在 SRAM。XIP 模式下消除调用链的唯一方法是用寄存器直接编程。
+4. **SCB->VTOR 是可靠的运行时模式判别**：比条件编译（`#ifdef DEBUG`）更安全，不受编译配置错误影响。
+5. **A/B 双槽 + 版本号**是 Flash 存储的经典容错方案：一个槽被擦除但未写入的时间窗口内掉电，至少还有另一个槽完好。
+6. **XIP Flash 擦写是嵌入式系统写入自身 Flash 的统一难题**：无论 STM32、NXP、TI 的 MCU，只要从 NOR Flash 执行代码，在线更新就必须把擦写代码放在 SRAM。这是硬件约束，与厂商无关。
+
+---
+
+### 问题 7.5：RELEASE/XIP 模式直接寄存器编程擦写 NOR Flash 失败（最终结论）
+
+#### 背景
+
+问题 7.4 中已将 `erase_and_write` 及其所有子函数放入 `.RamFunc`（SRAM 执行），XIP 路径完全通过直接写 XSPI2 硬件寄存器实现擦除和写入，零 HAL/Flash 函数调用。理论上消除了所有 Flash 取指依赖。
+
+#### 测试流程
+
+1. **编译 RELEASE 模式**（代码在 NOR Flash 0x70100400 XIP 执行）
+2. **上电运行**，串口输入 `saveface` 命令
+3. **观察结果**：系统死锁，串口无返回，屏幕冻结
+
+#### 调试过程中发现的子问题与修复
+
+##### 子问题 A：寄存器写入顺序错误（FMODE=0 前写了寄存器）
+
+**现象**：`saveface` 等几秒后返回 -2（`NVSTORE_ERROR_ERASE`）。
+
+**根因**：`xip_wait_ready`（auto-polling）退出时将 FMODE 留在 2。紧接着 `xip_send_cmd_instr`（WREN 0x06）在 FMODE=2 时写了 IR 寄存器——这在 auto-polling 模式下只会更新 auto-poll 配置，不会触发间接传输。然后切 FMODE=0，但传输永远没有被触发过。WREN 命令从未到达 Flash → WEL 未置位 → Sector Erase 无效。
+
+**修复**：所有 4 处 helper 函数改为"先设 FMODE=0，再写寄存器触发传输"。FMODE 切换必须在寄存器写入之前。
+
+##### 子问题 B：退出 MM 模式时切换了 EN=0→1 导致 AXI 总线错误
+
+**现象**：修复 A 后，`saveface` 直接卡死（无返回）。
+
+**根因**：退出 Memory-Mapped 模式时，代码执行了 `EN=0 → EN=1` 重置 XSPI 外设。这会导致：
+1. XSPI2 外设被禁用，所有未完成的 AXI 读请求收到 SLVERR/DECERR 错误响应
+2. AXI 总线错误触发 CPU 的 BusFault/HardFault
+3. 异常处理器的向量表在 NOR Flash（0x70100400）中 → CPU 尝试读取异常向量 → AXI 读 NOR Flash → XSPI2 已禁用 → AXI 总线停顿 → 无限死锁
+
+**修复**：移除 EN 切换。参照 HAL `HAL_XSPI_Abort()` 的实现——仅 ABORT + 清 FMODE，不动 EN 位。
+
+**参考文件**：
+- `ElectronicWarehouse/Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_hal_xspi.c` 第 2460 行 `HAL_XSPI_Abort()`
+- `ElectronicWarehouse/Drivers/BSP/NORFlash/norflash_xspi.c` 第 93 行 `NORFlash_XSPI_DisableMapMode()`
+
+##### 子问题 C：ICACHE 投机取指导致 AXI 停顿
+
+**现象**：修复 A+B 后，`saveface` 不再立刻卡死，但返回 -2（`NVSTORE_ERROR_ERASE`），等待约 6 秒后输出。
+
+**根因**：Cortex-M55 的指令缓存（ICACHE）在退出 MM 模式前可能已缓存了 NOR Flash 区域的指令。退出 MM 后（FMODE=0），XSPI2 Port2 不再服务 MM 读取。此时如果 ICACHE 未命中（CPU 需要取指但指令不在 ICACHE），CPU 会通过 AXI 总线去 NOR Flash 取指 → AXI 停顿 → 死锁。
+
+此外 ICACHE 也可能触发投机预取（speculative prefetch），CPU 可能会预测性地从 NOR Flash 地址取指，即使正在执行的代码在 SRAM。
+
+**修复**：退出 MM 模式前通过直接写 SCB 寄存器禁用 ICACHE：
+```c
+SCB->CCR &= ~SCB_CCR_IC_Msk;  // 关 I-Cache
+__DSB(); __ISB();
+SCB->ICIALLU = 0UL;           // 无效化 I-Cache
+__DSB(); __ISB();
+```
+恢复 MM 模式后重新使能：
+```c
+SCB->CCR |= SCB_CCR_IC_Msk;   // 开 I-Cache
+__DSB(); __ISB();
+```
+注意：不能 `#include "core_starmc1.h"`（与 `core_cm55.h` 类型定义冲突），直接写寄存器即可。
+
+##### 子问题 D：xip_wait_ready 在 FMODE=0 时写了 AR 触发垃圾传输
+
+**现象**：修复 A+B+C 后，`saveface` 仍返回 -2，等待约 6 秒。
+
+**根因**：`xip_wait_ready` 函数在 FMODE=0 的配置阶段写了 `xspi->AR = 0`。在 FMODE=0（间接写入模式）下写 AR 会触发一次间接传输——XSPI 开始向 Flash 发送指令+地址，但此时 PSMKR/PSMAR/PIR 等 auto-polling 寄存器尚未配置完成。随后 FMODE 切换到 2（auto-polling）又写一次 AR。第一次 AR 写触发的垃圾传输可能使 Flash 进入错误状态。
+
+**修复**：`xip_wait_ready` 的 Step 2（FMODE=0 配置阶段）不写 AR，只在 Step 4（FMODE=2）写 AR 触发 auto-polling。
+```c
+// Step 2: 写 CCR/TCR/IR/DLR/PSMKR/PSMAR/PIR — 不写 AR！
+// Step 3: 切 FMODE=2 + APMS
+// Step 4: 写 AR=0 触发 auto-polling（现在 FMODE=2，正确触发）
+```
+
+##### 子问题 E：最终仍死锁（FMODE 切换后首次 auto-polling 无法完成）
+
+**现象**：修复 A+B+C+D，并加入 -20~-25 分段错误码后，`saveface` 再次直接死锁，连错误码都来不及返回。
+
+**分析**：综合所有修复后，死锁发生在退出 MM 模式后、第一次 `xip_wait_ready`（auto-polling）的过程中。说明即使在 FMODE=0 模式下发 RDSR auto-polling，XSPI2 仍然无法完成与 NOR Flash 的正常通信。
+
+可能原因（未验证）：
+1. **FMODE 从 3→0 的过渡不干净**：MM 模式可能遗留了未完成的内部状态，单纯清 FMODE 不足以完全退出
+2. **ABORT 后 Flash 处于异常状态**：ABORT 可能中断了 Flash 正在执行的读命令，Flash 进入需要特殊恢复的状态（某些 Flash 在命令中断后需要发送 Software Reset 命令）
+3. **XSPI2 Port1/Port2 有隐藏的总线竞争**：即使清除了 FMODE，Port2 可能在硬件层面仍然占用着 AXI 总线
+4. **MX25UM25645G 在 8D-8D-8D DTR 模式下对命令时序有额外要求**：clock phase、DQS signaling、CS 的建立/保持时间等。虽然 XSPI2 的 DCR 配置（FSBL 初始化）应该正确，但 FSBL 的配置是为 MM 读优化的，不一定适合间接写
+5. **AXI bus matrix 层面的问题**：STM32N6 的总线矩阵可能对 XSPI2 MM 区域有特殊处理，切换 FMODE 后可能需要等待 AXI 流水线排空
+
+#### 最终结论
+
+**放弃 RELEASE/XIP 模式下对 NOR Flash 的擦写操作。**
+
+LRUN 模式（代码在 SRAM 中运行，通过 HAL/NORFlash 驱动）已经验证可以正常擦写 NOR Flash。因此在 LRUN 模式下，NVStore 功能仍然是可用的。但产品化 RELEASE 固件（XIP 从 NOR Flash 执行）不支持运行时更新 NOR Flash 中的数据。
+
+**根因**：MX25UM25645G 不支持 Read-While-Write（RWW），当代码从该 Flash 执行时，任何擦除/写入操作都会使 Flash 进入忙状态，无法同时服务 CPU 的取指请求。将擦写代码放入 SRAM 消除了直接的 Flash 取指依赖，但以下隐藏路径仍会触发 Flash 访问：
+- Cortex-M55 ICACHE 的投机预取和缓存填充
+- AXI 总线上未完成的 XIP 读事务
+- 可能的 CPU 投机执行或数据预取
+
+这些硬件层面的行为无法从应用层完全控制。
+
+#### 可行替代方案（供未来参考）
+
+1. **双 Flash 方案**：一片 NOR Flash 用于 XIP（代码执行），另一片 SPI Flash 用于数据存储（读写时不影响 XIP）
+2. **EEPROM/FRAM 扩展**：使用更大容量的 I2C/SPI EEPROM（如 64Kb+）或 FRAM 存储关键数据
+3. **SD 卡**：STM32N6 有 SDMMC 接口，可使用 SD 卡存储数据，不占用 NOR Flash 带宽
+4. **外部 MCU 管理存储**：用一颗小 MCU 管理 NOR Flash 的擦写，主 MCU 通过 UART/SPI 与之通信
+5. **仅在 LRUN/DEBUG 模式使用 NVStore**：开发/调试阶段用 LRUN 模式验证逻辑，量产时不依赖 NOR Flash 数据持久化
+
+#### 涉及文件
+
+| 文件 | 状态 | 说明 |
+|------|------|------|
+| `Appli/APP/nvstore.c` | 保留（LRUN 可用） | ~470 行，含 A/B 双槽 + CRC + 直接寄存器 XIP 代码 |
+| `Appli/APP/nvstore.h` | 保留 | NVStore API 头文件 |
+| `Appli/STM32N647X0HXQ_ROMxspi2_RAMxspi1.ld` | 保留 | `.RamFunc` 段 `>RAM AT> ROM` |
+| `Appli/Core/Src/main.c` | 保留 | NORFlashObject 全局化 + RamFunc 拷贝 + NVStore Init |
+| `README1.md` | 本文档 | 问题 7.1-7.5 完整记录 |
+
+#### 参考资料
+
+- **RM0486**：STM32N6 参考手册，XSPI 章节（寄存器布局、FMODE、ABORT、auto-polling）
+- **MX25UM25645G 数据手册**：256Mb NOR Flash，8D-8D-8D DTR mode，不支持 RWW
+- **AN6228**：How to implement XSPI read-while-write (RWW) feature on STM32 MCUs（需 RWW 支持的 Flash）
+- **AN4838**：STM32H7 的 MPU 和 cache 管理（cache coherency 问题与本问题类似）
+- **ARM Cortex-M55 技术参考手册**：ICACHE/DCACHE 控制、SCB CCR 寄存器
+- **ST 社区**：STM32H7 外部 NOR Flash XIP + 写入的讨论（结论：需要 Flash 支持 RWW 或双 Flash 方案）
+  - https://community.st.com/stm32-mcus-embedded-software-32/issues-while-writing-into-an-external-nor-while-xip-from-a-different-section-of-same-external-nor-120586

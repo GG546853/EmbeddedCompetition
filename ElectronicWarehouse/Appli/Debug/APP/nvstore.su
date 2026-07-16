@@ -3,9 +3,9 @@
 ../APP/nvstore.c:39:13:slot_is_valid	56	static
 ../APP/nvstore.c:59:17:find_best_slot	40	static
 ../APP/nvstore.c:78:17:find_target_slot	40	static
-../APP/nvstore.c:97:23:erase_and_write	32	static,ignoring_inline_asm
-../APP/nvstore.c:122:16:NVStore_Init	16	static
-../APP/nvstore.c:131:16:NVStore_LoadInventory	32	static
-../APP/nvstore.c:150:16:NVStore_SaveInventory	40	static
-../APP/nvstore.c:190:16:NVStore_LoadFaceGallery	32	static
-../APP/nvstore.c:211:16:NVStore_SaveFaceGallery	40	static
+../APP/nvstore.c:100:23:erase_and_write	32	static,ignoring_inline_asm
+../APP/nvstore.c:135:16:NVStore_Init	16	static
+../APP/nvstore.c:144:16:NVStore_LoadInventory	32	static
+../APP/nvstore.c:163:16:NVStore_SaveInventory	40	static
+../APP/nvstore.c:203:16:NVStore_LoadFaceGallery	32	static
+../APP/nvstore.c:224:16:NVStore_SaveFaceGallery	40	static

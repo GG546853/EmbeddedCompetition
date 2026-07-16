@@ -21,7 +21,7 @@ const osThreadAttr_t LVTask_attributes = {
 };
 
 // UI 专用帧缓冲 — Layer 1, RGB565, 800x480, 分配在 HyperRAM
-uint8_t g_ltdc_ui_framebuf[800 * 480 * 2] __attribute__((section(".EXTRAM"), aligned(32)));
+uint8_t g_ltdc_ui_framebuf[800 * 480 * 2] __attribute__((section(".ltdc_ui_fb"), aligned(32)));
 
 static void lv_port_init(void) {
     lv_init();

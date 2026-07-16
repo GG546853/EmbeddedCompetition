@@ -67,6 +67,14 @@ SECTIONS
     . = ALIGN(32);
   } >EXTRAM
 
+  /* UI Layer 1 framebuffer in HyperRAM */
+  .ltdc_ui_fb (NOLOAD):
+  {
+    . = ALIGN(32);
+    *(.ltdc_ui_fb)
+    . = ALIGN(32);
+  } >EXTRAM
+
   /* The startup code into "RAM" Ram type memory */
   .isr_vector :
   {

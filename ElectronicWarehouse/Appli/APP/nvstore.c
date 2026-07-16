@@ -88,31 +88,269 @@ static uint32_t find_target_slot(uint32_t addr_a, uint32_t addr_b, uint32_t slot
     return (ver_a <= ver_b) ? addr_a : addr_b; /* overwrite the older one */
 }
 
+/* ==================================================================
+ *  XIP-safe register-level helpers (all .RamFunc — zero Flash calls)
+ * ================================================================== */
+
+/* 8D8D8D instruction encoding: CMD<<8 | ~CMD */
+#define XIP_INSTR(cmd)  ((uint32_t)(((uint16_t)(cmd) << 8) | ((uint8_t)(~(cmd)) & 0xFF)))
+
+/* CCR values for 8D-8D-8D DTR mode */
+#define XIP_CCR_INSTR         0x0000003F  /* Instruction only */
+#define XIP_CCR_INSTR_ADDR    0x00003F3F  /* Instruction + Address */
+#define XIP_CCR_INSTR_ADDR_D  0x0F003F3F  /* + Data (no DQS, for writes) */
+#define XIP_CCR_INSTR_ADDR_DQ 0x2F003F3F  /* + Data + DQS (for reads) */
+
+/* Timeout loop counts (~6 cycles/iter at 800 MHz → ~7.5 ns/iter) */
+#define XIP_TO_SHORT     2000000   /* ~15 ms */
+#define XIP_TO_ERASE   800000000   /* ~6 s (covers max 5 s sector erase) */
+#define XIP_TO_PROG     20000000   /* ~150 ms (covers max 5 ms page program) */
+
+/* ---- Wait for flash ready via auto-polling RDSR (WIP=0) ---- */
+__attribute__((section(".RamFunc")))
+static int xip_wait_ready(XSPI_TypeDef *xspi, volatile uint32_t timeout)
+{
+    uint32_t cr;
+
+    /* Step 1: Set FMODE=0 first (indirect write) before touching any config regs */
+    cr  = xspi->CR;
+    cr &= ~(XSPI_CR_FMODE | XSPI_CR_PMM | XSPI_CR_APMS);
+    cr |= XSPI_CR_EN;
+    xspi->CR = cr;
+
+    /* Step 2: Write config registers while FMODE=0.
+     * Do NOT write AR here — in FMODE=0 it would trigger an indirect transfer. */
+    xspi->CCR   = XIP_CCR_INSTR_ADDR_DQ;
+    xspi->TCR   = 4;                    /* DCYC=4 */
+    xspi->IR    = XIP_INSTR(0x05);      /* RDSR */
+    xspi->DLR   = 0;                    /* 1 byte */
+    xspi->PSMKR = 0x01;                 /* mask WIP (bit 0) */
+    xspi->PSMAR = 0x00;                 /* match WIP=0 */
+    xspi->PIR   = 0x10;                 /* polling interval */
+
+    /* Step 3: Switch to auto-polling mode (FMODE=2) */
+    cr  = xspi->CR;
+    cr &= ~(XSPI_CR_FMODE | XSPI_CR_PMM | XSPI_CR_APMS);
+    cr |= (2U << XSPI_CR_FMODE_Pos) | XSPI_CR_APMS;  /* FMODE=2, APMS, AND-match */
+    xspi->CR = cr | XSPI_CR_EN;
+
+    /* Step 4: Trigger auto-polling by writing AR (now in FMODE=2) */
+    xspi->AR = 0;
+
+    while (!(xspi->SR & XSPI_SR_SMF) && --timeout > 0) {}
+    xspi->FCR = XSPI_FCR_CSMF;
+
+    return (timeout > 0) ? 0 : -1;
+}
+
+/* ---- Send instruction-only command (e.g. WREN 0x06) ---- */
+__attribute__((section(".RamFunc")))
+static int xip_send_cmd_instr(XSPI_TypeDef *xspi, uint8_t cmd, volatile uint32_t timeout)
+{
+    uint32_t cr;
+
+    /* Step 1: Set FMODE=0 first (indirect write) — previous op may have left FMODE=2 */
+    cr  = xspi->CR;
+    cr &= ~(XSPI_CR_FMODE | XSPI_CR_APMS | XSPI_CR_PMM);
+    cr |= XSPI_CR_EN;
+    xspi->CR = cr;
+
+    /* Step 2: Write CCR/TCR/IR — IR write triggers the transfer in FMODE=0 */
+    xspi->CCR = XIP_CCR_INSTR;
+    xspi->TCR = 0;
+    xspi->IR  = XIP_INSTR(cmd);
+
+    /* Step 3: Wait for BUSY to de-assert, then for TCF */
+    while ((xspi->SR & XSPI_SR_BUSY) && --timeout > 0) {}
+    while (!(xspi->SR & XSPI_SR_TCF) && --timeout > 0) {}
+    xspi->FCR = XSPI_FCR_CTCF;
+
+    return (timeout > 0) ? 0 : -1;
+}
+
+/* ---- Send instruction+address command (e.g. Sector Erase 0x21) ---- */
+__attribute__((section(".RamFunc")))
+static int xip_send_cmd_addr(XSPI_TypeDef *xspi, uint8_t cmd, uint32_t addr,
+                             volatile uint32_t timeout)
+{
+    uint32_t cr;
+
+    /* Step 1: Set FMODE=0 first (indirect write) — previous op may have left FMODE=2 */
+    cr  = xspi->CR;
+    cr &= ~(XSPI_CR_FMODE | XSPI_CR_APMS | XSPI_CR_PMM);
+    cr |= XSPI_CR_EN;
+    xspi->CR = cr;
+
+    /* Step 2: Write CCR/TCR/IR/AR — AR write triggers the transfer in FMODE=0 */
+    xspi->CCR = XIP_CCR_INSTR_ADDR;
+    xspi->TCR = 0;
+    xspi->IR  = XIP_INSTR(cmd);
+    xspi->AR  = addr;
+
+    /* Step 3: Wait for BUSY to de-assert, then for TCF */
+    while ((xspi->SR & XSPI_SR_BUSY) && --timeout > 0) {}
+    while (!(xspi->SR & XSPI_SR_TCF) && --timeout > 0) {}
+    xspi->FCR = XSPI_FCR_CTCF;
+
+    return (timeout > 0) ? 0 : -1;
+}
+
 /**
- * Critical erase+write routine — must execute from SRAM (.RamFunc) so that
- * the CPU never tries to fetch instructions from NOR Flash while the XSPI
- * bus is occupied with the erase / program operation.
+ * Critical erase+write routine — must execute from SRAM (.RamFunc).
+ *
+ * LRUN:  code runs from SRAM; HAL/NORFlash calls are safe.
+ * XIP:   code runs from NOR Flash; ALL operations during flash busy
+ *        use direct XSPI2 register writes from within .RamFunc so
+ *        the CPU never fetches instructions from Flash.
  */
 __attribute__((section(".RamFunc")))
 static NVStore_Status erase_and_write(uint32_t addr, uint32_t erase_size,
                                       const uint8_t *data, uint32_t data_len)
 {
-    NVStore_Status status = NVSTORE_OK;
+    int lrun = ((SCB->VTOR & 0xFF000000) == 0x34000000);
 
     __disable_irq();
 
-    if (NORFlash_EraseSector(nv_flash, addr, erase_size) != NORFlash_OK) {
-        status = NVSTORE_ERROR_ERASE;
-        goto exit;
+    /* ---- LRUN path: HAL functions are safe (code in SRAM) ---- */
+    if (lrun) {
+        NVStore_Status status = NVSTORE_OK;
+        NORFlash_DisableMemoryMappedMode(nv_flash);
+        if (NORFlash_EraseSector(nv_flash, addr, erase_size) != NORFlash_OK) {
+            status = NVSTORE_ERROR_ERASE;
+            goto lrun_exit;
+        }
+        if (NORFlash_Write(nv_flash, addr, data, data_len) != NORFlash_OK) {
+            status = NVSTORE_ERROR_WRITE;
+        }
+    lrun_exit:
+        NORFlash_EnableMemoryMappedMode(nv_flash);
+        __enable_irq();
+        return status;
     }
 
-    if (NORFlash_Write(nv_flash, addr, data, data_len) != NORFlash_OK) {
-        status = NVSTORE_ERROR_WRITE;
-    }
+    /* ---- XIP path: direct XSPI2 register writes, zero Flash calls ---- */
+    {
+        XSPI_TypeDef *const xspi = XSPI2;
+        const uint32_t sector_sz = 0x1000;  /* 4 KB */
+        const uint32_t page_sz   = 0x100;   /* 256 B */
+        uint32_t cur_addr, remaining, chunk, cr;
+        const uint8_t *src;
 
-exit:
-    __enable_irq();
-    return status;
+        /* Save MM-mode config so we can restore it after */
+        uint32_t save_ccr  = xspi->CCR;
+        uint32_t save_tcr  = xspi->TCR;
+        uint32_t save_ir   = xspi->IR;
+        uint32_t save_wccr = xspi->WCCR;
+        uint32_t save_wtcr = xspi->WTCR;
+        uint32_t save_wir  = xspi->WIR;
+
+        /* ---- Exit memory-mapped mode ---- */
+        /* Disable I-Cache to prevent speculative instruction fetches from NOR Flash
+         * while the XSPI is in indirect mode (Port2 inactive). */
+        SCB->CCR &= ~SCB_CCR_IC_Msk;
+        __DSB();
+        __ISB();
+        SCB->ICIALLU = 0UL;
+        __DSB();
+        __ISB();
+
+        /* Abort any in-flight MM transaction, then switch to indirect write mode.
+         * Matches HAL_XSPI_Abort — just ABORT → clear FMODE, no EN toggle. */
+        if (xspi->SR & XSPI_SR_BUSY) {
+            cr  = xspi->CR;
+            cr |= XSPI_CR_ABORT;
+            xspi->CR = cr;
+            { volatile uint32_t _t = XIP_TO_SHORT;
+              while ((xspi->SR & XSPI_SR_BUSY) && --_t > 0) {} }
+            { volatile uint32_t _t = XIP_TO_SHORT;
+              while (!(xspi->SR & XSPI_SR_TCF) && --_t > 0) {} }
+            xspi->FCR = XSPI_FCR_CTCF;
+        }
+        /* Clear FMODE to enter indirect write mode */
+        cr  = xspi->CR;
+        cr &= ~XSPI_CR_FMODE;
+        cr |= XSPI_CR_EN;
+        xspi->CR = cr;
+        { volatile uint32_t _t = XIP_TO_SHORT;
+          while ((xspi->SR & XSPI_SR_BUSY) && --_t > 0) {} }
+
+        /* ---- Erase sectors ---- */
+        cur_addr  = addr;
+        remaining = erase_size;
+        while (remaining > 0) {
+            if (xip_wait_ready(xspi, XIP_TO_ERASE))  { __enable_irq(); return -20; }
+            if (xip_send_cmd_instr(xspi, 0x06, XIP_TO_SHORT)) { __enable_irq(); return -21; }
+            if (xip_send_cmd_addr(xspi, 0x21, cur_addr, XIP_TO_SHORT)) { __enable_irq(); return -22; }
+
+            cur_addr  += sector_sz;
+            remaining -= (remaining >= sector_sz) ? sector_sz : remaining;
+        }
+        /* Wait for last erase to finish */
+        if (xip_wait_ready(xspi, XIP_TO_ERASE)) { __enable_irq(); return -23; }
+
+        /* ---- Page Program ---- */
+        src       = data;
+        cur_addr  = addr;
+        remaining = data_len;
+        while (remaining > 0) {
+            chunk = (remaining < page_sz) ? remaining : page_sz;
+
+            if (xip_send_cmd_instr(xspi, 0x06, XIP_TO_SHORT)) { __enable_irq(); return -24; }
+
+            /* Step 1: Set FMODE=0 first (indirect write) */
+            cr  = xspi->CR;
+            cr &= ~(XSPI_CR_FMODE | XSPI_CR_APMS | XSPI_CR_PMM);
+            cr |= XSPI_CR_EN;
+            xspi->CR = cr;
+
+            /* Step 2: Configure PP command — AR write triggers indirect cmd in FMODE=0,
+             *         then DR writes stream the data */
+            xspi->CCR = XIP_CCR_INSTR_ADDR_D;
+            xspi->TCR = 0;
+            xspi->IR  = XIP_INSTR(0x12);     /* Page Program */
+            xspi->AR  = cur_addr;
+            xspi->DLR = chunk - 1;
+
+            /* Step 3: Write data to DR byte by byte */
+            for (uint32_t i = 0; i < chunk; i++) {
+                *((__IO uint8_t *)&xspi->DR) = src[i];
+            }
+
+            /* Wait for transfer complete */
+            { volatile uint32_t _t = XIP_TO_SHORT;
+              while ((xspi->SR & XSPI_SR_BUSY) && --_t > 0) {}
+              _t = XIP_TO_SHORT;
+              while (!(xspi->SR & XSPI_SR_TCF) && --_t > 0) {} }
+            xspi->FCR = XSPI_FCR_CTCF;
+
+            /* Wait for program to finish */
+            if (xip_wait_ready(xspi, XIP_TO_PROG)) { __enable_irq(); return -25; }
+
+            cur_addr  += chunk;
+            remaining -= chunk;
+            src       += chunk;
+        }
+
+        /* ---- Restore memory-mapped mode ---- */
+        xspi->CCR  = save_ccr;
+        xspi->TCR  = save_tcr;
+        xspi->IR   = save_ir;
+        xspi->WCCR = save_wccr;
+        xspi->WTCR = save_wtcr;
+        xspi->WIR  = save_wir;
+
+        cr  = xspi->CR;
+        cr &= ~XSPI_CR_FMODE;
+        cr |= (3U << XSPI_CR_FMODE_Pos) | XSPI_CR_EN;  /* FMODE=3 (MM) */
+        xspi->CR = cr;
+
+        /* Re-enable I-Cache */
+        SCB->CCR |= SCB_CCR_IC_Msk;
+        __DSB();
+        __ISB();
+        __enable_irq();
+        return NVSTORE_OK;
+    }
 }
 
 /* ==================================================================

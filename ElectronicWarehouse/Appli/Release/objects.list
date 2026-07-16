@@ -12,6 +12,7 @@
 "./APP/UART4_RxTask.o"
 "./APP/UART_protocol.o"
 "./APP/VL53L1X_task.o"
+"./APP/nvstore.o"
 "./APP/ui/actions.o"
 "./APP/ui/eez-flow.o"
 "./APP/ui/images.o"

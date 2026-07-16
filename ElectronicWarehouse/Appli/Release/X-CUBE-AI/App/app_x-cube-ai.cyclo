@@ -11,8 +11,10 @@
 ../X-CUBE-AI/App/app_x-cube-ai.c:626:6:ai_face_enroll_multi	9
 ../X-CUBE-AI/App/app_x-cube-ai.c:689:6:ai_face_identify	17
 ../X-CUBE-AI/App/app_x-cube-ai.c:747:7:ai_face_gallery_print	2
-../X-CUBE-AI/App/app_x-cube-ai.c:759:7:ai_face_reid_run	14
-../X-CUBE-AI/App/app_x-cube-ai.c:803:7:MX_X_CUBE_AI_Process_User	41
-../X-CUBE-AI/App/app_x-cube-ai.c:831:6:set_clk_sleep_mode	1
-../X-CUBE-AI/App/app_x-cube-ai.c:870:6:MX_X_CUBE_AI_Init	1
-../X-CUBE-AI/App/app_x-cube-ai.c:929:6:MX_X_CUBE_AI_Process	3
+../X-CUBE-AI/App/app_x-cube-ai.c:755:6:ai_face_gallery_export	1
+../X-CUBE-AI/App/app_x-cube-ai.c:761:6:ai_face_gallery_import	1
+../X-CUBE-AI/App/app_x-cube-ai.c:775:7:ai_face_reid_run	14
+../X-CUBE-AI/App/app_x-cube-ai.c:819:7:MX_X_CUBE_AI_Process_User	41
+../X-CUBE-AI/App/app_x-cube-ai.c:847:6:set_clk_sleep_mode	1
+../X-CUBE-AI/App/app_x-cube-ai.c:886:6:MX_X_CUBE_AI_Init	1
+../X-CUBE-AI/App/app_x-cube-ai.c:945:6:MX_X_CUBE_AI_Process	3

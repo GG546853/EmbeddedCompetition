@@ -83,9 +83,6 @@ SECTIONS
     *(.glue_7)         /* glue arm to thumb code */
     *(.glue_7t)        /* glue thumb to arm code */
     *(.eh_frame)
-    *(.RamFunc)        /* .RamFunc sections */
-    *(.RamFunc*)       /* .RamFunc* sections */
-
     KEEP (*(.init))
     KEEP (*(.fini))
 
@@ -161,6 +158,18 @@ SECTIONS
     . = ALIGN(4);
     _edata = .;        /* define a global symbol at data end */
 
+  } >RAM AT> ROM
+
+  _siramfunc = LOADADDR(.RamFunc);
+
+  .RamFunc :
+  {
+    . = ALIGN(4);
+    _sramfunc = .;
+    KEEP(*(.RamFunc))
+    KEEP(*(.RamFunc*))
+    . = ALIGN(4);
+    _eramfunc = .;
   } >RAM AT> ROM
 
   .noncacheable :

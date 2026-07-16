@@ -58,6 +58,15 @@ SECTIONS
     *(.EXTRAM)
     . = ALIGN(8);
   } >EXTRAM
+
+  /* LCD framebuffer in HyperRAM */
+  .ltdc_fb (NOLOAD):
+  {
+    . = ALIGN(32);
+    *(.ltdc_fb)
+    . = ALIGN(32);
+  } >EXTRAM
+
   /* The startup code into "RAM" Ram type memory */
   .isr_vector :
   {
@@ -75,9 +84,6 @@ SECTIONS
     *(.glue_7)         /* glue arm to thumb code */
     *(.glue_7t)        /* glue thumb to arm code */
     *(.eh_frame)
-    *(.RamFunc)        /* .RamFunc sections */
-    *(.RamFunc*)       /* .RamFunc* sections */
-
     KEEP (*(.init))
     KEEP (*(.fini))
 
@@ -153,6 +159,18 @@ SECTIONS
     . = ALIGN(4);
     _edata = .;        /* define a global symbol at data end */
 
+  } >RAM
+
+  _siramfunc = LOADADDR(.RamFunc);
+
+  .RamFunc :
+  {
+    . = ALIGN(4);
+    _sramfunc = .;
+    KEEP(*(.RamFunc))
+    KEEP(*(.RamFunc*))
+    . = ALIGN(4);
+    _eramfunc = .;
   } >RAM
 
   .noncacheable :

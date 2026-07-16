@@ -39,6 +39,7 @@
 #include "sys.h"
 #include "hyperram.h"
 #include "norflash.h"
+#include "nvstore.h"
 #include "imx335.h"
 #include "rgblcd.h"
 #include "uart.h"
@@ -218,12 +219,28 @@ int main(void)
   {
       Error_Handler();
   }
+
+  /* Copy RamFunc section from Flash to SRAM (XIP mode only;
+     LRUN mode has LMA == VMA, skip to avoid memcpy self-overlap). */
+  extern uint32_t _siramfunc, _sramfunc, _eramfunc;
+  if (&_siramfunc != &_sramfunc) {
+      uint32_t ramfunc_size = (uint32_t)&_eramfunc - (uint32_t)&_sramfunc;
+      if (ramfunc_size > 0) {
+          memcpy(&_sramfunc, &_siramfunc, ramfunc_size);
+      }
+  }
+
+  /* Init NVStore */
+  if (NVStore_Init(&NORFlashObject) != NVSTORE_OK) {
+      printf("[NVStore] Init failed\r\n");
+  }
+  NVStore_LoadInventory();
+  NVStore_LoadFaceGallery();
 #endif
 
   rgblcd_init();
   rgblcd_display_dir(1);  /* 设置RGB LCD显示方向 */
-  HAL_GPIO_WritePin(GPIOG, GPIO_PIN_4, 1);
-  HAL_GPIO_WritePin(GPIOG, GPIO_PIN_6, 1);
+
 
 
 

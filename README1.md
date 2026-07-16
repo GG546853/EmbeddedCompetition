@@ -636,3 +636,95 @@ static void stopScript() {
 2. **数据绑定 vs Flow 执行**：EEZ-Flow 中 List Widget 的数据绑定不触发 Flow 执行，但某些复杂 UI 组件（如带事件的列表项）会触发。添加新 UI 功能时要注意这个区别
 3. **assert 在嵌入式环境不会退出程序**：`assert(false)` 会进入 `abort()` 死循环，如果发生在 UI 线程上会导致整个屏幕冻结
 4. **调试技巧**：当 UI 卡死时，先检查串口是否有 `assert` 报错，它直接告诉你崩溃的精确位置
+
+---
+
+## 问题 6：摄像头 AE（自动曝光）持续需要 I2C，但为避免与触摸屏冲突提前释放了总线
+
+### 问题描述
+
+摄像头初始化后画面颜色异常——白平衡只在初始化瞬间做了一次，之后不再更新。实际上 AWB（自动白平衡）在 DCMIPP ISP 管线内部完成，不需要 I2C。真正的问题出在 AE（自动曝光）算法——它需要通过 I2C 持续调整传感器的增益（Gain）和曝光时间（Exposure），而初始化后 I2C 总线被永久释放给触摸屏了。
+
+### 硬件背景
+
+团队自画板上，摄像头和触摸屏的 I2C 引脚：
+
+| 信号 | 摄像头（GPIO 模拟 I2C） | 触摸屏 GT9xxx（硬件 I2C2） |
+|------|--------------------------|---------------------------|
+| SCL | PD14 | PD14 |
+| SDA | **PC2** | **PD4** |
+
+只有 PD14（SCL）一根引脚共享。之前旧版硬件 SDA 也是共用的（都在 PD4），导致摄像头软件 I2C 通信时 PD4 上的电平翻转被 GT9xxx 触摸芯片当成 I2C 指令，清空了出厂配置表，触摸屏直接报废。
+
+### 根因
+
+`Sensor_task.c` 在摄像头初始化完成后立刻调用 `imx335_io_deinit()`，把 PD14 从 GPIO 模式切到 AF4（硬件 I2C2），从此摄像头再也发不了 I2C。但 AE 算法在运行时需要通过 I2C 调传感器增益和曝光：
+
+```
+imx335_isp_background_process()
+  → ISP_BackgroundProcess()
+    → ISP_Algo_AE_Process()           // AE 算法
+      → ISP_SVC_Sensor_SetGain()
+        → imx335_set_sensor_gain_helper()
+          → IMX335_SetGain()
+            → imx335_io_writereg()    ← I2C 写传感器！
+      → ISP_SVC_Sensor_SetExposure()
+        → IMX335_SetExposure()
+          → imx335_io_writereg()      ← I2C 写传感器！
+```
+
+I2C 总线被释放后这些调用全部静默失败，曝光和增益锁死在初始值。
+
+### 修改方法：分时复用 + 互斥锁 + I2C2 时钟关断
+
+**核心思路**：每次摄像头 I2C 通信前后动态切换 PD14，切换期间关掉 I2C2 时钟（物理上杜绝触摸屏外设误触发），加 FreeRTOS 互斥锁保护。
+
+**修改的文件**：
+
+| 文件 | 改动 |
+|------|------|
+| `imx335.h` | 新增 `#include "cmsis_os.h"`；声明 `extern osMutexId_t cam_i2c_mutex` |
+| `imx335.c` | 新增 `#include "i2c.h"`；定义 `osMutexId_t cam_i2c_mutex` |
+| `imx335.c` → `imx335_io_init()` | 新增 `__HAL_RCC_I2C2_CLK_DISABLE()`，接管总线时关断 I2C2 时钟 |
+| `imx335.c` → `imx335_io_deinit()` | 新增 `__HAL_RCC_I2C2_CLK_ENABLE()` + `MX_I2C2_Init()`，释放总线时恢复 I2C2 |
+| `imx335.c` → `imx335_io_writereg()` | 用互斥锁包裹：拿锁 → init → I2C 通信 → deinit → 放锁 |
+| `imx335.c` → `imx335_io_readreg()` | 同上 |
+| `Sensor_task.c` | 删除 `imx335_io_deinit()`；在 `imx335_init()` 之前 `osMutexNew(NULL)` 创建互斥锁 |
+| `gt9xxx.c` | 新增 `#include "imx335.h"` 和 `#include "cmsis_os.h"`；`gt9xxx_wr_reg()` / `gt9xxx_rd_reg()` 的 HAL I2C 调用用同一把锁包裹 |
+
+**writereg/readreg 改造后的结构**（以 writereg 为例）：
+
+```c
+static int32_t imx335_io_writereg(uint16_t dev_addr, uint16_t reg, uint8_t *data, uint16_t length)
+{
+    int32_t ret = 0;
+
+    osMutexAcquire(cam_i2c_mutex, osWaitForever);  // ① 拿锁
+    imx335_io_init();                               // ② 关 I2C2 时钟，PD14→GPIO
+
+    cam_iic_start();
+    // ... I2C 通信（所有错误 goto exit） ...
+    
+exit:
+    cam_iic_stop();
+    imx335_io_deinit();                             // ③ PD14→AF4，开 I2C2 时钟，重初始化 I2C2
+    osMutexRelease(cam_i2c_mutex);                  // ④ 放锁
+    return ret;
+}
+```
+
+**运行时行为**：
+
+```
+摄像头要发 I2C ─→ 拿锁 → 关 I2C2 → PD14切GPIO → 通信 → PD14切AF4 → 开I2C2+重初始化 → 放锁
+触摸屏要发 I2C ─→ 拿锁 → HAL_I2C2通信 ───────────────────────────────────────→ 放锁
+```
+
+两个设备通过互斥锁串行化，I2C2 在摄像头通信期间时钟被关闭，物理上不存在，绝无可能误触发触摸芯片。
+
+### 为什么是安全的
+
+1. **I2C2 时钟关断**：摄像头 I2C 通信期间，I2C2 外设物理上不存在。即便 PD4 上有干扰也绝无可能被解释为有效 I2C 帧
+2. **互斥锁**：摄像头 I2C 和触摸屏 I2C 互斥，不会出现"摄像头正用 I2C 时 HAL 超时"或"I2C2 正通信时被中途关时钟"的情况
+3. **SDA 不复用**：摄像头 SDA 在 PC2，触摸屏 SDA 在 PD4，硬件上已隔离。只有 SCL（PD14）需要分时切换
+4. **每次通信后释放**：摄像头只在需要时短暂占用 PD14，通信完立刻归还，触摸屏响应不受影响

@@ -94,6 +94,10 @@ int  ai_face_enroll(const float *embedding, const char *name);
 int  ai_face_enroll_multi(const float *embedding, const char *name);
 int  ai_face_identify(const float *embedding, char *name_out, float *dist_out);
 void ai_face_gallery_print(void);
+
+/* Raw accessors for persistent storage (nvstore) */
+void ai_face_gallery_export(face_entry_t *out_entries, uint32_t *out_count);
+void ai_face_gallery_import(const face_entry_t *in_entries, uint32_t in_count);
 /* USER CODE END includes */
 #ifdef __cplusplus
 }

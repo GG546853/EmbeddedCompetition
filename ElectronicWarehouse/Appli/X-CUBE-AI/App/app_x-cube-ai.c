@@ -752,6 +752,22 @@ static uint8_t crop_temp_buf[CROP_TEMP_SIZE]
      }
  }
 
+void ai_face_gallery_export(face_entry_t *out_entries, uint32_t *out_count)
+{
+    memcpy(out_entries, face_gallery, sizeof(face_gallery));
+    *out_count = face_gallery_count;
+}
+
+void ai_face_gallery_import(const face_entry_t *in_entries, uint32_t in_count)
+{
+    memcpy(face_gallery, in_entries, sizeof(face_gallery));
+    if (in_count <= FACE_GALLERY_MAX) {
+        face_gallery_count = in_count;
+    } else {
+        face_gallery_count = FACE_GALLERY_MAX;
+    }
+}
+
  /* -------------------------------------------------------------------------- */
  /*                    network_fc Inference Wrapper                             */
  /* -------------------------------------------------------------------------- */

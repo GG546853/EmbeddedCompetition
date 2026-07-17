@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include "i2c.h"
 #include "app_types.h"
+#include "rgblcd.h"
+
 osThreadId_t VL53L1X_TaskHandle;
 const osThreadAttr_t VL53L1XTask_attributes = {
   .name = "VL53L1XTask",
@@ -49,8 +51,8 @@ void VL53L1X_Task(void *argument)
     for (;;) {
         if (vl53l1x_is_data_ready(&ready) == 0 && ready) {
             vl53l1x_read_distance(&Cabinet.distance_mm);
+            printf("[VL53L1X] distance: %u mm\r\n", Cabinet.distance_mm);
             vl53l1x_clear_interrupt();
-
             uint32_t now = xTaskGetTickCount();
             uint32_t elapsed = (now - state_enter_tick) * portTICK_PERIOD_MS;
 
@@ -60,6 +62,7 @@ void VL53L1X_Task(void *argument)
                     state_enter_tick = now;
                 } else if (elapsed >= 5000) {
                     Cabinet.System_state = false;
+                    RGBLCD_BL(0);
                 }
             } else {
                 if (proximity_state == 1) {
@@ -67,6 +70,7 @@ void VL53L1X_Task(void *argument)
                     state_enter_tick = now;
                 } else if (elapsed >= 1000) {
                     Cabinet.System_state = true;
+                    RGBLCD_BL(1);
                 }
             }
         }

@@ -20,6 +20,7 @@ int  ui_pull_history(HistoryRecord *list, int max_count);
 int  ui_get_log_count(void);
 void ui_get_log_entry(int index, char *time, char *user, char *pc,
                       int *qty, char *action, int *cab_id);
+void ui_push_alarm(const AlarmRecord *list, int count);
 
 #ifdef __cplusplus
 }

@@ -6,6 +6,14 @@ const osThreadAttr_t ElectromagnetTask_attributes = {
   .stack_size = 512 * 4
 };
 
+osThreadId_t ElectromagnetLock_TaskHandle;
+const osThreadAttr_t ElectromagnetLockTask_attributes = {
+  .name = "ElectromagnetLockTask",
+  .priority = (osPriority_t) osPriorityNormal,
+  .stack_size = 128 * 4
+};
+
+
 void Electromagnet_Open(uint8_t cabinet_mask)
 {
 	osThreadNew(Electromagnet_Task, (void *)(uintptr_t)cabinet_mask, &ElectromagnetTask_attributes);
@@ -31,3 +39,16 @@ void Electromagnet_Task(void *argument)
 
     osThreadExit();
 }
+
+
+//osThreadNew(ElectromagnetLock_Task, NULL, &ElectromagnetLockTask_attributes);
+void ElectromagnetLock_Task(void *argument)
+{
+	HAL_GPIO_WritePin(GPIOQ, GPIO_PIN_3, GPIO_PIN_SET);
+    vTaskDelay(pdMS_TO_TICKS(500));
+    HAL_GPIO_WritePin(GPIOQ, GPIO_PIN_3, GPIO_PIN_RESET);
+    osThreadExit();
+}
+
+
+

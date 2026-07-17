@@ -1,0 +1,12 @@
+../APP/nvstore.c:20:17:crc32	3
+../APP/nvstore.c:148:12:xip_send_cmd_instr.constprop	5
+../APP/nvstore.c:111:12:xip_wait_ready.constprop	3
+../APP/nvstore.c:207:23:erase_and_write.constprop	27
+../APP/nvstore.c:39:13:slot_is_valid.constprop	5
+../APP/nvstore.c:59:17:find_best_slot.constprop	4
+../APP/nvstore.c:78:17:find_target_slot.constprop	3
+../APP/nvstore.c:360:16:NVStore_Init	2
+../APP/nvstore.c:369:16:NVStore_LoadInventory	3
+../APP/nvstore.c:388:16:NVStore_SaveInventory	2
+../APP/nvstore.c:428:16:NVStore_LoadFaceGallery	3
+../APP/nvstore.c:449:16:NVStore_SaveFaceGallery	2

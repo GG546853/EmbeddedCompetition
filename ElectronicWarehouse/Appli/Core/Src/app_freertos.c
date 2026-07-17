@@ -178,7 +178,7 @@ void MX_FREERTOS_Init(void) {
 
 
   //Aht10_TaskHandle = osThreadNew(Aht10_Task, NULL, &Aht10Task_attributes);
-  UART4_RxTaskHandle = osThreadNew(UART4_RxTask, NULL, &UART4_RxTask_attributes);
+  //UART4_RxTaskHandle = osThreadNew(UART4_RxTask, NULL, &UART4_RxTask_attributes);
   //VL53L1X_TaskHandle = osThreadNew(VL53L1X_Task, NULL, &VL53L1XTask_attributes);
   /* USER CODE END RTOS_THREADS */
 
@@ -198,7 +198,7 @@ void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN defaultTask */
 	//osThreadNew(RGBLED_Task, (void *)(uintptr_t)0xfffffff, &RGBLEDTask_attributes);
-	strcpy(Cabinet.User, "ZS");
+	  //RGBLED_Flash(0xfffffff);
   vTaskDelay(pdMS_TO_TICKS(3500));
 	//char now[32];
 	//osThreadNew(RGBLED_Task, (void *)(uintptr_t)0xfffffff, &RGBLEDTask_attributes);
@@ -206,6 +206,7 @@ void StartDefaultTask(void *argument)
   for(;;)
   {
 	  HAL_GPIO_WritePin(GPIOG,GPIO_PIN_10,1);
+
 //    printf("[History] %d records:\r\n", history_count);
 //    for (int i = 0; i < history_count; i++) {
 //        printf("  [%d] t:%s u:%s pc:%s qty:%u act:%s cab:%d\r\n",

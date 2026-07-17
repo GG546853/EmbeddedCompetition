@@ -24,9 +24,11 @@
 #include "isp_param_conf.h"
 #include "cmsis_os.h"
 #include "sys.h"
+#include "i2c.h"
 
 extern DCMIPP_HandleTypeDef hdcmipp;
 extern osSemaphoreId_t cam_frame_sem;
+osMutexId_t cam_i2c_mutex;
 static __IO uint32_t imx335_capture_frame_count = 0;
 static IMX335_Object_t imx335_object = {0};
 static ISP_HandleTypeDef imx335_hisp = {0};
@@ -446,6 +448,9 @@ static int32_t imx335_io_init(void)
 {
     GPIO_InitTypeDef gpio = {0};
 
+    /* 关闭 I2C2 时钟，防止摄像头 I2C 通信期间触摸屏外设误触发 */
+    __HAL_RCC_I2C2_CLK_DISABLE();
+
     __HAL_RCC_GPIOC_CLK_ENABLE();
     __HAL_RCC_GPIOD_CLK_ENABLE();
 
@@ -487,6 +492,10 @@ int32_t imx335_io_deinit(void)
     gpio.Speed = GPIO_SPEED_FREQ_LOW;
     gpio.Alternate = GPIO_AF4_I2C2;
     HAL_GPIO_Init(CAM_IIC_SCL_PORT, &gpio);
+
+    /* 重新打开 I2C2 时钟并初始化外设，恢复触摸屏通信 */
+    __HAL_RCC_I2C2_CLK_ENABLE();
+    MX_I2C2_Init();
 
     return 0;
 }
@@ -598,24 +607,29 @@ static uint8_t cam_iic_read_byte(uint8_t ack)
  */
 static int32_t imx335_io_writereg(uint16_t dev_addr, uint16_t reg, uint8_t *data, uint16_t length)
 {
+    int32_t ret = 0;
     static uint32_t wr_cnt = 0;
+
+    osMutexAcquire(cam_i2c_mutex, osWaitForever);
+    imx335_io_init();
+
     wr_cnt++;
 
     cam_iic_start();
     cam_iic_send_byte(dev_addr & 0xFE);     /* 写命令 */
     if (cam_iic_wait_ack()) {
         printf("[I2C] W#%lu ACK fail at dev_addr 0x%02X\r\n", wr_cnt, dev_addr);
-        cam_iic_stop(); return 1;
+        ret = 1; goto exit;
     }
     cam_iic_send_byte(reg >> 8);            /* 寄存器高8位 */
     if (cam_iic_wait_ack()) {
         printf("[I2C] W#%lu ACK fail at reg_hi 0x%04X\r\n", wr_cnt, reg);
-        cam_iic_stop(); return 1;
+        ret = 1; goto exit;
     }
     cam_iic_send_byte(reg & 0xFF);          /* 寄存器低8位 */
     if (cam_iic_wait_ack()) {
         printf("[I2C] W#%lu ACK fail at reg_lo 0x%04X\r\n", wr_cnt, reg);
-        cam_iic_stop(); return 1;
+        ret = 1; goto exit;
     }
 
     for (uint16_t i = 0; i < length; i++)
@@ -623,12 +637,15 @@ static int32_t imx335_io_writereg(uint16_t dev_addr, uint16_t reg, uint8_t *data
         cam_iic_send_byte(data[i]);
         if (cam_iic_wait_ack()) {
             printf("[I2C] W#%lu ACK fail at reg 0x%04X data[%u]\r\n", wr_cnt, reg, i);
-            cam_iic_stop(); return 1;
+            ret = 1; goto exit;
         }
     }
 
+exit:
     cam_iic_stop();
-    return 0;
+    imx335_io_deinit();
+    osMutexRelease(cam_i2c_mutex);
+    return ret;
 }
 
 /**
@@ -641,25 +658,33 @@ static int32_t imx335_io_writereg(uint16_t dev_addr, uint16_t reg, uint8_t *data
  */
 static int32_t imx335_io_readreg(uint16_t dev_addr, uint16_t reg, uint8_t *data, uint16_t length)
 {
+    int32_t ret = 0;
+
+    osMutexAcquire(cam_i2c_mutex, osWaitForever);
+    imx335_io_init();
+
     cam_iic_start();
     cam_iic_send_byte(dev_addr & 0xFE);     /* 写命令（先写寄存器地址） */
-    if (cam_iic_wait_ack()) { cam_iic_stop(); return 1; }
+    if (cam_iic_wait_ack()) { ret = 1; goto exit; }
     cam_iic_send_byte(reg >> 8);            /* 寄存器高8位 */
-    if (cam_iic_wait_ack()) { cam_iic_stop(); return 1; }
+    if (cam_iic_wait_ack()) { ret = 1; goto exit; }
     cam_iic_send_byte(reg & 0xFF);          /* 寄存器低8位 */
-    if (cam_iic_wait_ack()) { cam_iic_stop(); return 1; }
+    if (cam_iic_wait_ack()) { ret = 1; goto exit; }
 
     cam_iic_start();
     cam_iic_send_byte(dev_addr | 0x01);     /* 读命令 */
-    if (cam_iic_wait_ack()) { cam_iic_stop(); return 1; }
+    if (cam_iic_wait_ack()) { ret = 1; goto exit; }
 
     for (uint16_t i = 0; i < length; i++)
     {
         data[i] = cam_iic_read_byte(i == (length - 1) ? 1 : 0);
     }
 
+exit:
     cam_iic_stop();
-    return 0;
+    imx335_io_deinit();
+    osMutexRelease(cam_i2c_mutex);
+    return ret;
 }
 
 /**

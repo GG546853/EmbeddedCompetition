@@ -11,8 +11,10 @@
 ../X-CUBE-AI/App/app_x-cube-ai.c:626:6:ai_face_enroll_multi	544	static
 ../X-CUBE-AI/App/app_x-cube-ai.c:689:6:ai_face_identify	584	static
 ../X-CUBE-AI/App/app_x-cube-ai.c:747:7:ai_face_gallery_print	24	static
-../X-CUBE-AI/App/app_x-cube-ai.c:759:7:ai_face_reid_run	24	static,ignoring_inline_asm
-../X-CUBE-AI/App/app_x-cube-ai.c:803:7:MX_X_CUBE_AI_Process_User	256	static,ignoring_inline_asm
-../X-CUBE-AI/App/app_x-cube-ai.c:831:6:set_clk_sleep_mode	32	static
-../X-CUBE-AI/App/app_x-cube-ai.c:870:6:MX_X_CUBE_AI_Init	56	static
-../X-CUBE-AI/App/app_x-cube-ai.c:929:6:MX_X_CUBE_AI_Process	8	static,ignoring_inline_asm
+../X-CUBE-AI/App/app_x-cube-ai.c:755:6:ai_face_gallery_export	8	static
+../X-CUBE-AI/App/app_x-cube-ai.c:761:6:ai_face_gallery_import	8	static
+../X-CUBE-AI/App/app_x-cube-ai.c:775:7:ai_face_reid_run	24	static,ignoring_inline_asm
+../X-CUBE-AI/App/app_x-cube-ai.c:819:7:MX_X_CUBE_AI_Process_User	256	static,ignoring_inline_asm
+../X-CUBE-AI/App/app_x-cube-ai.c:847:6:set_clk_sleep_mode	32	static
+../X-CUBE-AI/App/app_x-cube-ai.c:886:6:MX_X_CUBE_AI_Init	56	static
+../X-CUBE-AI/App/app_x-cube-ai.c:945:6:MX_X_CUBE_AI_Process	8	static,ignoring_inline_asm

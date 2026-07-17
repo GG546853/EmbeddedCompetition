@@ -39,6 +39,7 @@
 #include "sys.h"
 #include "hyperram.h"
 #include "norflash.h"
+#include "nvstore.h"
 #include "imx335.h"
 #include "rgblcd.h"
 #include "uart.h"
@@ -66,8 +67,8 @@
 /* USER CODE BEGIN PV */
 #ifdef DEBUG
 static HyperRAM_ObjectTypeDef HyperRAMObject = {0}; //句柄
-static NORFlash_ObjectTypeDef NORFlashObject = {0};
 #endif
+static NORFlash_ObjectTypeDef NORFlashObject = {0};
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -183,7 +184,7 @@ int main(void)
   //MX_XSPI1_Init();
   MX_LTDC_Init();
   MX_USART1_UART_Init();
- // MX_XSPI2_Init();
+  //MX_XSPI2_Init();
   MX_CACHEAXI_Init();
   MX_RAMCFG_Init();
   MX_UART7_Init();
@@ -218,12 +219,69 @@ int main(void)
   {
       Error_Handler();
   }
+#else
+  /* RELEASE mode: FSBL already configured XSPI2 + NOR Flash for XIP.
+     Pure data initialization — no hardware register writes, since Port2
+     is actively serving XIP reads and touching XSPI2 registers may hang. */
+  NORFlashObject.XSPIObject.XSPIHandle = &hxspi2;
+  hxspi2.Instance = XSPI2;
+  hxspi2.State    = HAL_XSPI_STATE_READY;
+
+  /* BaseCommand for 8D8D8D mode */
+  NORFlashObject.XSPIObject.BaseCommand.OperationType      = HAL_XSPI_OPTYPE_COMMON_CFG;
+  NORFlashObject.XSPIObject.BaseCommand.IOSelect           = HAL_XSPI_SELECT_IO_7_0;
+  NORFlashObject.XSPIObject.BaseCommand.Instruction        = 0;
+  NORFlashObject.XSPIObject.BaseCommand.InstructionMode    = HAL_XSPI_INSTRUCTION_8_LINES;
+  NORFlashObject.XSPIObject.BaseCommand.InstructionWidth   = HAL_XSPI_INSTRUCTION_16_BITS;
+  NORFlashObject.XSPIObject.BaseCommand.InstructionDTRMode = HAL_XSPI_INSTRUCTION_DTR_ENABLE;
+  NORFlashObject.XSPIObject.BaseCommand.Address            = 0;
+  NORFlashObject.XSPIObject.BaseCommand.AddressMode        = HAL_XSPI_ADDRESS_8_LINES;
+  NORFlashObject.XSPIObject.BaseCommand.AddressWidth       = HAL_XSPI_ADDRESS_32_BITS;
+  NORFlashObject.XSPIObject.BaseCommand.AddressDTRMode     = HAL_XSPI_ADDRESS_DTR_ENABLE;
+  NORFlashObject.XSPIObject.BaseCommand.AlternateBytesMode = HAL_XSPI_ALT_BYTES_NONE;
+  NORFlashObject.XSPIObject.BaseCommand.DataMode           = HAL_XSPI_DATA_8_LINES;
+  NORFlashObject.XSPIObject.BaseCommand.DataLength         = 0;
+  NORFlashObject.XSPIObject.BaseCommand.DataDTRMode        = HAL_XSPI_DATA_DTR_ENABLE;
+  NORFlashObject.XSPIObject.BaseCommand.DummyCycles        = 0;
+  NORFlashObject.XSPIObject.BaseCommand.DQSMode            = HAL_XSPI_DQS_DISABLE;
+
+  /* MX25UM25645G flash parameters */
+  NORFlashObject.Information.FlashSize  = 0x2000000;
+  NORFlashObject.Information.SectorSize = 0x1000;
+  NORFlashObject.Information.PageSize   = 0x100;
+  NORFlashObject.Timing.EraseChip       = 150000;
+  NORFlashObject.Timing.EraseSector     = 400;
+  NORFlashObject.Timing.ProgramPage     = 1;
+  NORFlashObject.Command.MapRead.Command    = 0xEE;
+  NORFlashObject.Command.MapRead.Dummy      = 20;
+  NORFlashObject.Command.MapWrite.Command   = 0x12;
+  NORFlashObject.Command.MapWrite.Dummy     = 0;
+  NORFlashObject.Command.ProgramPage.Command = 0x12;
+  NORFlashObject.Command.ProgramPage.Dummy   = 0;
+  NORFlashObject.Command.EraseSector.Command = 0x21;
+  NORFlashObject.Command.EraseSector.Dummy   = 0;
 #endif
+
+  /* Copy RamFunc section from Flash to SRAM (XIP mode only;
+     LRUN mode has LMA == VMA, skip to avoid memcpy self-overlap). */
+  extern uint32_t _siramfunc, _sramfunc, _eramfunc;
+  if (&_siramfunc != &_sramfunc) {
+      uint32_t ramfunc_size = (uint32_t)&_eramfunc - (uint32_t)&_sramfunc;
+      if (ramfunc_size > 0) {
+          memcpy(&_sramfunc, &_siramfunc, ramfunc_size);
+      }
+  }
+
+  /* Init NVStore */
+  if (NVStore_Init(&NORFlashObject) != NVSTORE_OK) {
+      printf("[NVStore] Init failed\r\n");
+  }
+  NVStore_LoadInventory();
+  NVStore_LoadFaceGallery();
 
   rgblcd_init();
   rgblcd_display_dir(1);  /* 设置RGB LCD显示方向 */
-  HAL_GPIO_WritePin(GPIOG, GPIO_PIN_4, 1);
-  HAL_GPIO_WritePin(GPIOG, GPIO_PIN_6, 1);
+
 
 
 
@@ -351,6 +409,8 @@ void PeriphCommonClock_Config(void)
 
   /*RISUP configuration*/
   HAL_RIF_RISC_SetSlaveSecureAttributes(RIF_RISC_PERIPH_INDEX_TIM6 , RIF_ATTRIBUTE_SEC | RIF_ATTRIBUTE_PRIV);
+  HAL_RIF_RISC_SetSlaveSecureAttributes(RIF_RISC_PERIPH_INDEX_XSPI1 , RIF_ATTRIBUTE_SEC | RIF_ATTRIBUTE_PRIV);
+  HAL_RIF_RISC_SetSlaveSecureAttributes(RIF_RISC_PERIPH_INDEX_XSPI2 , RIF_ATTRIBUTE_SEC | RIF_ATTRIBUTE_PRIV);
   HAL_RIF_RISC_SetSlaveSecureAttributes(RIF_RISC_PERIPH_INDEX_DCMIPP , RIF_ATTRIBUTE_SEC | RIF_ATTRIBUTE_PRIV);
   HAL_RIF_RISC_SetSlaveSecureAttributes(RIF_RISC_PERIPH_INDEX_DMA2D , RIF_ATTRIBUTE_SEC | RIF_ATTRIBUTE_PRIV);
   HAL_RIF_RISC_SetSlaveSecureAttributes(RIF_RISC_PERIPH_INDEX_LTDCL1 , RIF_ATTRIBUTE_SEC | RIF_ATTRIBUTE_PRIV);

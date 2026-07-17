@@ -20,7 +20,7 @@
 ../APP/ui/eez-flow.h:3982:6:void utf8lwr(utf8_int8_t*)	5
 ../APP/ui/eez-flow.h:4182:36:constexpr utf8_int32_t utf8uprcodepoint(utf8_int32_t)	71
 ../APP/ui/eez-flow.h:3999:6:void utf8upr(utf8_int8_t*)	5
-../APP/ui/structs.h:45:5:CabinetValue::CabinetValue()	1
+../APP/ui/structs.h:54:5:CabinetValue::CabinetValue()	1
 ../APP/ui/ui_bridge.cpp:20:6:void ui_set_integer(int, int)	1
 ../APP/ui/ui_bridge.cpp:24:5:int ui_get_integer(int)	1
 ../APP/ui/ui_bridge.cpp:28:6:void ui_set_string(int, const char*)	1
@@ -31,4 +31,5 @@
 ../APP/ui/ui_bridge.cpp:101:5:int ui_pull_history(HistoryRecord*, int)	5
 ../APP/ui/ui_bridge.cpp:121:5:int ui_get_log_count()	2
 ../APP/ui/ui_bridge.cpp:128:6:void ui_get_log_entry(int, char*, char*, char*, int*, char*, int*)	5
-../APP/ui/ui_bridge.cpp:147:17:void action_givetime(lv_event_t*)	1
+../APP/ui/ui_bridge.cpp:147:6:void ui_push_alarm(const AlarmRecord*, int)	2
+../APP/ui/ui_bridge.cpp:161:17:void action_givetime(lv_event_t*)	1

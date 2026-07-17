@@ -1,2 +1,3 @@
-../APP/AI_task.c:33:13:fill_rect.constprop	40	static
-../APP/AI_task.c:268:6:AI_Task	664	static,ignoring_inline_asm
+../APP/AI_task.c:137:13:process_serial_commands	5360	static
+../APP/AI_task.c:34:13:fill_rect.constprop	40	static
+../APP/AI_task.c:283:6:AI_Task	664	static,ignoring_inline_asm

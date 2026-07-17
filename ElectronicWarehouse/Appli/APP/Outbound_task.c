@@ -16,6 +16,11 @@ InventoryItem inventory_item_D[6];
 HistoryRecord history_list[32];
 int history_count;
 
+AlarmRecord alarm_list[1];
+
+
+
+
 void Outbound_Task(void *argument)
 {
     uint32_t led_bitmap = 0;

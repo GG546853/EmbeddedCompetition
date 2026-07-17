@@ -42,6 +42,13 @@ typedef struct {
     uint16_t quantity;
 } HistoryRecord;
 
+typedef struct{
+	char pc[32];
+	uint8_t cabinet_id;
+	uint16_t quantity;
+}AlarmRecord;
+
+
 
 extern SystemState Cabinet;
 

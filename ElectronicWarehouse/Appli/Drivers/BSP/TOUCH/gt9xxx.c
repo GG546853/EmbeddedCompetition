@@ -23,6 +23,8 @@
 #include "touch.h"
 #include "gt9xxx.h"
 #include "i2c.h"
+#include "imx335.h"
+#include "cmsis_os.h"
 
 extern I2C_HandleTypeDef hi2c2;
 //#include "../SYS/sys.h"
@@ -40,10 +42,15 @@ uint8_t g_gt_tnum = 5;      /* 默认支持的触摸屏点数(5点触摸) */
  */
 uint8_t gt9xxx_wr_reg(uint16_t reg, uint8_t *buf, uint8_t len)
 {
+    uint8_t ret;
+
+    osMutexAcquire(cam_i2c_mutex, osWaitForever);
     if (HAL_I2C_Mem_Write(&hi2c2, GT9XXX_CMD_WR, reg, I2C_MEMADD_SIZE_16BIT, buf, len, 1000) == HAL_OK)
-        return 0;
+        ret = 0;
     else
-        return 1;
+        ret = 1;
+    osMutexRelease(cam_i2c_mutex);
+    return ret;
 }
 
 /**
@@ -55,7 +62,9 @@ uint8_t gt9xxx_wr_reg(uint16_t reg, uint8_t *buf, uint8_t len)
  */
 void gt9xxx_rd_reg(uint16_t reg, uint8_t *buf, uint8_t len)
 {
+    osMutexAcquire(cam_i2c_mutex, osWaitForever);
     HAL_I2C_Mem_Read(&hi2c2, GT9XXX_CMD_WR, reg, I2C_MEMADD_SIZE_16BIT, buf, len, 1000);
+    osMutexRelease(cam_i2c_mutex);
 }
 
 /**

@@ -4,6 +4,8 @@
 #include "Outbound_task.h"
 #include "ui_bridge.h"
 #include "vars.h"
+#include "RGBLED_task.h"
+#include "Electromagnet.h"
 #include <stdio.h>
 #include <string.h>
 #include "FreeRTOS.h"
@@ -90,8 +92,16 @@ void Barcode_Task(void *argument)
                     sprintf(loc, "%c%02d", dup_type, dup_idx);
                     inventory_add_quantity(&inventory_item, loc);
                     ui_push_inventory(inventory_item_T, 28, inventory_item_D, 6);
+                    ui_set_integer(FLOW_GLOBAL_VARIABLE_DASH_LS,
+                        ui_get_integer(FLOW_GLOBAL_VARIABLE_DASH_LS) + inventory_item.quantity);
                     uint8_t cab_id = (dup_type == 'T') ? (uint8_t)dup_idx
                                                        : (uint8_t)(28 + dup_idx);
+
+                    if (cab_id <= 27) {
+                        RGBLED_Flash(1u << (27 - cab_id));
+                    } else {
+                        Electromagnet_Open((uint8_t)(1u << (cab_id - 28)));
+                    }
 
                     HistoryRecord *r = &history_list[history_count];
                     get_current_time_str(r->time, sizeof(r->time));
@@ -124,8 +134,18 @@ void Barcode_Task(void *argument)
                             }
                             inventory_store_to_slot(&inventory_item, loc);
                             ui_push_inventory(inventory_item_T, 28, inventory_item_D, 6);
+                            ui_set_integer(FLOW_GLOBAL_VARIABLE_DASH_CTG,
+                                ui_get_integer(FLOW_GLOBAL_VARIABLE_DASH_CTG) + 1);
+                            ui_set_integer(FLOW_GLOBAL_VARIABLE_DASH_LS,
+                                ui_get_integer(FLOW_GLOBAL_VARIABLE_DASH_LS) + inventory_item.quantity);
                             uart4_send_store(loc);
                             ui_set_integer(FLOW_GLOBAL_VARIABLE_CID, -1);
+
+                            if (cid <= 27) {
+                                RGBLED_Flash(1u << (27 - cid));
+                            } else {
+                                Electromagnet_Open((uint8_t)(1u << (cid - 28)));
+                            }
 
                             HistoryRecord *r = &history_list[history_count];
                             get_current_time_str(r->time, sizeof(r->time));

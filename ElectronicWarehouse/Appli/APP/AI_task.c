@@ -1,6 +1,7 @@
 #include "app_freertos.h"
 #include "AI_task.h"
 #include "app_x-cube-ai.h"
+#include "nvstore.h"
 #include "imx335.h"
 #include "dcmipp.h"
 #include "network_f.h"
@@ -168,6 +169,20 @@ static void process_serial_commands(void)
     }
     else if (strcmp(cmd, "gallery") == 0) {
         ai_face_gallery_print();
+    }
+    else if (strcmp(cmd, "saveface") == 0) {
+        NVStore_Status s = NVStore_SaveFaceGallery();
+        printf("[TEST] SaveFaceGallery = %d\r\n", s);
+    }
+    else if (strcmp(cmd, "loadface") == 0) {
+        NVStore_Status s = NVStore_LoadFaceGallery();
+        printf("[TEST] LoadFaceGallery = %d\r\n", s);
+        ai_face_gallery_print();
+    }
+    else if (strcmp(cmd, "clearface") == 0) {
+        face_entry_t empty[FACE_GALLERY_MAX] = {0};
+        ai_face_gallery_import(empty, 0);
+        printf("[TEST] Gallery cleared in RAM\r\n");
     }
     else if (strcmp(cmd, "help") == 0) {
         printf("[HELP] Commands:\r\n");

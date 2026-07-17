@@ -22,6 +22,7 @@
 #define __IMX335_H
 
 #include "main.h"
+#include "cmsis_os.h"
 
 /* 引脚定义 */
 #define IMX335_PWDN_GPIO_PORT   GPIOG
@@ -42,6 +43,9 @@
 /* IMX335 ID和I2C访问地址定义 */
 #define IMX335_ID               0x00
 #define IMX335_ADDR             0x34
+
+/* 摄像头I2C总线互斥锁（与触摸屏共享PD14 SCL） */
+extern osMutexId_t cam_i2c_mutex;
 
 /* 函数声明 */
 uint8_t imx335_init(void);                                                      /* 初始化IMX335 */

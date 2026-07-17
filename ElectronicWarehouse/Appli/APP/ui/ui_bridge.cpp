@@ -144,6 +144,20 @@ void ui_get_log_entry(int index, char *time, char *user, char *pc,
     *cab_id = entry.cabinet_id();
 }
 
+void ui_push_alarm(const AlarmRecord *list, int count) {
+    osMutexAcquire(flow_var_mutex, osWaitForever);
+    ArrayOfLSWValue lsws(count);
+    for (int i = 0; i < count; i++) {
+        LSWValue entry;
+        entry.name(list[i].pc);
+        entry.CNUM((int)list[i].cabinet_id);
+        entry.STOCK((int)list[i].quantity);
+        lsws.at(i, entry);
+    }
+    eez::flow::setGlobalVariable(FLOW_GLOBAL_VARIABLE_LSW, lsws);
+    osMutexRelease(flow_var_mutex);
+}
+
 extern "C" void action_givetime(lv_event_t * e)
 {
     (void)e;

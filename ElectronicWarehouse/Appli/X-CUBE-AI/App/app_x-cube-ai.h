@@ -40,7 +40,7 @@ void MX_X_CUBE_AI_Process(void);
 #define AI_FD_IOU_THRESHOLD    0.3f
 #define AI_FD_GRID_0_NB_BOXES  512
 #define AI_FD_GRID_1_NB_BOXES  384
-#define AI_FD_BOX_SCALE_W      0.90f
+#define AI_FD_BOX_SCALE_W      0.80f
 #define AI_FD_BOX_SCALE_H      1.20f
 #define AI_FD_EMA_ALPHA        0.30f
 #define AI_FD_TRACK_IOU_THRESH 0.50f
@@ -95,7 +95,7 @@ int  ai_face_enroll_multi(const float *embedding, const char *name);
 int  ai_face_identify(const float *embedding, char *name_out, float *dist_out);
 void ai_face_gallery_print(void);
 
-/* Raw accessors for persistent storage (nvstore) */
+/* Raw accessors for persistent storage */
 void ai_face_gallery_export(face_entry_t *out_entries, uint32_t *out_count);
 void ai_face_gallery_import(const face_entry_t *in_entries, uint32_t in_count);
 /* USER CODE END includes */

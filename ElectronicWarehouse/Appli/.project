@@ -98,6 +98,16 @@
       <locationURI>PARENT-1-PROJECT_LOC/Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_hal_ltdc_ex.c</locationURI>
     </link>
     <link>
+      <name>Drivers/STM32N6xx_HAL_Driver/stm32n6xx_hal_mmc.c</name>
+      <type>1</type>
+      <locationURI>PARENT-1-PROJECT_LOC/Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_hal_mmc.c</locationURI>
+    </link>
+    <link>
+      <name>Drivers/STM32N6xx_HAL_Driver/stm32n6xx_hal_mmc_ex.c</name>
+      <type>1</type>
+      <locationURI>PARENT-1-PROJECT_LOC/Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_hal_mmc_ex.c</locationURI>
+    </link>
+    <link>
       <name>Drivers/STM32N6xx_HAL_Driver/stm32n6xx_hal_pwr.c</name>
       <type>1</type>
       <locationURI>PARENT-1-PROJECT_LOC/Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_hal_pwr.c</locationURI>
@@ -126,6 +136,21 @@
       <name>Drivers/STM32N6xx_HAL_Driver/stm32n6xx_hal_rif.c</name>
       <type>1</type>
       <locationURI>PARENT-1-PROJECT_LOC/Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_hal_rif.c</locationURI>
+    </link>
+    <link>
+      <name>Drivers/STM32N6xx_HAL_Driver/stm32n6xx_hal_sd.c</name>
+      <type>1</type>
+      <locationURI>PARENT-1-PROJECT_LOC/Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_hal_sd.c</locationURI>
+    </link>
+    <link>
+      <name>Drivers/STM32N6xx_HAL_Driver/stm32n6xx_hal_sd_ex.c</name>
+      <type>1</type>
+      <locationURI>PARENT-1-PROJECT_LOC/Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_hal_sd_ex.c</locationURI>
+    </link>
+    <link>
+      <name>Drivers/STM32N6xx_HAL_Driver/stm32n6xx_hal_sdio.c</name>
+      <type>1</type>
+      <locationURI>PARENT-1-PROJECT_LOC/Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_hal_sdio.c</locationURI>
     </link>
     <link>
       <name>Drivers/STM32N6xx_HAL_Driver/stm32n6xx_hal_spi.c</name>
@@ -161,6 +186,11 @@
       <name>Drivers/STM32N6xx_HAL_Driver/stm32n6xx_hal_xspi.c</name>
       <type>1</type>
       <locationURI>PARENT-1-PROJECT_LOC/Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_hal_xspi.c</locationURI>
+    </link>
+    <link>
+      <name>Drivers/STM32N6xx_HAL_Driver/stm32n6xx_ll_sdmmc.c</name>
+      <type>1</type>
+      <locationURI>PARENT-1-PROJECT_LOC/Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_ll_sdmmc.c</locationURI>
     </link>
     <link>
       <name>Middlewares/RTOS2/CMSIS/RTOS2/Core/TZ_Secure_Only/cmsis_os2.c</name>

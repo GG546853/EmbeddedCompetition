@@ -1,0 +1,13 @@
+../APP/storage.c:281:12:load_buf	2
+../APP/storage.c:259:12:save_buf	4
+../APP/storage.c:40:5:storage_init	4
+../APP/storage.c:68:5:storage_load_inventory	3
+../APP/storage.c:86:5:storage_save_inventory	2
+../APP/storage.c:103:5:storage_load_faces	4
+../APP/storage.c:130:5:storage_save_faces	5
+../APP/storage.c:167:5:storage_load_history	5
+../APP/storage.c:195:5:storage_save_history	5
+../APP/storage.c:224:6:storage_mark_inventory_dirty	1
+../APP/storage.c:225:6:storage_mark_faces_dirty	1
+../APP/storage.c:226:6:storage_mark_history_dirty	1
+../APP/storage.c:228:6:storage_flush	12

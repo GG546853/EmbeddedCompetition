@@ -1230,3 +1230,279 @@ LRUN 模式（代码在 SRAM 中运行，通过 HAL/NORFlash 驱动）已经验�
 - **ARM Cortex-M55 技术参考手册**：ICACHE/DCACHE 控制、SCB CCR 寄存器
 - **ST 社区**：STM32H7 外部 NOR Flash XIP + 写入的讨论（结论：需要 Flash 支持 RWW 或双 Flash 方案）
   - https://community.st.com/stm32-mcus-embedded-software-32/issues-while-writing-into-an-external-nor-while-xip-from-a-different-section-of-same-external-nor-120586
+
+---
+
+## 问题 8：SD NAND + FATFS 文件系统集成与调试
+
+### 背景
+
+放弃 NOR Flash XIP 擦写后，改用核心板自带的 16Gb SD NAND（4-bit SDMMC2 接口，50MHz）做数据持久化。移植 FATFS R0.15a，用文件系统直接读写二进制文件。CubeMX 已完成 SDMMC2 外设配置。
+
+### 架构概览
+
+```
+storage.c (应用层)
+  → f_open / f_read / f_write / f_mount    (FATFS R0.15a)
+    → disk_read / disk_write / disk_ioctl   (diskio.c 胶水层)
+      → sd_nand_read_disk / sd_nand_write_disk  (SD NAND 驱动)
+        → HAL_SD_ReadBlocks / HAL_SD_WriteBlocks (STM32 HAL)
+          → SDMMC2 (4-bit, 50MHz)
+```
+
+### 移植文件清单
+
+**新建：**
+| 文件 | 说明 |
+|------|------|
+| `Appli/Drivers/BSP/SD_NAND/sd_nand.h` | SD NAND 驱动头文件 |
+| `Appli/Drivers/BSP/SD_NAND/sd_nand.c` | SD NAND 驱动实现 |
+| `Appli/Middlewares/ST/Third_Party/FATFS/ff.h` | FATFS 公共 API |
+| `Appli/Middlewares/ST/Third_Party/FATFS/ff.c` | FATFS 核心（R0.15a） |
+| `Appli/Middlewares/ST/Third_Party/FATFS/diskio.h` | 磁盘 I/O 接口 |
+| `Appli/Middlewares/ST/Third_Party/FATFS/ffconf.h` | FATFS 配置（FF_VOLUMES=1, FF_USE_MKFS=1, FF_CODE_PAGE=936） |
+| `Appli/FATFS/Target/diskio.c` | 胶水层（FATFS → SD NAND 驱动） |
+| `Appli/APP/storage.h` | 存储模块 API |
+| `Appli/APP/storage.c` | 存储模块实现（inventory/faces/history 的保存和加载） |
+
+**修改：**
+| 文件 | 改动 |
+|------|------|
+| `Appli/Core/Inc/main.h` | 添加 `#include "sdmmc.h"` |
+| `Appli/Core/Src/main.c` | 添加 SD NAND init + storage init + 数据加载序列 |
+| `Appli/Core/Src/app_freertos.c` | 添加 StorageFlush 低优先级任务 + storage_mutex |
+| `Appli/APP/AI_task.c` | 添加 saveface/loadface/clearface 串口调试命令 |
+| `Appli/Release/sources.mk` | SUBDIRS 添加 SD_NAND、FATFS/Target、FATFS |
+| `Appli/Debug/sources.mk` | 同上 |
+| `Release/FATFS/Target/subdir.mk` | **手动创建**（CubeMX 不会自动生成此目录的构建文件） |
+| `Debug/FATFS/Target/subdir.mk` | **手动创建** |
+
+### FATFS 配置要点 (ffconf.h)
+
+```c
+FF_VOLUMES    = 1    // 只挂 SD NAND 一个卷
+FF_STR_VOLUME_ID = 0
+FF_USE_MKFS   = 1    // 首次启动自动格式化空白卡
+FF_USE_LFN    = 0    // 不需要长文件名
+FF_FS_EXFAT   = 0    // FAT32 足够
+FF_CODE_PAGE  = 936  // 简体中文
+FF_USE_LABEL  = 0
+```
+
+### 延迟写入架构
+
+为减少 FATFS I/O 对 UI/AI 任务的阻塞，采用脏标志 + 低优先级 Flush 任务模式：
+
+```
+AI_task          → storage_mark_faces_dirty()
+UART4_RxTask     → storage_mark_inventory_dirty()
+Barcode_task     → storage_mark_inventory_dirty()
+actions.c        → storage_mark_inventory_dirty()
+                       ↓
+StorageFlush_Task (优先级 Low, 每 2s)
+  → storage_flush()
+    → osMutexAcquire(storage_mutex)
+    → if dirty: save → clear flag
+    → osMutexRelease(storage_mutex)
+```
+
+### 问题 8.1：链接错误 "undefined reference to disk_write/disk_read/..."
+
+**现象**：编译时链接器报错，所有 disk_* 函数未定义。
+
+**根因**：`FATFS/Target/subdir.mk` 不存在于 Debug 和 Release 目录。STM32CubeIDE 的 make 系统通过每个源码目录下的 `subdir.mk` 文件来发现 `.c` 源文件，仅在 `sources.mk` 的 SUBDIRS 中添加目录是不够的。
+
+**修复**：手动创建 `Release/FATFS/Target/subdir.mk` 和 `Debug/FATFS/Target/subdir.mk`，参照已有的 `SD_NAND/subdir.mk` 格式：
+
+```makefile
+# C sources
+C_SOURCES += \
+FATFS/Target/diskio.c
+```
+
+### 问题 8.2：SD NAND 容量显示为 983040 MB
+
+**现象**：串口输出 `[SD NAND] OK, 983040 MB`，实际应为 ~1920 MB。
+
+**根因**：容量计算公式错误：
+```c
+// 错误（多乘了 LogBlockSize = 512）
+printf("[SD NAND] OK, %lu MB\r\n",
+    (unsigned long)(g_sd_nand_info_struct.LogBlockNbr / 2 / 1024
+                    * g_sd_nand_info_struct.LogBlockSize));
+```
+`LogBlockNbr` 是扇区总数（1 sector = 512 字节），`/ 2 / 1024` 已将扇区转为 MB。再乘以 `LogBlockSize`（512）放大了 512 倍：983040 / 512 ≈ 1920 MB。
+
+**修复**：移除多余的 `* g_sd_nand_info_struct.LogBlockSize`：
+```c
+printf("[SD NAND] OK, %lu MB\r\n",
+    (unsigned long)(g_sd_nand_info_struct.LogBlockNbr / 2 / 1024));
+```
+
+### 问题 8.3：saveface 返回 FRESULT=13 但初始化显示 "Mount OK"
+
+**现象**：
+- 启动日志显示 `[STORAGE] Mount OK`
+- 发送 `saveface` 命令后：`[STORAGE] faces.bin open failed (FRESULT=13)`
+- FRESULT 13 = `FR_NO_FILESYSTEM`（没有有效的 FAT 文件系统）
+
+**根因**：`f_mount` 的第三个参数 `opt` 的语义陷阱。
+
+```c
+// 原代码
+res = f_mount(&g_fs, "0:", 0);  // opt=0：延迟挂载
+
+// ff.c 源码第 3719 行
+if (opt == 0) return FR_OK;  // 仅注册对象，不读磁盘，永远返回 FR_OK
+```
+
+`opt=0`（延迟挂载）只把文件系统对象注册到 FATFS 内部链表，**不读磁盘**、**不检查 FAT 签名**、**永远返回 FR_OK**。空白的 SD NAND 没有文件系统，但 `opt=0` 的 `f_mount` 仍返回 FR_OK。后续的 auto-format 逻辑（`if (res == FR_NO_FILESYSTEM)`）永远不会触发。真正的文件系统检查延迟到 `f_open` 时才执行，此时才发现没有 FAT 签名 → 返回 FR_NO_FILESYSTEM (13)。
+
+**修复**：将 `opt` 从 `0` 改为 `1`（立即挂载）：
+```c
+res = f_mount(&g_fs, "0:", 1);  // opt=1：立即挂载，真的读磁盘检查 FAT
+```
+
+`opt=1` 的 `f_mount` 会：
+1. 读磁盘 Sector 0（MBR）
+2. 解析分区表找到 FAT 卷
+3. 读 FAT 卷的 Boot Sector
+4. 校验 FAT 签名（0x55AA）和 FSINFO 签名
+
+如果以上任何步骤失败，返回对应的错误码（`FR_NO_FILESYSTEM` 等），不再"假装成功"。
+
+### 问题 8.4：格式化成功但重新挂载失败（FR_NO_FILESYSTEM 反复出现）
+
+**现象**：修复 8.3 后：
+- `[STORAGE] No filesystem, formatting...`
+- `[STORAGE] Format OK`
+- `[STORAGE] Mount failed (13)` ← 刚格式化完，重新挂载又报无文件系统！
+
+**根因**：D-Cache 一致性问题。`disk_read` 使用了 `SCB_InvalidateDCache_by_Addr`：
+
+```c
+// 错误实现
+DRESULT disk_read(BYTE pdrv, BYTE *buff, LBA_t sector, UINT count)
+{
+    sd_nand_read_disk(buff, sector, count);              // DMA 写数据到内存
+    SCB_InvalidateDCache_by_Addr(buff, count * 512);     // ← BUG 在这里
+    return RES_OK;
+}
+```
+
+**问题机制**（Cortex-M55 D-Cache）：
+
+1. `f_mkfs` 调用 `disk_write` → 通过 DMA 将 FAT 元数据从 SRAM 写到 SD NAND
+2. `f_mkfs` 返回后调用 `f_mount` → 触发 `disk_read` 读回 Boot Sector 验证
+3. `sd_nand_read_disk` 通过 SDMMC2 DMA 将数据写入 SRAM 缓冲区
+4. `SCB_InvalidateDCache_by_Addr` **直接丢弃**缓冲区对应的 Cache Line
+
+**关键**：如果 FATFS 内部栈变量（如 `fs->win[]` 512 字节工作缓冲区）的 Cache Line 碰巧与 DMA 读入的缓冲区落在同一 Cache Line（或同一组），Invalidate 会在丢弃 DMA 数据的同时，也丢弃了 FATFS 刚刚写回但尚未物理写出的脏数据。CPU 后续读取该地址时 Cache Miss，从内存读到的是**磁盘上的旧数据**——而磁盘上的数据是刚刚被格式化写入的，理应是最新的。
+
+实际上问题更微妙——`f_mkfs` 写入的数据经过 `SCB_CleanDCache_by_Addr` 正确写回了，但问题出在 `f_mount` 内部的读路径。`f_mount` 调用 `disk_read` 读 Boot Sector，DMA 将数据写入 SRAM。如果该地址的 Cache Line 恰好之前被其他变量（如 `g_fs.win[]`）的脏数据占据，Invalidate 会丢弃那些未 Clean 的脏行 → 文件系统对象状态不一致。
+
+**修复**：将 `SCB_InvalidateDCache_by_Addr` 改为 `SCB_CleanInvalidateDCache_by_Addr`：
+
+```c
+DRESULT disk_read(BYTE pdrv, BYTE *buff, LBA_t sector, UINT count)
+{
+    sd_nand_read_disk(buff, sector, count);
+    // 先把脏的 Cache Line 写回内存，再 Invalidate
+    // 确保 DMA 写入的数据不会因 Invalidate 丢失
+    SCB_CleanInvalidateDCache_by_Addr((uint32_t *)buff, count * 512);
+    return RES_OK;
+}
+```
+
+`CleanInvalidate` = Clean（写回脏数据到内存）+ Invalidate（丢弃 Cache Line）。下次 CPU 读这个地址时 Cache Miss → 从内存读到 DMA 写入的正确数据。
+
+**为什么 disk_write 不需要改**：写入路径用 `SCB_CleanDCache_by_Addr` 是正确的——只 Clean 不 Invalidate。Clean 将 CPU 写入的数据推到内存，DMA 从内存读到正确数据。如果在写之前 Invalidate，反而会丢弃 CPU 刚写的数据。
+
+### 存储模块 API (storage.h)
+
+```c
+int  storage_init(void);                  // f_mount + 自动格式化
+int  storage_load_inventory(void);        // 加载 invent_t.bin / invent_d.bin
+int  storage_load_faces(void);            // 加载 faces.bin
+int  storage_load_history(void);          // 加载 history.bin
+int  storage_save_inventory(void);        // 保存整个库存
+int  storage_save_faces(void);            // 保存人脸库
+int  storage_save_history(void);          // 保存历史
+
+// 延迟写入（设置脏标志，由 StorageFlush_Task 异步处理）
+void storage_mark_inventory_dirty(void);
+void storage_mark_faces_dirty(void);
+void storage_mark_history_dirty(void);
+void storage_flush(void);                 // 检查脏标志并写入
+```
+
+### 串口调试命令（AI_task.c 中实现）
+
+```
+register <name>  — 录入当前人脸
+s                — 多角度采集一张（录入过程中）
+identify         — 识别当前人脸
+gallery          — 列出已注册人脸
+saveface         — 保存人脸库到 SD NAND
+loadface         — 从 SD NAND 加载人脸库
+clearface        — 清空 SRAM 中人脸库（不修改 SD NAND）
+help             — 显示帮助
+```
+
+### 启动序列（main.c）
+
+在 `SystemIsolation_Config()` 之后、`osKernelInitialize()` 之前：
+
+```c
+#include "sd_nand.h"
+#include "storage.h"
+
+while (sd_nand_init()) {
+    printf("[SD NAND] Retry...\r\n");
+    HAL_Delay(1000);
+}
+printf("[SD NAND] OK, %lu MB\r\n",
+    (unsigned long)(g_sd_nand_info_struct.LogBlockNbr / 2 / 1024));
+
+if (storage_init() == 0) {
+    storage_load_inventory();
+    storage_load_faces();
+    storage_load_history();
+    printf("[STORAGE] All data loaded\r\n");
+} else {
+    printf("[STORAGE] Mount failed, RAM-only\r\n");
+}
+```
+
+### 验证结果
+
+1. 编译通过，烧录启动 → 串口打印 `[SD NAND] OK, 1920 MB`
+2. 首次启动 → 自动格式化 + 打印 `No invent_t.bin (first boot)`
+3. `saveface` → `[DISKIO] write sect=480 cnt=1` → `[STORAGE] Face gallery saved (1 faces)`
+4. `clearface` → 清空 SRAM → `loadface` → 人脸恢复 → `gallery` 显示已存储的人脸
+
+### 涉及文件汇总
+
+| 文件 | 操作 | 说明 |
+|------|------|------|
+| `Appli/Core/Inc/main.h` | 修改 | 添加 `#include "sdmmc.h"` |
+| `Appli/Core/Src/main.c` | 修改 | SD NAND init + storage init + 数据加载 + MB 修复 |
+| `Appli/Core/Src/app_freertos.c` | 修改 | StorageFlush 任务 + storage_mutex |
+| `Appli/FATFS/Target/diskio.c` | 新建/修改 | FATFS 胶水层（含 D-Cache 修复） |
+| `Release/FATFS/Target/subdir.mk` | 新建 | Release 构建文件 |
+| `Debug/FATFS/Target/subdir.mk` | 新建 | Debug 构建文件 |
+| `Appli/APP/storage.h` | 新建 | 存储模块 API |
+| `Appli/APP/storage.c` | 新建/修改 | 存储模块实现（含 f_mount opt 修复） |
+| `Appli/APP/AI_task.c` | 修改 | 串口调试命令（saveface/loadface/clearface） |
+| `Appli/Middlewares/ST/Third_Party/FATFS/ffconf.h` | 新建 | FATFS 配置 |
+| `Appli/Release/sources.mk` | 修改 | SUBDIRS 新增 |
+| `Appli/Debug/sources.mk` | 修改 | SUBDIRS 新增 |
+
+### 经验教训
+
+1. **`f_mount` opt 参数是经典的 FATFS 陷阱**：`opt=0`（延迟挂载）只注册不检查，永远返回 FR_OK。需要验证文件系统是否真的存在时必须用 `opt=1`（立即挂载）。无数嵌入式开发者在这栽过跟头。
+2. **Cortex-M55 D-Cache 一致性是 DMA + 文件系统并存时的核心难点**：读路径用 `CleanInvalidate`（先写回脏数据再丢弃 Cache Line），写路径用 `Clean`（只写回不丢弃）。Invalidate 单独使用会丢弃未写回的脏数据。
+3. **STM32CubeIDE 的 make 系统依赖 `subdir.mk`**：新增源码目录时，除了在 `sources.mk` 的 SUBDIRS 中添加目录名，还必须手动创建对应目录下的 `subdir.mk` 文件。仅修改 SUBDIRS 不够。
+4. **f_mkfs 是启动时格式化的安全方案**：配合 `FF_USE_MKFS=1`，首次上电时自动检测并格式化空白 SD NAND，无需预先用 PC 格式化。
+5. **延迟写入模式适合 UI 交互场景**：通过脏标志 + 低优先级 Flush 任务，将慢速的 FATFS 写入从热路径（扫码、人脸录入）移到后台，避免 UI 卡顿。
+6. **FATFS 文件写操作本身是可靠的**：只要 D-Cache 一致性问题解决、f_mount 正确返回、SD NAND 驱动稳定，FATFS 的 `f_write` 写入小文件（几 KB）非常可靠。

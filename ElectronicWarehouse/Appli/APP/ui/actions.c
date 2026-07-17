@@ -18,6 +18,7 @@
 #include "UART_protocol.h"
 #include "RGBLED_task.h"
 #include "Electromagnet.h"
+#include "storage.h"
 #include <string.h>
 #include <stdlib.h>
 
@@ -172,6 +173,8 @@ void action_iobutton(lv_event_t * e) {
     r->cabinet_id = (uint8_t)cabinet;
     r->quantity   = (uint16_t)((qty > 0) ? qty : -qty);
     history_count++;
+    storage_mark_inventory_dirty();
+    storage_mark_history_dirty();
     uart4_send_history(r);
     ui_push_history(history_list, history_count);
 

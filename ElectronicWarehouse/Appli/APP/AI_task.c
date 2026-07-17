@@ -1,7 +1,7 @@
 #include "app_freertos.h"
 #include "AI_task.h"
 #include "app_x-cube-ai.h"
-#include "nvstore.h"
+
 #include "imx335.h"
 #include "dcmipp.h"
 #include "network_f.h"
@@ -14,6 +14,7 @@
 #include <stdlib.h>
 #include "uart.h"
 #include "dma2d.h"
+#include "storage.h"
 #define DISP_W 800
 #define DISP_H 480
 #define BOX_THICKNESS 3
@@ -170,19 +171,16 @@ static void process_serial_commands(void)
     else if (strcmp(cmd, "gallery") == 0) {
         ai_face_gallery_print();
     }
-    else if (strcmp(cmd, "saveface") == 0) {
-        NVStore_Status s = NVStore_SaveFaceGallery();
-        printf("[TEST] SaveFaceGallery = %d\r\n", s);
-    }
-    else if (strcmp(cmd, "loadface") == 0) {
-        NVStore_Status s = NVStore_LoadFaceGallery();
-        printf("[TEST] LoadFaceGallery = %d\r\n", s);
-        ai_face_gallery_print();
-    }
     else if (strcmp(cmd, "clearface") == 0) {
         face_entry_t empty[FACE_GALLERY_MAX] = {0};
         ai_face_gallery_import(empty, 0);
-        printf("[TEST] Gallery cleared in RAM\r\n");
+        printf("[TEST] Gallery cleared in RAM (SD NAND NOT modified)\r\n");
+    }
+    else if (strcmp(cmd, "saveface") == 0) {
+        storage_save_faces();
+    }
+    else if (strcmp(cmd, "loadface") == 0) {
+        storage_load_faces();
     }
     else if (strcmp(cmd, "help") == 0) {
         printf("[HELP] Commands:\r\n");
@@ -190,6 +188,9 @@ static void process_serial_commands(void)
         printf("  s                -- capture one sample (during enrollment)\r\n");
         printf("  identify         -- identify current face\r\n");
         printf("  gallery          -- list registered faces\r\n");
+        printf("  saveface         -- save face gallery to SD NAND\r\n");
+        printf("  loadface         -- load face gallery from SD NAND\r\n");
+        printf("  clearface        -- clear face gallery in RAM only\r\n");
     }
 }
 
@@ -255,6 +256,7 @@ static void run_reid_pipeline(ai_result_t *result)
             int remaining = ai_face_enroll_multi(embedding, reid_name);
             if (remaining == 0) {
                 reid_pending = REID_IDLE;
+                storage_mark_faces_dirty();
                 printf("[REID] Enrolled '%s'\r\n", reid_name);
             }
             /* else: keep REID_REGISTER; wait for next 's' */

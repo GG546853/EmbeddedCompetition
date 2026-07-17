@@ -163,10 +163,12 @@ RM := rm -rf
 -include Middlewares/lvgl-release-v9.4/src/core/subdir.mk
 -include Middlewares/lvgl-release-v9.4/src/subdir.mk
 -include Middlewares/STM32_MW_ISP/isp/Src/subdir.mk
+-include Middlewares/ST/Third_Party/FATFS/subdir.mk
 -include Middlewares/ST/AI/Npu/ll_aton/subdir.mk
 -include Middlewares/ST/AI/Npu/Devices/STM32N6XX/subdir.mk
 -include Middlewares/RTOS2/CMSIS/RTOS2/Heap/Heap_4/subdir.mk
 -include Middlewares/RTOS2/CMSIS/RTOS2/Core/TZ_Secure_Only/subdir.mk
+-include FATFS/Target/subdir.mk
 -include Drivers/STM32N6xx_HAL_Driver/subdir.mk
 -include Drivers/BSP/VL53L1X/subdir.mk
 -include Drivers/BSP/UART/subdir.mk
@@ -174,6 +176,7 @@ RM := rm -rf
 -include Drivers/BSP/SoftI2C/subdir.mk
 -include Drivers/BSP/SYS/subdir.mk
 -include Drivers/BSP/SK9822/subdir.mk
+-include Drivers/BSP/SD_NAND/subdir.mk
 -include Drivers/BSP/RGBLCD/subdir.mk
 -include Drivers/BSP/Printer/subdir.mk
 -include Drivers/BSP/NORFlash/subdir.mk

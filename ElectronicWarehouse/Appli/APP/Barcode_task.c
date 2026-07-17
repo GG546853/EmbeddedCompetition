@@ -6,6 +6,7 @@
 #include "vars.h"
 #include "RGBLED_task.h"
 #include "Electromagnet.h"
+#include "storage.h"
 #include <stdio.h>
 #include <string.h>
 #include "FreeRTOS.h"
@@ -111,6 +112,8 @@ void Barcode_Task(void *argument)
                     r->cabinet_id = cab_id;
                     r->quantity   = inventory_item.quantity;
                     history_count++;
+                    storage_mark_inventory_dirty();
+                    storage_mark_history_dirty();
                     uart4_send_history(r);
                     ui_push_history(history_list, history_count);
                 } else {
@@ -155,6 +158,8 @@ void Barcode_Task(void *argument)
                             r->cabinet_id = (uint8_t)cid;
                             r->quantity   = inventory_item.quantity;
                             history_count++;
+                            storage_mark_inventory_dirty();
+                            storage_mark_history_dirty();
                             uart4_send_history(r);
                             ui_push_history(history_list, history_count);
                             break;

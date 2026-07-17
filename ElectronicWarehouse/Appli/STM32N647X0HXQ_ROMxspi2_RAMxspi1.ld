@@ -169,18 +169,6 @@ SECTIONS
 
   } >RAM AT> ROM
 
-  _siramfunc = LOADADDR(.RamFunc);
-
-  .RamFunc :
-  {
-    . = ALIGN(4);
-    _sramfunc = .;
-    KEEP(*(.RamFunc))
-    KEEP(*(.RamFunc*))
-    . = ALIGN(4);
-    _eramfunc = .;
-  } >RAM AT> ROM
-
   .noncacheable :
   {
     . = ALIGN(8);

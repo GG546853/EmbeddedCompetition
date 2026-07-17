@@ -26,6 +26,7 @@
 #include "i2c.h"
 #include "ltdc.h"
 #include "ramcfg.h"
+#include "sdmmc.h"
 #include "spi.h"
 #include "tim.h"
 #include "usart.h"
@@ -38,13 +39,15 @@
 /* USER CODE BEGIN Includes */
 #include "sys.h"
 #include "hyperram.h"
-#include "norflash.h"
-#include "nvstore.h"
+
+
 #include "imx335.h"
 #include "rgblcd.h"
 #include "uart.h"
 #include "aht10.h"
 #include "../Drivers/BSP/SoftI2C/soft_i2c.h"
+#include "sd_nand.h"
+#include "storage.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -68,7 +71,6 @@
 #ifdef DEBUG
 static HyperRAM_ObjectTypeDef HyperRAMObject = {0}; //句柄
 #endif
-static NORFlash_ObjectTypeDef NORFlashObject = {0};
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -93,10 +95,10 @@ int main(void)
   /* USER CODE BEGIN 1 */
 	//SCB->VTOR = 0x34000400;
 #ifdef DEBUG
-    // Debug 模式：通常指向 RAM 中的向量表
+    // Debug 模式：通常指向 RAM 中的向量�?
     SCB->VTOR = 0x34000400;
 #else
-    // Release 模式：指向外部 Flash 的起始地址
+    // Release 模式：指向外�?Flash 的起始地址
     SCB->VTOR = 0x70100400;
 #endif
 
@@ -115,8 +117,8 @@ int main(void)
 //	  /* 1. 禁用 MPU */
 //	  HAL_MPU_Disable();
 //
-//	  /* 2. 配置内存属性集 0 (配置为：Normal Memory, Non-Cacheable 非缓存)
-//	     用以替代旧版的 TypeExtField、IsCacheable、IsBufferable 组合 */
+//	  /* 2. 配置内存属性集 0 (配置为：Normal Memory, Non-Cacheable 非缓�?
+//	     用以替代旧版�?TypeExtField、IsCacheable、IsBufferable 组合 */
 //	  MPU_AttributesInit.Number = MPU_ATTRIBUTES_NUMBER0;
 //	  MPU_AttributesInit.Attributes = INNER_OUTER(MPU_NOT_CACHEABLE);
 //	  HAL_MPU_ConfigMemoryAttributes(&MPU_AttributesInit);
@@ -128,8 +130,8 @@ int main(void)
 //	  /* 区域起始地址 */
 //	  MPU_InitStruct.BaseAddress = 0x90000000;
 //
-//	  /* 区域结束地址（LimitAddress）
-//	     32MB 空间大小在 16 进制下为 0x02000000 字节。
+//	  /* 区域结束地址（LimitAddress�?
+//	     32MB 空间大小�?16 进制下为 0x02000000 字节�?
 //	     LimitAddress = BaseAddress + Size - 1 = 0x90000000 + 0x02000000 - 1 = 0x91FFFFFF */
 //	  MPU_InitStruct.LimitAddress = 0x91FFFFFF;
 //
@@ -143,7 +145,7 @@ int main(void)
 //	  MPU_InitStruct.DisableExec = MPU_INSTRUCTION_ACCESS_ENABLE;
 //	  MPU_InitStruct.DisablePrivExec = MPU_PRIV_INSTRUCTION_ACCESS_ENABLE;
 //
-//	  /* 非共享属性 */
+//	  /* 非共享属�?*/
 //	  MPU_InitStruct.IsShareable = MPU_ACCESS_NOT_SHAREABLE;
 //
 //	  /* 应用 MPU 区域配置 */
@@ -193,6 +195,7 @@ int main(void)
   MX_I2C1_Init();
   MX_UART4_Init();
   MX_UART5_Init();
+  MX_SDMMC2_SD_Init();
   MX_X_CUBE_AI_Init();
   SystemIsolation_Config();
   /* USER CODE BEGIN 2 */
@@ -209,91 +212,37 @@ int main(void)
   }
   HyperRAM_EnableMemoryMappedMode(&HyperRAMObject);
 
-  MX_XSPI2_Init();
-  uint32_t xspi2_clk = HAL_RCCEx_GetPeriphCLKFreq(RCC_PERIPHCLK_XSPI2);
-  if (NORFlash_Init(&NORFlashObject, &hxspi2, xspi2_clk) != NORFlash_OK)
-    {
-        Error_Handler();
-    }
-  if (NORFlash_EnableMemoryMappedMode(&NORFlashObject) != NORFlash_OK)
-  {
-      Error_Handler();
-  }
-#else
-  /* RELEASE mode: FSBL already configured XSPI2 + NOR Flash for XIP.
-     Pure data initialization — no hardware register writes, since Port2
-     is actively serving XIP reads and touching XSPI2 registers may hang. */
-  NORFlashObject.XSPIObject.XSPIHandle = &hxspi2;
-  hxspi2.Instance = XSPI2;
-  hxspi2.State    = HAL_XSPI_STATE_READY;
-
-  /* BaseCommand for 8D8D8D mode */
-  NORFlashObject.XSPIObject.BaseCommand.OperationType      = HAL_XSPI_OPTYPE_COMMON_CFG;
-  NORFlashObject.XSPIObject.BaseCommand.IOSelect           = HAL_XSPI_SELECT_IO_7_0;
-  NORFlashObject.XSPIObject.BaseCommand.Instruction        = 0;
-  NORFlashObject.XSPIObject.BaseCommand.InstructionMode    = HAL_XSPI_INSTRUCTION_8_LINES;
-  NORFlashObject.XSPIObject.BaseCommand.InstructionWidth   = HAL_XSPI_INSTRUCTION_16_BITS;
-  NORFlashObject.XSPIObject.BaseCommand.InstructionDTRMode = HAL_XSPI_INSTRUCTION_DTR_ENABLE;
-  NORFlashObject.XSPIObject.BaseCommand.Address            = 0;
-  NORFlashObject.XSPIObject.BaseCommand.AddressMode        = HAL_XSPI_ADDRESS_8_LINES;
-  NORFlashObject.XSPIObject.BaseCommand.AddressWidth       = HAL_XSPI_ADDRESS_32_BITS;
-  NORFlashObject.XSPIObject.BaseCommand.AddressDTRMode     = HAL_XSPI_ADDRESS_DTR_ENABLE;
-  NORFlashObject.XSPIObject.BaseCommand.AlternateBytesMode = HAL_XSPI_ALT_BYTES_NONE;
-  NORFlashObject.XSPIObject.BaseCommand.DataMode           = HAL_XSPI_DATA_8_LINES;
-  NORFlashObject.XSPIObject.BaseCommand.DataLength         = 0;
-  NORFlashObject.XSPIObject.BaseCommand.DataDTRMode        = HAL_XSPI_DATA_DTR_ENABLE;
-  NORFlashObject.XSPIObject.BaseCommand.DummyCycles        = 0;
-  NORFlashObject.XSPIObject.BaseCommand.DQSMode            = HAL_XSPI_DQS_DISABLE;
-
-  /* MX25UM25645G flash parameters */
-  NORFlashObject.Information.FlashSize  = 0x2000000;
-  NORFlashObject.Information.SectorSize = 0x1000;
-  NORFlashObject.Information.PageSize   = 0x100;
-  NORFlashObject.Timing.EraseChip       = 150000;
-  NORFlashObject.Timing.EraseSector     = 400;
-  NORFlashObject.Timing.ProgramPage     = 1;
-  NORFlashObject.Command.MapRead.Command    = 0xEE;
-  NORFlashObject.Command.MapRead.Dummy      = 20;
-  NORFlashObject.Command.MapWrite.Command   = 0x12;
-  NORFlashObject.Command.MapWrite.Dummy     = 0;
-  NORFlashObject.Command.ProgramPage.Command = 0x12;
-  NORFlashObject.Command.ProgramPage.Dummy   = 0;
-  NORFlashObject.Command.EraseSector.Command = 0x21;
-  NORFlashObject.Command.EraseSector.Dummy   = 0;
 #endif
-
-  /* Copy RamFunc section from Flash to SRAM (XIP mode only;
-     LRUN mode has LMA == VMA, skip to avoid memcpy self-overlap). */
-  extern uint32_t _siramfunc, _sramfunc, _eramfunc;
-  if (&_siramfunc != &_sramfunc) {
-      uint32_t ramfunc_size = (uint32_t)&_eramfunc - (uint32_t)&_sramfunc;
-      if (ramfunc_size > 0) {
-          memcpy(&_sramfunc, &_siramfunc, ramfunc_size);
-      }
-  }
-
-  /* Init NVStore */
-  if (NVStore_Init(&NORFlashObject) != NVSTORE_OK) {
-      printf("[NVStore] Init failed\r\n");
-  }
-  NVStore_LoadInventory();
-  NVStore_LoadFaceGallery();
 
   rgblcd_init();
   rgblcd_display_dir(1);  /* 设置RGB LCD显示方向 */
 
+  /* ---- SD NAND + FATFS + Data Load ---- */
+  while (sd_nand_init()) {
+      printf("[SD NAND] Init failed, retrying...\r\n");
+      HAL_Delay(1000);
+  }
+  printf("[SD NAND] OK, %lu MB\r\n",
+      (unsigned long)(g_sd_nand_info_struct.LogBlockNbr / 2 / 1024));
 
-
+  if (storage_init() == 0) {
+      storage_load_inventory();
+      storage_load_faces();
+      storage_load_history();
+      printf("[STORAGE] All data loaded\r\n");
+  } else {
+      printf("[STORAGE] Mount failed — RAM-only mode\r\n");
+  }
 
 //  /* ==== AHT10 软件 I2C 诊断 ==== */
 //  printf("AHT10 Soft I2C Diagnostic:\r\n");
 //  printf("  SystemCoreClock=%lu\r\n", SystemCoreClock);
 //
-//  /* 查看 GPIOH 初始状态 */
+//  /* 查看 GPIOH 初始状�?*/
 //  printf("  GPIOH MODER=0x%08lX ODR=0x%08lX IDR=0x%08lX\r\n",
 //         GPIOH->MODER, GPIOH->ODR, GPIOH->IDR);
 //
-//  /* 初始化软 I2C（重配 PH7/PH8 为开漏输出） */
+//  /* 初始化软 I2C（重�?PH7/PH8 为开漏输出） */
 //  soft_i2c_init();
 //
 //  printf("  After soft_i2c_init:\r\n");
@@ -311,7 +260,7 @@ int main(void)
 //  HAL_Delay(500);
 //  printf("  GPIOH ODR=0x%08lX IDR=0x%08lX\r\n", GPIOH->ODR, GPIOH->IDR);
 //
-//  /* 复位总线后尝试 AHT10 */
+//  /* 复位总线后尝�?AHT10 */
 //  SDA_H();
 //  SCL_H();
 //  HAL_Delay(10);
@@ -407,8 +356,13 @@ void PeriphCommonClock_Config(void)
   RIMC_master.SecPriv = RIF_ATTRIBUTE_SEC | RIF_ATTRIBUTE_PRIV;
   HAL_RIF_RIMC_ConfigMasterAttributes(RIF_MASTER_INDEX_LTDC2, &RIMC_master);
 
+  RIMC_master.MasterCID = RIF_CID_1;
+  RIMC_master.SecPriv = RIF_ATTRIBUTE_SEC | RIF_ATTRIBUTE_PRIV;
+  HAL_RIF_RIMC_ConfigMasterAttributes(RIF_MASTER_INDEX_SDMMC2, &RIMC_master);
+
   /*RISUP configuration*/
   HAL_RIF_RISC_SetSlaveSecureAttributes(RIF_RISC_PERIPH_INDEX_TIM6 , RIF_ATTRIBUTE_SEC | RIF_ATTRIBUTE_PRIV);
+  HAL_RIF_RISC_SetSlaveSecureAttributes(RIF_RISC_PERIPH_INDEX_SDMMC2 , RIF_ATTRIBUTE_SEC | RIF_ATTRIBUTE_PRIV);
   HAL_RIF_RISC_SetSlaveSecureAttributes(RIF_RISC_PERIPH_INDEX_XSPI1 , RIF_ATTRIBUTE_SEC | RIF_ATTRIBUTE_PRIV);
   HAL_RIF_RISC_SetSlaveSecureAttributes(RIF_RISC_PERIPH_INDEX_XSPI2 , RIF_ATTRIBUTE_SEC | RIF_ATTRIBUTE_PRIV);
   HAL_RIF_RISC_SetSlaveSecureAttributes(RIF_RISC_PERIPH_INDEX_DCMIPP , RIF_ATTRIBUTE_SEC | RIF_ATTRIBUTE_PRIV);
@@ -434,17 +388,23 @@ void PeriphCommonClock_Config(void)
   HAL_GPIO_ConfigPinAttributes(GPIOB,GPIO_PIN_12,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
   HAL_GPIO_ConfigPinAttributes(GPIOB,GPIO_PIN_13,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
   HAL_GPIO_ConfigPinAttributes(GPIOB,GPIO_PIN_15,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
+  HAL_GPIO_ConfigPinAttributes(GPIOC,GPIO_PIN_0,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
   HAL_GPIO_ConfigPinAttributes(GPIOC,GPIO_PIN_1,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
   HAL_GPIO_ConfigPinAttributes(GPIOC,GPIO_PIN_2,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
+  HAL_GPIO_ConfigPinAttributes(GPIOC,GPIO_PIN_3,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
+  HAL_GPIO_ConfigPinAttributes(GPIOC,GPIO_PIN_4,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
+  HAL_GPIO_ConfigPinAttributes(GPIOC,GPIO_PIN_5,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
   HAL_GPIO_ConfigPinAttributes(GPIOC,GPIO_PIN_6,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
   HAL_GPIO_ConfigPinAttributes(GPIOC,GPIO_PIN_10,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
   HAL_GPIO_ConfigPinAttributes(GPIOC,GPIO_PIN_11,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
   HAL_GPIO_ConfigPinAttributes(GPIOC,GPIO_PIN_12,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
   HAL_GPIO_ConfigPinAttributes(GPIOC,GPIO_PIN_13,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
   HAL_GPIO_ConfigPinAttributes(GPIOD,GPIO_PIN_1,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
+  HAL_GPIO_ConfigPinAttributes(GPIOD,GPIO_PIN_2,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
   HAL_GPIO_ConfigPinAttributes(GPIOD,GPIO_PIN_4,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
   HAL_GPIO_ConfigPinAttributes(GPIOD,GPIO_PIN_5,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
   HAL_GPIO_ConfigPinAttributes(GPIOD,GPIO_PIN_14,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
+  HAL_GPIO_ConfigPinAttributes(GPIOE,GPIO_PIN_4,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
   HAL_GPIO_ConfigPinAttributes(GPIOE,GPIO_PIN_5,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
   HAL_GPIO_ConfigPinAttributes(GPIOE,GPIO_PIN_7,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
   HAL_GPIO_ConfigPinAttributes(GPIOE,GPIO_PIN_10,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
@@ -518,7 +478,7 @@ void PeriphCommonClock_Config(void)
     imx335_dcmipp_pipe_frame_cb(hdcmipp, Pipe);
     if (Pipe == DCMIPP_PIPE2)
     {
-        // 释放信号量，通知 AI 任务“图像写完了，可以开始推理了！”
+        // 释放信号量，通知 AI 任务“图像写完了，可以开始推理了！�?
         if (cam_frame_sem != NULL) {
             osSemaphoreRelease(cam_frame_sem);
         }
@@ -533,14 +493,14 @@ void PeriphCommonClock_Config(void)
   }
 
   void HAL_LTDC_ErrorCallback(LTDC_HandleTypeDef *hltdc)
-  {      /* 🔴 在这里也打个红色的断点 */
+  {      /* 🔴 在这里也打个红色的断�?*/
 //      uint32_t error_code = hltdc->ErrorCode;
       __NOP();
   }
 
   void HAL_DCMIPP_ErrorCallback(DCMIPP_HandleTypeDef *hdcmipp)
   {      /* 🔴 在这里打个红色的断点 */
-//      uint32_t error_code = hdcmipp->ErrorCode;  // 加一行这个方便观察
+//      uint32_t error_code = hdcmipp->ErrorCode;  // 加一行这个方便观�?
       __NOP();
   }
 
@@ -554,13 +514,13 @@ void PeriphCommonClock_Config(void)
       int i;
       for (i = 0; i < len; i++)
       {
-          // 1. 每次接收前清除可能存在的溢出错误标志，防止 UART 卡死
+          // 1. 每次接收前清除可能存在的溢出错误标志，防�?UART 卡死
           __HAL_UART_CLEAR_OREFLAG(&huart1);
 
-          // 2. 逐字节接收数据（阻塞等待）
+          // 2. 逐字节接收数据（阻塞等待�?
           if (HAL_UART_Receive(&huart1, (uint8_t *)&ptr[i], 1, HAL_MAX_DELAY) != HAL_OK)
           {
-              break; // 接收出错或超时则退出
+              break; // 接收出错或超时则退�?
           }
 
           // 3. 终端回显：将接收到的字符原样发送回电脑（让用户能在串口助手看到自己输入的内容）
@@ -569,9 +529,9 @@ void PeriphCommonClock_Config(void)
           // 4. 处理回车换行逻辑
           if (ptr[i] == '\r' || ptr[i] == '\n')
           {
-              ptr[i] = '\n'; // C 标准库解析通常以 '\n' 结束输入
+              ptr[i] = '\n'; // C 标准库解析通常�?'\n' 结束输入
 
-              // 在回显时补发一个 '\r' 换行符，以便终端工具正确换行到行首
+              // 在回显时补发一�?'\r' 换行符，以便终端工具正确换行到行�?
               char extra_r = '\r';
               HAL_UART_Transmit(&huart1, (uint8_t *)&extra_r, 1, 0xFFFF);
 
@@ -580,12 +540,12 @@ void PeriphCommonClock_Config(void)
           }
       }
 
-      // 5. 必须返回实际接收到的字节数，而不是写死 len
+      // 5. 必须返回实际接收到的字节数，而不是写�?len
       return i;
   }
   int _write(int file, char *ptr, int len)
   {
-      // 将 printf 的数据通过串口 1 发送出去
+      // �?printf 的数据通过串口 1 发送出�?
       HAL_UART_Transmit(&huart1, (uint8_t *)ptr, len, 0xFFFF);
       return len;
   }

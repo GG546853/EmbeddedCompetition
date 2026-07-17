@@ -12,6 +12,7 @@
 #include "vars.h"
 #include "ui_bridge.h"
 #include "Outbound_task.h"
+#include "storage.h"
 
 osThreadId_t UART4_RxTaskHandle;
 const osThreadAttr_t UART4_RxTask_attributes = {
@@ -273,6 +274,8 @@ void handle_store(const uint8_t *payload, uint8_t len)
             ui_get_integer(FLOW_GLOBAL_VARIABLE_DASH_LS) + pending_item.quantity);
     }
 
+    storage_mark_inventory_dirty();
+
     if (cab_id <= 27) {
         RGBLED_Flash(1u << (27 - cab_id));
     } else {
@@ -287,6 +290,7 @@ void handle_store(const uint8_t *payload, uint8_t len)
     r->cabinet_id = cab_id;
     r->quantity   = pending_item.quantity;
     history_count++;
+    storage_mark_history_dirty();
     uart4_send_history(r);
     ui_push_history(history_list, history_count);
 
@@ -314,6 +318,8 @@ void handle_miniapp_outbound(const uint8_t *payload, uint8_t len)
     } else {
         return;
     }
+
+    storage_mark_inventory_dirty();
 
     uint8_t cab_id = (type == 'T') ? slot : (uint8_t)(slot + 28);
     if (cab_id <= 27) {

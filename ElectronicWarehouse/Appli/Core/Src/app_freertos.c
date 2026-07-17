@@ -44,12 +44,13 @@
 #include "semphr.h"
 #include "app_types.h"
 #include "ui_bridge.h"
+#include "storage.h"
 
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-
+void StorageFlush_Task(void *argument);
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -72,6 +73,13 @@ const osThreadAttr_t defaultTask_attributes = {
   .name = "defaultTask",
   .priority = (osPriority_t) osPriorityNormal,
   .stack_size = 128 * 4
+};
+/* Definitions for StorageFlush */
+osThreadId_t StorageFlushHandle;
+const osThreadAttr_t StorageFlushTask_attributes = {
+  .name = "StorageFlush",
+  .priority = (osPriority_t) osPriorityLow,
+  .stack_size = 512 * 4
 };
 
 /* Private function prototypes -----------------------------------------------*/
@@ -146,6 +154,7 @@ void MX_FREERTOS_Init(void) {
   /* add mutexes, ... */
   i2c2_mutex = osMutexNew(&i2c2_mutex_attributes);
   flow_var_mutex = osMutexNew(&flow_var_mutex_attributes);
+  storage_mutex = osMutexNew(NULL);
   /* USER CODE END RTOS_MUTEX */
 
   /* USER CODE BEGIN RTOS_SEMAPHORES */
@@ -172,14 +181,15 @@ void MX_FREERTOS_Init(void) {
   LV_TaskHandle = osThreadNew(LVGL_Task, NULL, &LVTask_attributes);
   //AITaskHandle = osThreadNew(AI_Task, NULL, &AITask_attributes);
   //Electromagnet_TaskHandle = osThreadNew(Electromagnet_Task, NULL, &ElectromagnetTask_attributes);
-  //Barcode_TaskHandle = osThreadNew(Barcode_Task, NULL, &BarcodeTask_attributes);
+  Barcode_TaskHandle = osThreadNew(Barcode_Task, NULL, &BarcodeTask_attributes);
   //Printer_TaskHandle = osThreadNew(Printer_Task, NULL, &PrinterTask_attributes);
   //Outbound_TaskHandle = osThreadNew(Outbound_Task, NULL, &OutboundTask_attributes);
 
 
   //Aht10_TaskHandle = osThreadNew(Aht10_Task, NULL, &Aht10Task_attributes);
-  //UART4_RxTaskHandle = osThreadNew(UART4_RxTask, NULL, &UART4_RxTask_attributes);
+  UART4_RxTaskHandle = osThreadNew(UART4_RxTask, NULL, &UART4_RxTask_attributes);
   //VL53L1X_TaskHandle = osThreadNew(VL53L1X_Task, NULL, &VL53L1XTask_attributes);
+  StorageFlushHandle = osThreadNew(StorageFlush_Task, NULL, &StorageFlushTask_attributes);
   /* USER CODE END RTOS_THREADS */
 
   /* USER CODE BEGIN RTOS_EVENTS */
@@ -226,6 +236,17 @@ void StartDefaultTask(void *argument)
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
+
+/* Storage flush task — deferred SD NAND writes */
+void StorageFlush_Task(void *argument)
+{
+    vTaskDelay(pdMS_TO_TICKS(5000));  /* wait for UI + data load to settle */
+
+    for (;;) {
+        storage_flush();
+        vTaskDelay(pdMS_TO_TICKS(2000));  /* flush every 2 s */
+    }
+}
 
 /* USER CODE END Application */
 

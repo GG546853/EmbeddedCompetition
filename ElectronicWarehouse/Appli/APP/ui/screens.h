@@ -66,6 +66,7 @@ typedef struct _objects_t {
     lv_obj_t *name;
     lv_obj_t *stock;
     lv_obj_t *ui_cont_row1;
+    lv_obj_t *ui_cont_row1_1;
     lv_obj_t *ui_cont_board2;
     lv_obj_t *ui_lbl_board1_title_1;
     lv_obj_t *ui_cont_board1_list_1;
@@ -354,6 +355,9 @@ typedef struct _objects_t {
     lv_obj_t *obj269;
     lv_obj_t *obj270;
     lv_obj_t *obj271;
+    lv_obj_t *obj272;
+    lv_obj_t *obj273;
+    lv_obj_t *obj274;
     lv_obj_t *c1_5;
     lv_obj_t *active_border_7;
     lv_obj_t *c1_6;

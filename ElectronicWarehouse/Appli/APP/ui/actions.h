@@ -14,6 +14,7 @@ extern void action_action_recognize(lv_event_t * e);
 extern void action_iobutton(lv_event_t * e);
 extern void action_ver(lv_event_t * e);
 extern void action_new_user(lv_event_t * e);
+extern void action_save_user(lv_event_t * e);
 
 #ifdef __cplusplus
 }

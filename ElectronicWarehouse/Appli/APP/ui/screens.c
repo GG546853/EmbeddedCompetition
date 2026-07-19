@@ -76,6 +76,17 @@ static void event_handler_cb_camera_obj5(lv_event_t *e) {
     }
 }
 
+static void event_handler_cb_camera_obj6(lv_event_t *e) {
+    lv_event_code_t event = lv_event_get_code(e);
+    void *flowState = lv_event_get_user_data(e);
+    (void)flowState;
+    
+    if (event == LV_EVENT_CLICKED) {
+        e->user_data = (void *)0;
+        action_save_user(e);
+    }
+}
+
 static void event_handler_cb_page_main_ui_cont_main(lv_event_t *e) {
     lv_event_code_t event = lv_event_get_code(e);
     void *flowState = lv_event_get_user_data(e);
@@ -1502,9 +1513,10 @@ void create_screen_camera() {
         }
         {
             lv_obj_t *obj = lv_button_create(parent_obj);
-            objects.obj7 = obj;
+            objects.obj6 = obj;
             lv_obj_set_pos(obj, 701, 0);
             lv_obj_set_size(obj, 100, 50);
+            lv_obj_add_event_cb(obj, event_handler_cb_camera_obj6, LV_EVENT_ALL, flowState);
             lv_obj_set_style_bg_opa(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
             {
                 lv_obj_t *parent_obj = obj;
@@ -1534,7 +1546,7 @@ void create_screen_camera() {
                 lv_obj_t *parent_obj = obj;
                 {
                     lv_obj_t *obj = lv_label_create(parent_obj);
-                    objects.obj6 = obj;
+                    objects.obj7 = obj;
                     lv_obj_set_pos(obj, 60, 14);
                     lv_obj_set_size(obj, LV_PCT(80), LV_PCT(100));
                     lv_obj_set_style_text_color(obj, lv_color_hex(0xffffff), LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -1571,23 +1583,23 @@ void tick_screen_camera() {
     }
     {
         bool new_val = evalBooleanProperty(flowState, 5, 3, "Failed to evaluate Hidden flag");
-        bool cur_val = lv_obj_has_flag(objects.obj7, LV_OBJ_FLAG_HIDDEN);
+        bool cur_val = lv_obj_has_flag(objects.obj6, LV_OBJ_FLAG_HIDDEN);
         if (new_val != cur_val) {
-            tick_value_change_obj = objects.obj7;
+            tick_value_change_obj = objects.obj6;
             if (new_val) {
-                lv_obj_add_flag(objects.obj7, LV_OBJ_FLAG_HIDDEN);
+                lv_obj_add_flag(objects.obj6, LV_OBJ_FLAG_HIDDEN);
             } else {
-                lv_obj_remove_flag(objects.obj7, LV_OBJ_FLAG_HIDDEN);
+                lv_obj_remove_flag(objects.obj6, LV_OBJ_FLAG_HIDDEN);
             }
             tick_value_change_obj = NULL;
         }
     }
     {
         const char *new_val = evalTextProperty(flowState, 8, 3, "Failed to evaluate Text in Label widget");
-        const char *cur_val = lv_label_get_text(objects.obj6);
+        const char *cur_val = lv_label_get_text(objects.obj7);
         if (strcmp(new_val, cur_val) != 0) {
-            tick_value_change_obj = objects.obj6;
-            lv_label_set_text(objects.obj6, new_val);
+            tick_value_change_obj = objects.obj7;
+            lv_label_set_text(objects.obj7, new_val);
             tick_value_change_obj = NULL;
         }
     }

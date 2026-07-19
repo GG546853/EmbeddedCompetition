@@ -676,6 +676,8 @@ typedef struct _objects_t {
     lv_obj_t *obj541;
     lv_obj_t *obj542;
     lv_obj_t *obj543;
+    lv_obj_t *obj544;
+    lv_obj_t *obj545;
     lv_obj_t *c1_5;
     lv_obj_t *active_border_7;
     lv_obj_t *c1_6;

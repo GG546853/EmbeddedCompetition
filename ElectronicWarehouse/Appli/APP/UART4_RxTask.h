@@ -19,6 +19,8 @@ extern char           uart4_resp_str[512];
 extern volatile uint32_t last_heartbeat_tick;
 extern volatile uint8_t  esp32_online;
 extern osSemaphoreId_t inventory_sem;
+extern volatile uint8_t g_face_name_ready;
+extern char g_face_name_result[16];
 
 /* ---- Handler declarations (implementation up to user) ---- */
 void handle_led(const uint8_t *payload, uint8_t len);
@@ -30,6 +32,7 @@ void handle_inventory(const uint8_t *payload, uint8_t len);
 void handle_time(const uint8_t *payload, uint8_t len);
 void handle_store(const uint8_t *payload, uint8_t len);
 void handle_miniapp_outbound(const uint8_t *payload, uint8_t len);
+void handle_face_name(const uint8_t *payload, uint8_t len);
 void get_current_time_str(char *buf, int bufsize);
 
 /* Inventory source callbacks (user implements) */

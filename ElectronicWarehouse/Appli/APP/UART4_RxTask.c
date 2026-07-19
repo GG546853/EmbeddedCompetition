@@ -13,6 +13,7 @@
 #include "ui_bridge.h"
 #include "Outbound_task.h"
 #include "storage.h"
+#include "app_x-cube-ai.h"
 
 osThreadId_t UART4_RxTaskHandle;
 const osThreadAttr_t UART4_RxTask_attributes = {
@@ -28,6 +29,8 @@ extern AlarmRecord alarm_list[1];
 char           uart4_resp_str[512];
 volatile uint32_t last_heartbeat_tick;
 volatile uint8_t  esp32_online;
+volatile uint8_t  g_face_name_ready;
+char             g_face_name_result[16];
 
 static InventoryItem       pending_item;
 static volatile uint8_t    pending_store;
@@ -72,6 +75,30 @@ void handle_drawer(const uint8_t *payload, uint8_t len)
 
 void handle_face_clear(const uint8_t *payload, uint8_t len)
 {
+}
+
+void handle_face_name(const uint8_t *payload, uint8_t len)
+{
+    /* payload: user_id\0 name\0  e.g. "001\0Alice\0" */
+    const char *user_id = (const char *)payload;
+    uint16_t pos = 0;
+    while (pos < len && payload[pos] != '\0') pos++;
+    if (pos + 1 >= len) return;
+    pos++;
+
+    const char *name = (const char *)&payload[pos];
+
+    int idx = atoi(user_id) - 1;
+    if (idx < 0) return;
+
+    ai_face_gallery_set_name(idx, name);
+    storage_save_faces();
+
+    strncpy(g_face_name_result, name, sizeof(g_face_name_result) - 1);
+    g_face_name_result[sizeof(g_face_name_result) - 1] = '\0';
+    g_face_name_ready = 1;
+
+    printf("[FACE] Name received: user_%s -> %s (saved to SD NAND)\r\n", user_id, name);
 }
 
 void handle_alert(const uint8_t *payload, uint8_t len)

@@ -1,2 +1,4 @@
 ../Drivers/BSP/SYS/sys.c:28:6:sys_clock_config_debug	3
-../Drivers/BSP/SYS/sys.c:91:6:sys_delay_us	4
+../Drivers/BSP/SYS/sys.c:91:6:sys_rng_init	2
+../Drivers/BSP/SYS/sys.c:104:10:sys_rng_get_4digit	2
+../Drivers/BSP/SYS/sys.c:115:6:sys_delay_us	4

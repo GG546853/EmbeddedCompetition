@@ -64,6 +64,39 @@
  uint8_t *buffer_out_fc;
 
  /* -------------------------------------------------------------------------- */
+ /*                     CRC32 for Weight Integrity Check                        */
+ /* -------------------------------------------------------------------------- */
+
+ static uint32_t crc32_table[256];
+ static int crc32_table_ready;
+
+ static void crc32_init(void)
+ {
+     if (crc32_table_ready) return;
+     for (uint32_t i = 0; i < 256; i++) {
+         uint32_t crc = i;
+         for (int j = 0; j < 8; j++)
+             crc = (crc >> 1) ^ ((crc & 1) ? 0xEDB88320UL : 0);
+         crc32_table[i] = crc;
+     }
+     crc32_table_ready = 1;
+ }
+
+ static uint32_t crc32_update(uint32_t crc, const uint8_t *data, uint32_t len)
+ {
+     crc = ~crc;
+     for (uint32_t i = 0; i < len; i++)
+         crc = (crc >> 8) ^ crc32_table[(crc ^ data[i]) & 0xFF];
+     return ~crc;
+ }
+
+ uint32_t fc_weight_crc32(void)
+ {
+     crc32_init();
+     return crc32_update(0, (const uint8_t *)0x71200000, 1156289);
+ }
+
+ /* -------------------------------------------------------------------------- */
  /*                         Post-Processing Helpers                            */
  /* -------------------------------------------------------------------------- */
 
@@ -638,6 +671,23 @@ static uint8_t crop_temp_buf[CROP_TEMP_SIZE]
      float norm_emb[FACE_EMBEDDING_DIM];
      memcpy(norm_emb, embedding, sizeof(norm_emb));
      l2_normalize(norm_emb, FACE_EMBEDDING_DIM);
+
+     /* Quality gate: reject if too different from running average (skip 1st sample) */
+     if (enroll_count > 0) {
+         float avg[FACE_EMBEDDING_DIM];
+         for (int i = 0; i < FACE_EMBEDDING_DIM; i++)
+             avg[i] = enroll_accum[i] / (float)enroll_count;
+         l2_normalize(avg, FACE_EMBEDDING_DIM);
+         float cosim = 0.0f;
+         for (int i = 0; i < FACE_EMBEDDING_DIM; i++)
+             cosim += norm_emb[i] * avg[i];
+         if (cosim < ENROLL_QUALITY_COSIM) {
+             printf("[REID] Sample REJECTED (cos=%.4f < %.2f), keep still & re-send 's'\r\n",
+                    cosim, ENROLL_QUALITY_COSIM);
+             return ENROLL_QUALITY_REJECT;
+         }
+     }
+
      for (int i = 0; i < FACE_EMBEDDING_DIM; i++) {
          enroll_accum[i] += norm_emb[i];
      }
@@ -768,6 +818,18 @@ void ai_face_gallery_import(const face_entry_t *in_entries, uint32_t in_count)
     }
 }
 
+void ai_face_gallery_set_name(int idx, const char *name)
+{
+    if (idx < 0 || idx >= (int)face_gallery_count) return;
+    strncpy(face_gallery[idx].name, name, FACE_NAME_MAX - 1);
+    face_gallery[idx].name[FACE_NAME_MAX - 1] = '\0';
+}
+
+uint32_t ai_face_gallery_get_count(void)
+{
+    return face_gallery_count;
+}
+
  /* -------------------------------------------------------------------------- */
  /*                    network_fc Inference Wrapper                             */
  /* -------------------------------------------------------------------------- */
@@ -778,6 +840,23 @@ void ai_face_gallery_import(const face_entry_t *in_entries, uint32_t in_count)
 
      printf("[FC] Init start...\r\n");
      LL_ATON_RT_Init_Network(&NN_Instance_network_fc);
+
+     /* DEBUG: print buffer info */
+     {
+         const LL_Buffer_InfoTypeDef *ib_fc_dbg = NN_Interface_network_fc.input_buffers_info();
+         const LL_Buffer_InfoTypeDef *ob_fc_dbg = NN_Interface_network_fc.output_buffers_info();
+         printf("[FC-DBG] IN: addr=0x%08lX size=%lu type=%d\r\n",
+                (unsigned long)LL_Buffer_addr_start(&ib_fc_dbg[0]),
+                (unsigned long)LL_Buffer_len(&ib_fc_dbg[0]),
+                ib_fc_dbg[0].type);
+         printf("[FC-DBG] OUT: addr=0x%08lX size=%lu type=%d\r\n",
+                (unsigned long)LL_Buffer_addr_start(&ob_fc_dbg[0]),
+                (unsigned long)LL_Buffer_len(&ob_fc_dbg[0]),
+                ob_fc_dbg[0].type);
+         if (ob_fc_dbg[0].scale) printf("[FC-DBG] OUT scale=%.10f\r\n", *ob_fc_dbg[0].scale);
+         if (ob_fc_dbg[0].offset) printf("[FC-DBG] OUT zp=%d\r\n", *ob_fc_dbg[0].offset);
+     }
+
      printf("[FC] Init done, running epochs...\r\n");
 
      int epoch_cnt = 0;
@@ -795,6 +874,16 @@ void ai_face_gallery_import(const face_entry_t *in_entries, uint32_t in_count)
      SCB_InvalidateDCache_by_Addr(
          (uint32_t *)LL_Buffer_addr_start(&ob_fc[0]),
          LL_Buffer_len(&ob_fc[0]));
+
+     /* DEBUG: raw output hex dump (first 8 float32) */
+     {
+         uint32_t *raw_out = (uint32_t *)LL_Buffer_addr_start(&ob_fc[0]);
+         printf("[FC-RAW] first 8 f32 hex: %08lX %08lX %08lX %08lX %08lX %08lX %08lX %08lX\r\n",
+                (unsigned long)raw_out[0], (unsigned long)raw_out[1],
+                (unsigned long)raw_out[2], (unsigned long)raw_out[3],
+                (unsigned long)raw_out[4], (unsigned long)raw_out[5],
+                (unsigned long)raw_out[6], (unsigned long)raw_out[7]);
+     }
 
      /* Decode output: handle both float32 and int8 */
      if (ob_fc[0].type == DataType_FLOAT) {
@@ -939,6 +1028,11 @@ void MX_X_CUBE_AI_Init(void)
     buffer_in_fc  = (uint8_t *)LL_Buffer_addr_start(&ib_fc[0]);
     buffer_out_fc = (uint8_t *)LL_Buffer_addr_start(&ob_fc[0]);
     LL_ATON_RT_DeInit_Network(&NN_Instance_network_fc);
+
+    printf("[FC-INIT] buffer_in_fc=0x%08lX buffer_out_fc=0x%08lX\r\n",
+           (unsigned long)buffer_in_fc, (unsigned long)buffer_out_fc);
+    printf("[FC-INIT] NOR Flash weight @ 0x71200000 + 1156289 bytes\r\n");
+
     /* USER CODE END 5 */
 }
 

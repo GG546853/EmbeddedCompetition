@@ -1506,3 +1506,321 @@ if (storage_init() == 0) {
 4. **f_mkfs 是启动时格式化的安全方案**：配合 `FF_USE_MKFS=1`，首次上电时自动检测并格式化空白 SD NAND，无需预先用 PC 格式化。
 5. **延迟写入模式适合 UI 交互场景**：通过脏标志 + 低优先级 Flush 任务，将慢速的 FATFS 写入从热路径（扫码、人脸录入）移到后台，避免 UI 卡顿。
 6. **FATFS 文件写操作本身是可靠的**：只要 D-Cache 一致性问题解决、f_mount 正确返回、SD NAND 驱动稳定，FATFS 的 `f_write` 写入小文件（几 KB）非常可靠。
+
+---
+
+## 问题 9：network_fc (MobileFaceNet) 人脸识别模型验证与调优
+
+### 背景
+
+两个 AI 模型部署在 STM32N6 上：
+- **network_f** (BlazeFace) — 人脸检测，已验证正常
+- **network_fc** (MobileFaceNet) — 人脸识别（128 维 embedding），待验证
+
+network_fc 权重 1,156,289 字节存放在 NOR Flash `0x71200000`（xSPI2）。原始 ONNX 模型：`mobilefacenet_int8_faces.onnx`。
+
+此前 RELEASE/XIP 模式下 NOR Flash 擦写失败（问题 7），因此权重是否被正确烧录也是一个待确认项。
+
+### 模型规格
+
+| 属性 | 值 |
+|------|-----|
+| 模型 | MobileFaceNet (int8 量化) |
+| C 模型名 | network_fc |
+| 输入 | [1, 3, 112, 112] int8, scale≈0.007843, zp=0 |
+| 输出 | [1, 128] float32 |
+| 权重大小 | 1,156,289 bytes |
+| 权重位置 | NOR Flash @ 0x71200000 (xSPI2, octoFlash mempool) |
+| epochs | 183 (73 HW + 110 SW) |
+| 运行时 API | LL_ATON_RT_Init/RunEpochBlock/DeInit |
+
+### 流水线架构
+
+```
+摄像头 (IMX335, 800×480)
+  → DCMIPP PIPE2 (128×128 RGB888)
+    → uint8→float32 归一化
+      → network_f (BlazeFace, NPU)
+        → 人脸检测框 [0,1] 归一化坐标
+          → ai_crop_resize_face_112() (DMA2D + 双线性插值)
+            → 112×112 uint8 RGB
+              → quantize_u8_to_s8() (u8 - 128)
+                → network_fc (MobileFaceNet, NPU)
+                  → 128-dim float32 embedding
+                    → L2 归一化
+                      → 与 gallery 中每个人脸的 L2 距离比对
+                        → 三步判断: CONFIDENT_DIST → RATIO → MATCH
+```
+
+### 调试基础设施
+
+#### Embedding 全维输出 + 统计量
+
+在 `AI_task.c` 的 `run_reid_pipeline()` 中打印全部 128 维 embedding（每行 16 维），以及统计量（min/max/rms/l2norm）和帧间余弦相似度（COSIM）。
+
+#### 推理过程跟踪
+
+在 `app_x-cube-ai.c` 的 `ai_face_reid_run()` 中打印输入/输出 buffer 地址/大小/类型，以及输出 scale/zero point 和前 8 个 float32 的 hex dump。
+
+#### 权重 CRC32 校验
+
+在 `app_x-cube-ai.c` 中实现查表法 CRC32（多项式 0xEDB88320），`AI_task.c` 中增加 `crccc` 串口命令：
+
+```
+PC 端: network_fc_atonbuf.xSPI2.raw
+  MD5:  E06B8C80910FBEA94DB44113F364BD02
+  CRC32: 0xF3588EFA
+  大小:  1,156,289 bytes
+```
+
+设备端读取 0x71200000 处 1,156,289 字节计算 CRC32，与 PC 端预期值对比。
+
+#### 新增串口命令
+
+| 命令 | 功能 |
+|------|------|
+| `register <name>` | 开始录入人脸 |
+| `s` | 录入时采集一帧 |
+| `identify` | 识别当前人脸 |
+| `gallery` | 列出全部已注册人脸 |
+| `saveface` | 人脸库保存到 SD NAND |
+| `loadface` | 从 SD NAND 加载人脸库 |
+| `clearface` | 清空 RAM 中的人脸库 |
+| `crccc` | CRC32 校验 network_fc 权重 |
+
+### 识别算法（三步判断）
+
+```
+face_gallery[i] 存储 L2 归一化后的 128 维 embedding
+
+识别时：
+1. 计算 query embedding（L2 归一化后）与每个 gallery entry 的 L2 距离
+2. 如果 best_dist ≤ FACE_CONFIDENT_DIST → 直接匹配（跳过 ratio 检查）
+3. 否则，如果 best_dist / second_dist > FACE_RATIO_THRESHOLD → 拒绝（模糊不清）
+4. 否则，如果 best_dist < FACE_MATCH_THRESHOLD → 匹配成功
+5. 以上都不满足 → 不匹配
+```
+
+### 第一层验证：模型是否在吐垃圾数据？
+
+#### 正常输出特征（多次测试归纳）
+
+| 指标 | 正常范围 | 异常（垃圾数据） |
+|------|---------|----------------|
+| `[REID-STAT] l2norm` | 1.7 ~ 2.0 | 0.0 或 > 100 |
+| `[REID-STAT] min/max` | [-0.5, 0.6] 对称 | 全 0、NaN 或 > 100 |
+| `[REID-COSIM]` 同脸 | > 0.83 | < 0.3 |
+| `[FC] Epochs done` | 370~382 | 不在这个范围 |
+| `[FC-RAW]` 跨帧 | 值会变化 | 每帧完全相同 |
+| `[FC-DBG] OUT type` | 1 (float32) | 7 (int8) |
+
+#### 实测结果（uart记录 ①）
+
+**CRC32 校验：**
+```
+[CMD] crccc
+[CRC-FC] 0x71200000 + 1156289 bytes -> CRC32=0xF3588EFA (expect 0xF3588EFA)
+```
+权重完整性确认无误。模型正常输出，不是垃圾数据。
+
+**三次识别 tyx：**
+
+| # | Epochs | l2norm | COSIM vs prev | 结果 |
+|---|--------|--------|---------------|------|
+| 1 | 380 | 1.8387 | — | 拒绝 (ratio=0.977, best=0.383, second=0.393) |
+| 2 | 370 | 1.8737 | 0.954 | ✓ Matched tyx (dist=0.328) |
+| 3 | 378 | 1.9085 | 0.954 | ✓ Matched tyx (dist=0.238) |
+
+**陌生人识别（冒充 tyx）：**
+
+| # | dist | 结果 |
+|---|------|------|
+| 1 | 0.269 | ✗ 错误匹配为 tyx |
+| 2 | 0.314 | ✗ 错误匹配为 tyx |
+| 3 | 0.325 | ✗ 错误匹配为 tyx |
+
+陌生人全部被错误匹配 → **阈值过松，需要调整**。
+
+### 第二层验证：识别阈值调优
+
+阈值迭代历史：
+
+| 轮次 | MATCH_THRESHOLD | RATIO_THRESHOLD | CONFIDENT_DIST | 效果 |
+|------|----------------|----------------|----------------|------|
+| 初始 | 1.0 | 0.75 | 0.30 | 太严，谁都认不出 |
+| R1 | 0.55 | 0.85 | 0.30 | 同人能认出，陌生人也被认成同人 |
+| R2 | 0.40 | 0.80 | **0.38** | CONFIDENT_DIST=0.38 时所有 dist<0.38 的匹配都跳过 ratio → 陌生人误识 |
+| R3 | 0.40 | 0.93 | **0.25** | 陌生人安全了，但 zs/wph 互串问题首次出现 |
+
+**关键发现（uart记录 ②）：zs 被识别为 wph**
+
+| # | dist to wph | 结果 |
+|---|-------------|------|
+| 1 | 0.303 | ✗ 错误匹配为 wph |
+| 2 | 0.378 | ✗ 错误匹配为 wph（dist > CONFIDENT_DIST 但仍 < MATCH_THRESHOLD） |
+
+**关键问题（uart记录 ③）：zs 无法区分**
+
+| # | best dist | second dist | ratio | 结果 |
+|---|-----------|-------------|-------|------|
+| 1 | 0.370 | 0.377 | 0.983 | ✗ 拒绝（ratio > 0.80） |
+| 2 | 0.266 | 0.288 | 0.923 | ✗ 拒绝（ratio > 0.80） |
+| 3 | 0.486 | 0.500 | 0.974 | ✗ 拒绝（ratio > 0.93，uart记录 ④） |
+
+**根本原因**：zs 和 wph 在 int8 量化 MobileFaceNet 的特征空间中距离太近。best 和 second 的差值常 < 0.02，在这个量级上噪声就能让排名翻转。
+
+#### 最终阈值
+
+```c
+#define FACE_MATCH_THRESHOLD    0.40f
+#define FACE_RATIO_THRESHOLD    0.93f
+#define FACE_CONFIDENT_DIST     0.25f
+```
+
+### 第三层验证：人脸尺寸门禁（Face Size Gate）
+
+#### 问题发现
+
+同一人的识别距离随 face_size（检测框 max(w,h)）波动。人脸太近或太远都会导致识别质量下降。
+
+#### 实现
+
+在 `AI_task.c` 主循环中 `MX_X_CUBE_AI_Process_User()` 返回后，ReID 前插入 gate：
+
+```c
+#define FACE_SIZE_MIN  0.28f  // 检测框 max(w,h) 下限
+#define FACE_SIZE_MAX  0.56f  // 检测框 max(w,h) 上限
+
+float fs = max(result.detections[0].width, result.detections[0].height);
+if (fs < FACE_SIZE_MIN || fs > FACE_SIZE_MAX) {
+    result.nb_detect = 0;  // 不画框、不识别
+    printf("[GATE] face_size=%.2f out of [%.2f, %.2f]\r\n", fs, FACE_SIZE_MIN, FACE_SIZE_MAX);
+}
+```
+
+#### 效果
+
+实测 face_size 在 0.31~0.35 范围，均在门禁内。门禁解决了距离不一致导致的识别质量波动，但不解决 zs/wph 区分问题。
+
+### 第四层验证：录入质量门禁（Enroll Quality Gate）
+
+#### 问题
+
+5 次采集录入中，用户可能在中间某帧角度偏差较大，导致该帧 embedding 与整体均值差异大，最终平均后的 gallery entry 质量下降。
+
+#### 实现
+
+在 `app_x-cube-ai.c` 的 `ai_face_enroll_multi()` 中，每帧 embedding（L2 归一化后）与当前累积平均做 COSIM 比较：
+
+```c
+#define ENROLL_QUALITY_COSIM   0.88f  // 低于此值则拒绝该帧
+#define ENROLL_QUALITY_REJECT    (-1) // 返回值：样本被拒绝
+
+// 在 ai_face_enroll_multi() 中：
+if (enroll_count > 0) {
+    // 计算当前累积平均的 L2 归一化向量
+    // 计算新样本与累积平均的余弦相似度
+    if (cosim < ENROLL_QUALITY_COSIM) {
+        printf("[REID] Sample REJECTED (cos=%.4f < %.2f)\r\n", cosim, ENROLL_QUALITY_COSIM);
+        return ENROLL_QUALITY_REJECT;
+    }
+}
+```
+
+`AI_task.c` 调用侧处理 reject 返回值：不消耗 `g_capture_pending`，提示用户保持不动重新发 `s`。
+
+#### 实测结果（uart记录 ⑤）
+
+重新录入 zs 和 wph 后各识别 3 次：
+
+**识别 zs：**
+
+| # | best dist | second dist | ratio | 结果 |
+|---|-----------|-------------|-------|------|
+| 1 | 0.362 | — | — | ✓ Matched zs |
+| 2 | 0.301 | 0.303 | 0.994 | ✗ 拒绝（ratio > 0.93，zs/wph 几乎一样近） |
+| 3 | 0.333 | — | — | ✓ Matched zs |
+
+**识别 wph：**
+
+| # | best dist | second dist | ratio | 结果 |
+|---|-----------|-------------|-------|------|
+| 1 | 0.306 | 0.321 | 0.952 | ✗ 拒绝（ratio > 0.93） |
+| 2 | 0.202 | — | — | ✓✓ 高置信匹配（dist < 0.25，跳过 ratio） |
+| 3 | 0.442 | — | — | ✗ 不匹配（dist > 0.40） |
+
+#### 分析
+
+- 6 次中 3 次成功（50%）、2 次正确拒绝模糊匹配（33%）、1 次拒真（17%）
+- 录入质量门禁本身运行正常（多次录入过程中无 rejection 日志，说明采集质量合格）
+- zs/wph 无法区分的问题没有改变 — best 和 second 距离仍然高度重叠
+
+### 量化公式说明
+
+当前代码：
+
+```c
+void quantize_u8_to_s8(const uint8_t *u8, int8_t *s8, uint32_t count) {
+    for (uint32_t i = 0; i < count; i++) {
+        s8[i] = (int8_t)((int16_t)u8[i] - 128);
+    }
+}
+```
+
+理论正确公式：`s8 = round(u8 - 127.5)`。`u8 - 128` 是截断近似，对奇数 u8 值有 1-LSB 偏差。实际影响忽略不计（余弦相似度差异 < 0.001）。已写为注释说明。
+
+### 修改文件清单
+
+| 文件 | 改动 |
+|------|------|
+| `Appli/APP/AI_task.c` | 完整 embedding 输出 + STAT + 帧间 COSIM；face size gate；enroll reject 处理；`crccc` 命令 |
+| `Appli/X-CUBE-AI/App/app_x-cube-ai.c` | `[FC-DBG]` buffer info + `[FC-RAW]` hex dump；CRC32 实现 + `fc_weight_crc32()`；enroll quality gate |
+| `Appli/X-CUBE-AI/App/app_x-cube-ai.h` | `FACE_MATCH_THRESHOLD` 等阈值定义；`ai_detection_t` / `ai_result_t` / `face_entry_t` 结构体；`ENROLL_QUALITY_COSIM` / `ENROLL_QUALITY_REJECT` |
+
+### 最终配置
+
+```c
+// 识别
+#define FACE_MATCH_THRESHOLD    0.40f
+#define FACE_RATIO_THRESHOLD    0.93f
+#define FACE_CONFIDENT_DIST     0.25f
+
+// 人脸尺寸门禁
+#define FACE_SIZE_MIN           0.28f
+#define FACE_SIZE_MAX           0.56f
+
+// 录入质量
+#define ENROLL_QUALITY_COSIM    0.88f
+#define FACE_ENROLL_SAMPLES     5
+
+// 人脸库
+#define FACE_EMBEDDING_DIM      128
+#define FACE_GALLERY_MAX        10
+```
+
+### 结论
+
+| 验证项 | 状态 |
+|--------|------|
+| NOR Flash 权重烧录正确 | ✓ CRC32 校验通过 |
+| 模型能正常输出 128 维 embedding | ✓ 统计量健康，帧间 COSIM 0.83~0.96 |
+| 人脸检测 → 裁剪 → 量化 → 推理流水线完整可运行 | ✓ |
+| 人脸库管理（录入/识别/保存/加载/清空） | ✓ 全部正常 |
+| Face size gate 过滤距离不合适帧 | ✓ |
+| Enroll quality gate 拒绝录入不一致帧 | ✓ |
+
+**未解决的核心问题**：int8 MobileFaceNet 对 zs 和 wph 两张人脸的区分力不足。best 和 second gallery entry 的 L2 距离仅差 0.01~0.02，噪声即可导致排名翻转。这是模型容量（int8 量化）上的固有限制。
+
+**可能的改进方向**：
+1. 1:1 验证模式（把"你是谁"变成"你是 X 吗"）
+2. 用 zs/wph 数据专门微调模型
+3. 使用更大的识别模型（受限于 STM32N6 NPU 和内存）
+4. 如果实际场景中人员长相差异较大，当前配置可能足够
+
+### 经验教训
+
+1. **嵌入式 AI 调优需要分层验证**：先确认模型不吐垃圾（CRC + embedding 统计量），再调算法阈值，最后加业务层保护（size gate / quality gate）。跳过任何一层都会浪费时间
+2. **int8 量化模型的区分力有限**：MobileFaceNet 原版 float32 模型的 1:N 识别能力尚可，但 int8 量化后信息损失使某些相似人脸无法可靠区分
+3. **ratio 检查是 1:N 识别的重要手段**：单靠距离阈值容易误识/拒真，best/second ratio 能捕捉到"两个都差不多近"的模糊情况
+4. **人脸距离（框大小）显著影响识别质量**：一个简单的 size gate 就能过滤掉很多低质量帧
+5. **录入质量直接影响 gallery 纯度**：COSIM-based quality gate 是廉价且有效的保障

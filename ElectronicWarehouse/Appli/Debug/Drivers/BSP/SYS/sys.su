@@ -1,2 +1,5 @@
+../../Drivers/STM32N6xx_HAL_Driver/Inc/stm32n6xx_ll_bus.h:1165:22:LL_AHB3_GRP1_EnableClock	24	static
 ../Drivers/BSP/SYS/sys.c:28:6:sys_clock_config_debug	224	static
-../Drivers/BSP/SYS/sys.c:91:6:sys_delay_us	40	static
+../Drivers/BSP/SYS/sys.c:91:6:sys_rng_init	8	static
+../Drivers/BSP/SYS/sys.c:104:10:sys_rng_get_4digit	4	static
+../Drivers/BSP/SYS/sys.c:115:6:sys_delay_us	40	static

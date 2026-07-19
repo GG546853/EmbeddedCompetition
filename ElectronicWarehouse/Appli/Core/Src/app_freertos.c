@@ -45,7 +45,7 @@
 #include "app_types.h"
 #include "ui_bridge.h"
 #include "storage.h"
-
+#include "sys.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -178,10 +178,10 @@ void MX_FREERTOS_Init(void) {
 
   //RGBLED_TaskHandle = osThreadNew(RGBLED_Task, (void *)(uintptr_t)0, &RGBLEDTask_attributes);
   Sensor_TaskHandle = osThreadNew(Sensor_Task, NULL, &SensorTask_attributes);
-  LV_TaskHandle = osThreadNew(LVGL_Task, NULL, &LVTask_attributes);
-  //AITaskHandle = osThreadNew(AI_Task, NULL, &AITask_attributes);
+  //LV_TaskHandle = osThreadNew(LVGL_Task, NULL, &LVTask_attributes);
+  AITaskHandle = osThreadNew(AI_Task, NULL, &AITask_attributes);
   //Electromagnet_TaskHandle = osThreadNew(Electromagnet_Task, NULL, &ElectromagnetTask_attributes);
-  Barcode_TaskHandle = osThreadNew(Barcode_Task, NULL, &BarcodeTask_attributes);
+  //Barcode_TaskHandle = osThreadNew(Barcode_Task, NULL, &BarcodeTask_attributes);
   //Printer_TaskHandle = osThreadNew(Printer_Task, NULL, &PrinterTask_attributes);
   //Outbound_TaskHandle = osThreadNew(Outbound_Task, NULL, &OutboundTask_attributes);
 
@@ -208,7 +208,7 @@ void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN defaultTask */
 	//osThreadNew(RGBLED_Task, (void *)(uintptr_t)0xfffffff, &RGBLEDTask_attributes);
-	  //RGBLED_Flash(0xfffffff);
+	//RGBLED_Flash(0xfffffff);
   vTaskDelay(pdMS_TO_TICKS(3500));
 	//char now[32];
 	//osThreadNew(RGBLED_Task, (void *)(uintptr_t)0xfffffff, &RGBLEDTask_attributes);
@@ -241,7 +241,6 @@ void StartDefaultTask(void *argument)
 void StorageFlush_Task(void *argument)
 {
     vTaskDelay(pdMS_TO_TICKS(5000));  /* wait for UI + data load to settle */
-
     for (;;) {
         storage_flush();
         vTaskDelay(pdMS_TO_TICKS(2000));  /* flush every 2 s */

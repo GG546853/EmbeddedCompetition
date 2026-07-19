@@ -84,6 +84,30 @@ void sys_clock_config_debug(void)
 }
 
 /**
+ * @brief   初始化硬件真随机数发生器
+ * @param   无
+ * @retval  无
+ */
+void sys_rng_init(void)
+{
+    __HAL_RCC_RNG_CLK_ENABLE();
+    RNG->CR |= RNG_CR_RNGEN;
+    while ((RNG->SR & RNG_SR_DRDY) == 0);
+    (void)RNG->DR;
+}
+
+/**
+ * @brief   获取随机四位数(0000-9999)
+ * @param   无
+ * @retval  随机数(0-9999)
+ */
+uint16_t sys_rng_get_4digit(void)
+{
+    while ((RNG->SR & RNG_SR_DRDY) == 0);
+    return (uint16_t)(RNG->DR % 9000 + 1000);
+}
+
+/**
  * @brief   微秒级延时
  * @param   us: 延时时间
  * @retval  无

@@ -213,7 +213,7 @@ int main(void)
   HyperRAM_EnableMemoryMappedMode(&HyperRAMObject);
 
 #endif
-
+  sys_rng_init();
   rgblcd_init();
   rgblcd_display_dir(1);  /* 设置RGB LCD显示方向 */
 

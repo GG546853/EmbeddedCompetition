@@ -15,11 +15,20 @@
 #include "uart.h"
 #include "dma2d.h"
 #include "storage.h"
+#include "UART_protocol.h"
+#include "UART4_RxTask.h"
+#include "sys.h"
 #define DISP_W 800
 #define DISP_H 480
 #define BOX_THICKNESS 3
 #define KP_SIZE 5
 #define CMD_BUF_SIZE  64
+
+/* Face size gate: only accept detection when face max(w,h) is in this range.
+   Calibrate by standing at a comfortable distance and checking the box size
+   printed as "[GATE] face_size=..." on serial. */
+#define FACE_SIZE_MIN  0.28f
+#define FACE_SIZE_MAX  0.56f
 
 extern uint8_t g_ltdc_framebuf[480 * 800 * 3];
 
@@ -30,6 +39,7 @@ volatile int g_identify_done  = 0;
 volatile int g_identify_match = 0;
 char         g_identify_name[FACE_NAME_MAX];
 float        g_identify_dist;
+static uint16_t g_pending_face_code;
 
 
 static void fill_rect(int x, int y, int w, int h, uint8_t r, uint8_t g, uint8_t b)
@@ -191,6 +201,13 @@ static void process_serial_commands(void)
         printf("  saveface         -- save face gallery to SD NAND\r\n");
         printf("  loadface         -- load face gallery from SD NAND\r\n");
         printf("  clearface        -- clear face gallery in RAM only\r\n");
+        printf("  crccc             -- CRC32 check of network_fc weights\r\n");
+    }
+    else if (strcmp(cmd, "crccc") == 0) {
+        extern uint32_t fc_weight_crc32(void);
+        uint32_t crc = fc_weight_crc32();
+        printf("[CRC-FC] 0x71200000 + 1156289 bytes -> CRC32=0x%08lX (expect 0xF3588EFA)\r\n",
+               (unsigned long)crc);
     }
 }
 
@@ -244,20 +261,80 @@ static void run_reid_pipeline(ai_result_t *result)
 
     printf("[REID] DBG5: fc inference done\r\n");
 
-    /* DEBUG: print first 8 embedding values */
+    /* DEBUG: print full 128-dim embedding */
     printf("[REID-EMB] ");
-    for (int i = 0; i < 8; i++) printf("%.4f ", embedding[i]);
+    for (int i = 0; i < FACE_EMBEDDING_DIM; i++) {
+        printf("%.4f ", embedding[i]);
+        if ((i + 1) % 16 == 0 && i < FACE_EMBEDDING_DIM - 1)
+            printf("\r\n[REID-EMB] ");
+    }
     printf("\r\n");
+
+    /* Quick statistics to detect garbage at a glance */
+    float emb_min = embedding[0], emb_max = embedding[0], emb_sum_sq = 0.0f;
+    for (int i = 0; i < FACE_EMBEDDING_DIM; i++) {
+        if (embedding[i] < emb_min) emb_min = embedding[i];
+        if (embedding[i] > emb_max) emb_max = embedding[i];
+        emb_sum_sq += embedding[i] * embedding[i];
+    }
+    printf("[REID-STAT] min=%.4f max=%.4f rms=%.4f l2norm=%.4f\r\n",
+           emb_min, emb_max, sqrtf(emb_sum_sq / FACE_EMBEDDING_DIM), sqrtf(emb_sum_sq));
+
+    /* Cosine similarity with previous embedding (same face should be > 0.7) */
+    {
+        static float prev_emb[FACE_EMBEDDING_DIM];
+        static int has_prev = 0;
+        if (has_prev) {
+            float dot = 0.0f, na = 0.0f, nb = 0.0f;
+            for (int i = 0; i < FACE_EMBEDDING_DIM; i++) {
+                dot += prev_emb[i] * embedding[i];
+                na += prev_emb[i] * prev_emb[i];
+                nb += embedding[i] * embedding[i];
+            }
+            printf("[REID-COSIM] prev_vs_curr=%.6f\r\n",
+                   dot / (sqrtf(na) * sqrtf(nb) + 1e-30f));
+        }
+        memcpy(prev_emb, embedding, sizeof(prev_emb));
+        has_prev = 1;
+    }
 
     /* Step 5: Enroll or identify */
     if (reid_pending == REID_REGISTER) {
         if (g_capture_pending) {
             g_capture_pending = 0;
             int remaining = ai_face_enroll_multi(embedding, reid_name);
-            if (remaining == 0) {
+            if (remaining == ENROLL_QUALITY_REJECT) {
+                /* Sample rejected by quality gate — don't consume g_capture_pending */
+            }
+            else if (remaining == 0) {
                 reid_pending = REID_IDLE;
                 storage_mark_faces_dirty();
                 printf("[REID] Enrolled '%s'\r\n", reid_name);
+
+                /* Notify ESP32 and wait for name from mini-program */
+                {
+                    char user_id[32];
+                    uint32_t idx = ai_face_gallery_get_count() - 1;
+                    g_pending_face_code = sys_rng_get_4digit();
+                    snprintf(user_id, sizeof(user_id), "user_%03lu:%04u",
+                             idx + 1, g_pending_face_code);
+                    uart4_send_face_enroll(user_id);
+                    printf("[FACE] Sent enroll: %s, waiting for name...\r\n", user_id);
+
+                    g_face_name_ready = 0;
+                    int timeout = 9000;  /* 9000 * 10ms = 90s */
+                    while (!g_face_name_ready && timeout > 0) {
+                        osDelay(10);
+                        timeout--;
+                    }
+
+                    if (g_face_name_ready) {
+                        printf("[FACE] Name saved by handler: '%s'\r\n",
+                               g_face_name_result);
+                    } else {
+                        printf("[FACE] Name timeout, keeping '%s'\r\n", reid_name);
+                    }
+                }
             }
             /* else: keep REID_REGISTER; wait for next 's' */
         }
@@ -312,6 +389,23 @@ void AI_Task(void *argument)
         /* Run NPU inference + post-processing */
         memset(&result, 0, sizeof(result));
         MX_X_CUBE_AI_Process_User(&result);
+
+        /* Face size gate: reject detections too close or too far.
+           Out-of-range → no box drawn, no ReID, no identify. */
+        if (result.nb_detect > 0) {
+            float fs = (result.detections[0].width > result.detections[0].height)
+                       ? result.detections[0].width
+                       : result.detections[0].height;
+            if (fs < FACE_SIZE_MIN || fs > FACE_SIZE_MAX) {
+                static float last_fs;
+                if ((fs < last_fs - 0.005f) || (fs > last_fs + 0.005f)) {
+                    printf("[GATE] face_size=%.2f out of [%.2f, %.2f]\r\n",
+                           fs, FACE_SIZE_MIN, FACE_SIZE_MAX);
+                    last_fs = fs;
+                }
+                result.nb_detect = 0;
+            }
+        }
 
 #if 0
         /* Print results via serial */

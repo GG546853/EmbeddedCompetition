@@ -26,5 +26,7 @@
 /* 函数声明 */
 void sys_clock_config_debug(void);  /* 配置系统时钟 */
 void sys_delay_us(uint32_t us);     /* 微秒级延时 */
+void sys_rng_init(void);            /* 初始化硬件真随机数发生器 */
+uint16_t sys_rng_get_4digit(void);  /* 获取随机四位数(0000-9999) */
 
 #endif

@@ -36,7 +36,7 @@ void MX_X_CUBE_AI_Process(void);
 #define AI_FD_MAX_DETECTIONS   1
 #define AI_FD_NUM_KEYPOINTS    6
 #define AI_FD_IMG_SIZE         128
-#define AI_FD_CONF_THRESHOLD   0.5f
+#define AI_FD_CONF_THRESHOLD   0.6f
 #define AI_FD_IOU_THRESHOLD    0.3f
 #define AI_FD_GRID_0_NB_BOXES  512
 #define AI_FD_GRID_1_NB_BOXES  384
@@ -72,11 +72,13 @@ void ai_crop_resize_face_112(uint8_t *src_fb, ai_detection_t *det, uint8_t *outp
 /* --- Face Re-ID definitions ------------------------------------------------ */
 #define FACE_EMBEDDING_DIM     128
 #define FACE_GALLERY_MAX        10
-#define FACE_MATCH_THRESHOLD    1.0f   /* L2-normalised distance in [0,2]; <1.0 ≈ cos_sim >0.5 */
-#define FACE_RATIO_THRESHOLD    0.75f  /* best_dist / second_dist; <0.75 means confident match */
-#define FACE_CONFIDENT_DIST     0.3f   /* below this distance, skip ratio check entirely */
+#define FACE_MATCH_THRESHOLD    0.40f   /* L2-normalised distance in [0,2]; <1.0 ≈ cos_sim >0.5 */
+#define FACE_RATIO_THRESHOLD    0.93f  /* best_dist / second_dist; <0.75 means confident match */
+#define FACE_CONFIDENT_DIST     0.25f   /* below this distance, skip ratio check entirely */
 #define FACE_NAME_MAX           16
 #define FACE_ENROLL_SAMPLES      5     /* multi-shot enrollment: average N captures */
+#define ENROLL_QUALITY_COSIM   0.88f  /* reject sample if COSIM vs running avg < this */
+#define ENROLL_QUALITY_REJECT    (-1) /* returned when sample rejected by quality gate */
 
 typedef struct {
     float embedding[FACE_EMBEDDING_DIM];
@@ -98,6 +100,8 @@ void ai_face_gallery_print(void);
 /* Raw accessors for persistent storage */
 void ai_face_gallery_export(face_entry_t *out_entries, uint32_t *out_count);
 void ai_face_gallery_import(const face_entry_t *in_entries, uint32_t in_count);
+void ai_face_gallery_set_name(int idx, const char *name);
+uint32_t ai_face_gallery_get_count(void);
 /* USER CODE END includes */
 #ifdef __cplusplus
 }

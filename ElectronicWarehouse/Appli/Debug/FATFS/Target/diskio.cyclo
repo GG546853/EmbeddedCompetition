@@ -1,5 +1,5 @@
 ../FATFS/Target/diskio.c:18:9:disk_status	2
 ../FATFS/Target/diskio.c:31:9:disk_initialize	3
 ../FATFS/Target/diskio.c:49:9:disk_read	5
-../FATFS/Target/diskio.c:71:9:disk_write	5
-../FATFS/Target/diskio.c:92:9:disk_ioctl	6
+../FATFS/Target/diskio.c:72:9:disk_write	5
+../FATFS/Target/diskio.c:94:9:disk_ioctl	6

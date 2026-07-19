@@ -184,6 +184,12 @@ void action_iobutton(lv_event_t * e) {
         ui_get_integer(FLOW_GLOBAL_VARIABLE_DASH_LS) + qty);
 }
 
+void action_new_user(lv_event_t * e) {
+    (void)e;
+    eez_flow_push_screen(SCREEN_ID_CAMERA, LV_SCR_LOAD_ANIM_NONE, 0, 0);
+    ui_set_flag(FLOW_GLOBAL_VARIABLE_FLAG_SAVE, 1);
+    ui_set_flag(FLOW_GLOBAL_VARIABLE_FLAG_START, 0);
+}
 
 void action_printer(lv_event_t * e) {
 

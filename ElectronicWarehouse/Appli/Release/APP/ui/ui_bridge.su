@@ -35,3 +35,4 @@
 ../APP/ui/ui_bridge.cpp:147:6:void ui_push_alarm(const AlarmRecord*, int)	96	static
 ../APP/ui/ui_bridge.cpp:161:17:void action_givetime(lv_event_t*)	0	static
 ../APP/ui/ui_bridge.cpp:171:17:void ui_set_cam_text(const char*)	8	static
+../APP/ui/ui_bridge.cpp:176:17:void ui_set_flag(int, int)	0	static

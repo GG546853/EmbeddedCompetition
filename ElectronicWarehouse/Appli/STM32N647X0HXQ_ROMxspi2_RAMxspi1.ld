@@ -46,7 +46,8 @@ MEMORY
   ROM    (xrw)    : ORIGIN = 0x70100400,   LENGTH = 31743K
   RAM    (xrw)    : ORIGIN = 0x34000000,   LENGTH = 1024K
   EXTRAM (rw)     : ORIGIN = 0x90000000,   LENGTH = 2M      /* NPU activations + crop buf */
-  EXTRAM_FB (rw)  : ORIGIN = 0x90200000,   LENGTH = 30M     /* LCD framebuffer */
+  EXTRAM_FB (rw)  : ORIGIN = 0x90200000,   LENGTH = 4M      /* LCD framebuffer */
+  EXTRAM_LVGL (rw): ORIGIN = 0x90600000,   LENGTH = 2M      /* LVGL pool + partial bufs */
 }
 /* Sections */
 SECTIONS
@@ -64,6 +65,14 @@ SECTIONS
   {
     . = ALIGN(32);
     *(.ltdc_fb)
+    . = ALIGN(32);
+  } >EXTRAM_FB
+
+  /* LVGL partial render buffers (DMA2D source) */
+  .lvgl_pool (NOLOAD):
+  {
+    . = ALIGN(32);
+    *(.lvgl_pool)
     . = ALIGN(32);
   } >EXTRAM_FB
 

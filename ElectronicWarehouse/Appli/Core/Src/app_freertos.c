@@ -178,8 +178,8 @@ void MX_FREERTOS_Init(void) {
 
   //RGBLED_TaskHandle = osThreadNew(RGBLED_Task, (void *)(uintptr_t)0, &RGBLEDTask_attributes);
   Sensor_TaskHandle = osThreadNew(Sensor_Task, NULL, &SensorTask_attributes);
-  //LV_TaskHandle = osThreadNew(LVGL_Task, NULL, &LVTask_attributes);
-  AITaskHandle = osThreadNew(AI_Task, NULL, &AITask_attributes);
+  LV_TaskHandle = osThreadNew(LVGL_Task, NULL, &LVTask_attributes);
+  //AITaskHandle = osThreadNew(AI_Task, NULL, &AITask_attributes);
   //Electromagnet_TaskHandle = osThreadNew(Electromagnet_Task, NULL, &ElectromagnetTask_attributes);
   //Barcode_TaskHandle = osThreadNew(Barcode_Task, NULL, &BarcodeTask_attributes);
   //Printer_TaskHandle = osThreadNew(Printer_Task, NULL, &PrinterTask_attributes);
@@ -189,7 +189,7 @@ void MX_FREERTOS_Init(void) {
   //Aht10_TaskHandle = osThreadNew(Aht10_Task, NULL, &Aht10Task_attributes);
   UART4_RxTaskHandle = osThreadNew(UART4_RxTask, NULL, &UART4_RxTask_attributes);
   //VL53L1X_TaskHandle = osThreadNew(VL53L1X_Task, NULL, &VL53L1XTask_attributes);
-  StorageFlushHandle = osThreadNew(StorageFlush_Task, NULL, &StorageFlushTask_attributes);
+  //StorageFlushHandle = osThreadNew(StorageFlush_Task, NULL, &StorageFlushTask_attributes);
   /* USER CODE END RTOS_THREADS */
 
   /* USER CODE BEGIN RTOS_EVENTS */
@@ -216,7 +216,7 @@ void StartDefaultTask(void *argument)
   for(;;)
   {
 	  HAL_GPIO_WritePin(GPIOG,GPIO_PIN_10,1);
-
+	  ui_set_cam_text("hello");
 //    printf("[History] %d records:\r\n", history_count);
 //    for (int i = 0; i < history_count; i++) {
 //        printf("  [%d] t:%s u:%s pc:%s qty:%u act:%s cab:%d\r\n",
@@ -229,7 +229,7 @@ void StartDefaultTask(void *argument)
 //               history_list[i].cabinet_id);
 //    }
 
-    osDelay(2000);
+    osDelay(10000);
   }
   /* USER CODE END defaultTask */
 }

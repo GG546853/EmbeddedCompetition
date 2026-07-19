@@ -17,7 +17,7 @@ osThreadId_t LV_TaskHandle;
 const osThreadAttr_t LVTask_attributes = {
   .name = "LV_Task",
   .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 4096 * 24
+  .stack_size = 128 * 1024
 };
 
 // UI 专用帧缓冲 — Layer 1, RGB565, 800x480, 分配在 HyperRAM
@@ -50,8 +50,8 @@ static void lv_port_init(void) {
     HAL_LTDC_Reload(&hltdc, LTDC_RELOAD_IMMEDIATE);
 
     // LVGL 部分缓冲渲染 → DMA2D flush 到 Layer 1 帧缓冲
-    static lv_color_t buf1[LV_HOR_RES_MAX * LV_VER_RES_MAX / 10];
-    static lv_color_t buf2[LV_HOR_RES_MAX * LV_VER_RES_MAX / 10];
+    static lv_color_t buf1[LV_HOR_RES_MAX * LV_VER_RES_MAX / 10] __attribute__((section(".lvgl_pool")));
+    static lv_color_t buf2[LV_HOR_RES_MAX * LV_VER_RES_MAX / 10] __attribute__((section(".lvgl_pool")));
     lv_st_ltdc_create_partial(buf1, buf2, sizeof(buf1), 1);  // layer_idx = 1
 
     lv_port_indev_init();  // 触摸
@@ -62,11 +62,16 @@ static void lv_port_init(void) {
 void LVGL_Task(void *argument) {
 
 	vTaskDelay(pdMS_TO_TICKS(3000));
+    printf("[LV] start lv_port_init...\r\n");
     lv_port_init();
+    printf("[LV] lv_port_init done\r\n");
 
+    printf("[LV] start ui_init...\r\n");
     ui_init();  // EEZ Flow UI 初始化
+    printf("[LV] ui_init done\r\n");
 
     g_lv_stack_high_water = uxTaskGetStackHighWaterMark(NULL);  // 记录剩余栈
+    printf("[LV] stack water: %u words\r\n", (unsigned)g_lv_stack_high_water);
 
 
     for (;;) {

@@ -6688,9 +6688,14 @@ extern "C" void eez_flow_init(const uint8_t *assets, uint32_t assetsSize, lv_obj
     eez::flow::executeLvglActionHook = executeLvglAction;
     eez::flow::getLvglGroupFromIndexHook = getLvglGroupFromIndex;
     eez::flow::lvglSetColorThemeHook = eez_flow_set_theme;
+    printf("[UI] g_mainAssets=%p\r\n", (void*)eez::g_mainAssets);
+    printf("[UI] flow::start...\r\n");
     eez::flow::start(eez::g_mainAssets);
+    printf("[UI] create_screens...\r\n");
     create_screens();
+    printf("[UI] replacePageHook...\r\n");
     replacePageHook(1, 0, 0, 0);
+    printf("[UI] init done\r\n");
 }
 extern "C" void eez_flow_init_styles(
     void (*add_style)(lv_obj_t *obj, int32_t styleIndex),
@@ -6719,8 +6724,18 @@ void eez_flow_init_style_names(const char **styleNames, size_t numStyles) {
     g_styleNames = styleNames;
     g_numStyles = numStyles;
 }
+typedef void * osMutexId_t;
+#define osWaitForever 0xFFFFFFFFU
+extern "C" {
+int32_t osMutexAcquire(osMutexId_t mutex_id, uint32_t timeout);
+int32_t osMutexRelease(osMutexId_t mutex_id);
+}
+extern osMutexId_t flow_var_mutex;
+
 extern "C" void eez_flow_tick() {
+    osMutexAcquire(flow_var_mutex, osWaitForever);
     eez::flow::tick();
+    osMutexRelease(flow_var_mutex);
 }
 extern "C" bool eez_flow_is_stopped() {
     return eez::flow::isFlowStopped();

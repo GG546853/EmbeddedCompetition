@@ -162,3 +162,17 @@ extern "C" void action_givetime(lv_event_t * e)
 {
     (void)e;
 }
+
+static void cam_text_clear_cb(lv_timer_t *timer) {
+    ui_set_string(FLOW_GLOBAL_VARIABLE_CAM_TEXT, "");
+    lv_timer_delete(timer);
+}
+
+extern "C" void ui_set_cam_text(const char *msg) {
+    ui_set_string(FLOW_GLOBAL_VARIABLE_CAM_TEXT, msg);
+    lv_timer_create(cam_text_clear_cb, 5000, NULL);
+}
+
+extern "C" void ui_set_flag(int var_id, int val) {
+    ui_set_integer(var_id, val);
+}

@@ -475,8 +475,8 @@ static uint8_t crop_temp_buf[CROP_TEMP_SIZE]
      extern DMA2D_HandleTypeDef hdma2d;
 
      /* Map detection from [0,1] → display pixel coordinates */
-     float dx = det->x_center * (float)CROP_DISP_W;
-     float dy = det->y_center * (float)CROP_DISP_H;
+     float dx = det->x_center * (float)CROP_DISP_W + (float)DET_BOX_OFFSET_X;
+     float dy = det->y_center * (float)CROP_DISP_H + (float)DET_BOX_OFFSET_Y;
      float dw = det->width    * (float)CROP_DISP_W;
      float dh = det->height   * (float)CROP_DISP_H;
 

@@ -76,6 +76,11 @@ void ai_crop_resize_face_112(uint8_t *src_fb, ai_detection_t *det, uint8_t *outp
 #define FACE_RATIO_THRESHOLD    0.93f  /* best_dist / second_dist; <0.75 means confident match */
 #define FACE_CONFIDENT_DIST     0.25f   /* below this distance, skip ratio check entirely */
 #define FACE_VERIFY_THRESHOLD   0.23f   /* 1:1 verification L2 distance threshold */
+
+/* Detection box calibration offsets in pixels. Positive X → right, Positive Y → down.
+   Applied to both display box drawing and face crop. */
+#define DET_BOX_OFFSET_X  20
+#define DET_BOX_OFFSET_Y  0
 #define FACE_NAME_MAX           16
 #define FACE_ENROLL_SAMPLES      10     /* multi-shot enrollment: average N captures */
 #define ENROLL_QUALITY_COSIM   0.88f  /* reject sample if COSIM vs running avg < this */

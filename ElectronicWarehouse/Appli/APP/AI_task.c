@@ -28,8 +28,8 @@
 /* Face size gate: only accept detection when face max(w,h) is in this range.
    Calibrate by standing at a comfortable distance and checking the box size
    printed as "[GATE] face_size=..." on serial. */
-#define FACE_SIZE_MIN  0.56f
-#define FACE_SIZE_MAX  0.80f
+#define FACE_SIZE_MIN  0.46f
+#define FACE_SIZE_MAX  0.56f
 
 /* Multi-frame identify: average N embeddings before comparing to gallery.
    Reduces single-frame noise from int8 quantization. ~30fps → 5 frames ≈ 167ms. */
@@ -87,8 +87,8 @@ static void draw_kp(int x, int y, uint8_t r, uint8_t g, uint8_t b)
 /* DCMIPP 每帧覆盖整个缓冲区，旧检测框自然被擦除 */
 static void draw_one_detection(ai_detection_t *d, uint8_t r, uint8_t g, uint8_t b)
 {
-    int bx = (int)(d->x_center * DISP_W - d->width  * DISP_W * 0.5f);
-    int by = (int)(d->y_center * DISP_H - d->height * DISP_H * 0.5f);
+    int bx = (int)(d->x_center * DISP_W - d->width  * DISP_W * 0.5f) + DET_BOX_OFFSET_X;
+    int by = (int)(d->y_center * DISP_H - d->height * DISP_H * 0.5f) + DET_BOX_OFFSET_Y;
     int bw = (int)(d->width  * DISP_W);
     int bh = (int)(d->height * DISP_H);
 

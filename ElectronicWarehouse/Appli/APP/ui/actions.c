@@ -44,6 +44,9 @@ void action_ver(lv_event_t * e) {
 	    // ③ 切屏（Sensor_Task 常驻运行，DCMIPP 一直在采集）
 	    eez_flow_push_screen(SCREEN_ID_CAMERA, LV_SCR_LOAD_ANIM_NONE, 0, 0);
 
+    ui_set_flag(FLOW_GLOBAL_VARIABLE_FLAG_SAVE, 0);
+    ui_set_flag(FLOW_GLOBAL_VARIABLE_FLAG_START, 1);
+
 	    // ④ 创建 AI 任务（人脸检测 + 识别）
 	    AITaskHandle = osThreadNew(AI_Task, NULL, &AITask_attributes);
 }
@@ -89,14 +92,7 @@ void action_action_recognize(lv_event_t * e) {
             osThreadTerminate(AITaskHandle);
             AITaskHandle = NULL;
         }
-        if (Sensor_TaskHandle != NULL) {
-            osThreadTerminate(Sensor_TaskHandle);
-            Sensor_TaskHandle = NULL;
-        }
         osThreadNew(ElectromagnetLock_Task, NULL, &ElectromagnetLockTask_attributes);
-        HAL_LTDC_DisableColorKeying(&hltdc, 1);
-        HAL_LTDC_Reload(&hltdc, LTDC_RELOAD_IMMEDIATE);
-        rgblcd_clear(BLUE);
 
         strncpy(Cabinet.User, g_identify_name, sizeof(Cabinet.User) - 1);
         Cabinet.User[sizeof(Cabinet.User) - 1] = '\0';
@@ -110,10 +106,6 @@ void action_action_recognize(lv_event_t * e) {
             osThreadTerminate(AITaskHandle);
             AITaskHandle = NULL;
         }
-
-        HAL_LTDC_DisableColorKeying(&hltdc, 1);
-        HAL_LTDC_Reload(&hltdc, LTDC_RELOAD_IMMEDIATE);
-        rgblcd_clear(BLUE);
 
         eez_flow_push_screen(SCREEN_ID_PAGE_LOCK, LV_SCR_LOAD_ANIM_NONE, 0, 0);
     }
@@ -186,11 +178,22 @@ void action_iobutton(lv_event_t * e) {
 
 void action_new_user(lv_event_t * e) {
     (void)e;
+
+    HAL_LTDC_ConfigColorKeying(&hltdc, 0, 1);
+    HAL_LTDC_EnableColorKeying(&hltdc, 1);
+    HAL_LTDC_Reload(&hltdc, LTDC_RELOAD_IMMEDIATE);
+
+    memset(g_ltdc_ui_framebuf, 0, sizeof(g_ltdc_ui_framebuf));
+
     eez_flow_push_screen(SCREEN_ID_CAMERA, LV_SCR_LOAD_ANIM_NONE, 0, 0);
     ui_set_flag(FLOW_GLOBAL_VARIABLE_FLAG_SAVE, 1);
     ui_set_flag(FLOW_GLOBAL_VARIABLE_FLAG_START, 0);
+    AITaskHandle = osThreadNew(AI_Task, NULL, &AITask_attributes);
 }
 
+void action_save_user(lv_event_t * e) {
+
+}
 void action_printer(lv_event_t * e) {
 
 }

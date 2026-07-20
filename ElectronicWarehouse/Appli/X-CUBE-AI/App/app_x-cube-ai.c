@@ -598,9 +598,31 @@ static uint8_t crop_temp_buf[CROP_TEMP_SIZE]
  /*                        Face Gallery (Module 4)                              */
  /* -------------------------------------------------------------------------- */
 
+ /*
+  * Default gallery entry: zs_pc — PC-side enrolled embedding (L2-normalized).
+  * Imported from C:\Users\96022\Desktop\FACE_INT8\face_db.json
+  * PC verification: same-person cos≈0.85, stranger cos≈0.75
+  */
  static face_entry_t face_gallery[FACE_GALLERY_MAX] = {
-     { .embedding = {0.2024f, -0.0268f, 0.2197f, 0.0028f, 0.2456f, 0.1009f, -0.0739f, 0.0380f},
-       .name = "zs" },
+     { .embedding = {
+         0.0464f, 0.0166f, 0.1019f, -0.0212f, -0.0479f, 0.1120f, 0.0418f, 0.0946f,
+         0.1829f, 0.0130f, -0.0099f, -0.0512f, 0.0343f, 0.0820f, 0.0820f, 0.1439f,
+        -0.0768f, -0.0297f, 0.0137f, -0.0488f, 0.0915f, -0.0842f, -0.1286f, -0.1661f,
+        -0.0307f, 0.0029f, -0.0217f, -0.1306f, 0.0494f, -0.0335f, -0.0032f, 0.0409f,
+        -0.1004f, -0.1386f, -0.0100f, -0.0845f, 0.0070f, -0.1699f, 0.0612f, -0.0660f,
+        -0.0838f, 0.0268f, 0.0245f, -0.1623f, 0.0739f, -0.1622f, 0.0502f, -0.0036f,
+        -0.1305f, 0.0591f, -0.2211f, -0.1136f, -0.0074f, -0.0786f, 0.0303f, -0.0121f,
+         0.0348f, -0.1563f, 0.0452f, 0.0193f, 0.1168f, -0.1483f, -0.0708f, -0.0188f,
+        -0.1677f, 0.0642f, -0.0940f, -0.1703f, 0.0584f, -0.0398f, -0.0504f, -0.1083f,
+         0.0938f, 0.0203f, -0.0705f, 0.0766f, -0.0199f, 0.0076f, -0.0920f, -0.0420f,
+        -0.0092f, -0.1035f, 0.2035f, -0.0164f, -0.0038f, -0.0689f, -0.0034f, 0.1293f,
+         0.0797f, 0.0706f, -0.0140f, 0.0325f, -0.0191f, 0.0812f, -0.0477f, 0.0916f,
+         0.0024f, 0.1412f, -0.0363f, -0.1156f, -0.0096f, 0.0045f, 0.0713f, 0.0798f,
+         0.1551f, 0.0202f, 0.1482f, -0.0542f, 0.0933f, 0.0168f, 0.0152f, -0.1113f,
+         0.1172f, -0.0491f, -0.0257f, -0.1647f, 0.0484f, 0.0355f, -0.0784f, -0.1046f,
+        -0.1146f, 0.0382f, -0.0775f, 0.1954f, -0.0840f, 0.0698f, 0.0866f, -0.1070f
+       },
+       .name = "zs_pc" },
  };
  static uint32_t     face_gallery_count = 1;
 
@@ -801,6 +823,40 @@ static uint8_t crop_temp_buf[CROP_TEMP_SIZE]
          printf("  [%lu] %s\r\n", i, face_gallery[i].name);
      }
  }
+
+/* -------------------------------------------------------------------------- */
+/*                       1:1 Verification                                     */
+/* -------------------------------------------------------------------------- */
+
+int ai_face_select(const char *name, face_entry_t *out_entry)
+{
+    for (uint32_t i = 0; i < face_gallery_count; i++) {
+        if (strncmp(face_gallery[i].name, name, FACE_NAME_MAX) == 0) {
+            memcpy(out_entry, &face_gallery[i], sizeof(face_entry_t));
+            return 0;
+        }
+    }
+    return -1;
+}
+
+int ai_face_verify(const float *embedding, const face_entry_t *target, float *dist_out)
+{
+    float query[FACE_EMBEDDING_DIM];
+    memcpy(query, embedding, sizeof(query));
+    l2_normalize(query, FACE_EMBEDDING_DIM);
+
+    float sum_sq = 0.0f;
+    for (int d = 0; d < FACE_EMBEDDING_DIM; d++) {
+        float diff = query[d] - target->embedding[d];
+        sum_sq += diff * diff;
+    }
+    float dist = sqrtf(sum_sq);
+
+    if (dist_out) *dist_out = dist;
+
+    if (dist < FACE_VERIFY_THRESHOLD) return 1;
+    return 0;
+}
 
 void ai_face_gallery_export(face_entry_t *out_entries, uint32_t *out_count)
 {

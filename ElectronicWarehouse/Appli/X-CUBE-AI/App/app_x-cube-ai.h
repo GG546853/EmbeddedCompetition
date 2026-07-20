@@ -75,6 +75,7 @@ void ai_crop_resize_face_112(uint8_t *src_fb, ai_detection_t *det, uint8_t *outp
 #define FACE_MATCH_THRESHOLD    0.40f   /* L2-normalised distance in [0,2]; <1.0 ≈ cos_sim >0.5 */
 #define FACE_RATIO_THRESHOLD    0.93f  /* best_dist / second_dist; <0.75 means confident match */
 #define FACE_CONFIDENT_DIST     0.25f   /* below this distance, skip ratio check entirely */
+#define FACE_VERIFY_THRESHOLD   0.28f   /* 1:1 verification L2 distance threshold */
 #define FACE_NAME_MAX           16
 #define FACE_ENROLL_SAMPLES      5     /* multi-shot enrollment: average N captures */
 #define ENROLL_QUALITY_COSIM   0.88f  /* reject sample if COSIM vs running avg < this */
@@ -95,6 +96,11 @@ void ai_face_reid_run(float *embedding_out);
 int  ai_face_enroll(const float *embedding, const char *name);
 int  ai_face_enroll_multi(const float *embedding, const char *name);
 int  ai_face_identify(const float *embedding, char *name_out, float *dist_out);
+
+/* 1:1 verification */
+int  ai_face_select(const char *name, face_entry_t *out_entry);
+int  ai_face_verify(const float *embedding, const face_entry_t *target, float *dist_out);
+
 void ai_face_gallery_print(void);
 
 /* Raw accessors for persistent storage */

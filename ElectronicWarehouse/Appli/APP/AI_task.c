@@ -17,12 +17,14 @@
 #include "storage.h"
 #include "UART_protocol.h"
 #include "UART4_RxTask.h"
+#include "usart.h"
 #include "sys.h"
 #define DISP_W 800
 #define DISP_H 480
 #define BOX_THICKNESS 3
 #define KP_SIZE 5
 #define CMD_BUF_SIZE  64
+#define FACE_CROP_BUF  nn_input_u8  /* reuse camera buffer as face crop */
 
 /* Face size gate: only accept detection when face max(w,h) is in this range.
    Calibrate by standing at a comfortable distance and checking the box size
@@ -142,6 +144,13 @@ reid_action_t reid_pending;
 static char          reid_name[FACE_NAME_MAX];
 int           g_capture_pending = 0; /* set by 'register' or 's' cmd, consumed by pipeline */
 
+/* 1:1 verification target (loaded by 'select <name>') */
+static face_entry_t g_selected_entry;
+static int          g_has_selection = 0;
+static int          g_auto_dump    = 0;  /* 1 = hex dump face crop on every identify */
+
+static void send_face_dump(void);
+
 /* BSP interrupt-driven RX accumulates into g_uart_rx_buf[].
    g_uart_rx_sta bit15 = line ready (received \r\n). */
 
@@ -176,7 +185,26 @@ static void process_serial_commands(void)
     }
     else if (strcmp(cmd, "identify") == 0) {
         reid_pending = REID_IDENTIFY;
-        printf("[REID] Will identify face on next frame\r\n");
+        if (g_has_selection) {
+            printf("[REID] Will verify as '%s' on next frame\r\n", g_selected_entry.name);
+        } else {
+            printf("[REID] Will identify face on next frame (no selection)\r\n");
+        }
+    }
+    else if (strncmp(cmd, "select ", 7) == 0) {
+        char *sel_name = cmd + 7;
+        while (*sel_name == ' ') sel_name++;
+        if (ai_face_select(sel_name, &g_selected_entry) == 0) {
+            g_has_selection = 1;
+            printf("[REID] Selected '%s' for 1:1 verification\r\n", sel_name);
+        } else {
+            printf("[REID] '%s' not found in gallery\r\n", sel_name);
+        }
+    }
+    else if (strcmp(cmd, "unselect") == 0) {
+        g_has_selection = 0;
+        memset(&g_selected_entry, 0, sizeof(g_selected_entry));
+        printf("[REID] Selection cleared, back to 1:N identify\r\n");
     }
     else if (strcmp(cmd, "gallery") == 0) {
         ai_face_gallery_print();
@@ -196,12 +224,15 @@ static void process_serial_commands(void)
         printf("[HELP] Commands:\r\n");
         printf("  register <name>  -- start enrolling current face\r\n");
         printf("  s                -- capture one sample (during enrollment)\r\n");
-        printf("  identify         -- identify current face\r\n");
+        printf("  select <name>    -- select identity for 1:1 verification\r\n");
+        printf("  unselect         -- clear selection, back to 1:N\r\n");
+        printf("  identify         -- identify/verify current face\r\n");
         printf("  gallery          -- list registered faces\r\n");
         printf("  saveface         -- save face gallery to SD NAND\r\n");
         printf("  loadface         -- load face gallery from SD NAND\r\n");
         printf("  clearface        -- clear face gallery in RAM only\r\n");
         printf("  crccc             -- CRC32 check of network_fc weights\r\n");
+        printf("  dumpface          -- hex dump 112x112 face crop for PC comparison\r\n");
     }
     else if (strcmp(cmd, "crccc") == 0) {
         extern uint32_t fc_weight_crc32(void);
@@ -209,15 +240,42 @@ static void process_serial_commands(void)
         printf("[CRC-FC] 0x71200000 + 1156289 bytes -> CRC32=0x%08lX (expect 0xF3588EFA)\r\n",
                (unsigned long)crc);
     }
+    else if (strcmp(cmd, "dumpface") == 0) {
+        send_face_dump();
+    }
+    else if (strcmp(cmd, "dumpface on") == 0) {
+        g_auto_dump = 1;
+        printf("[DUMP] Auto-dump ON — face crop sent on every identify\r\n");
+    }
+    else if (strcmp(cmd, "dumpface off") == 0) {
+        g_auto_dump = 0;
+        printf("[DUMP] Auto-dump OFF\r\n");
+    }
 }
 
 /* -------------------------------------------------------------------------- */
 /*                     ReID Pipeline (triggered by serial cmd)                 */
 /* -------------------------------------------------------------------------- */
 
-/* Reuse nn_input_u8 as face crop buffer (48KB) — the original camera data
-   is no longer needed after float32 conversion. */
-#define FACE_CROP_BUF  nn_input_u8
+#define FACE_CROP_BUF  nn_input_u8  /* reuse camera buffer as face crop */
+
+static void send_face_dump(void)
+{
+    const uint32_t dump_size = 112 * 112 * 3;  /* 37632 bytes RGB */
+
+    printf("[DUMP-FACE] %lu bytes hex follow...\r\n", (unsigned long)dump_size);
+
+    /* 16 pixels (48 hex chars) per line */
+    for (uint32_t i = 0; i < dump_size; i += 48) {
+        uint32_t chunk = (i + 48 <= dump_size) ? 48 : (dump_size - i);
+        for (uint32_t j = 0; j < chunk; j++) {
+            printf("%02X", FACE_CROP_BUF[i + j]);
+        }
+        printf("\r\n");
+    }
+
+    printf("[DUMP-FACE] done\r\n");
+}
 
 static void run_reid_pipeline(ai_result_t *result)
 {
@@ -340,19 +398,37 @@ static void run_reid_pipeline(ai_result_t *result)
         }
     }
     else if (reid_pending == REID_IDENTIFY) {
-        int idx = ai_face_identify(embedding, g_identify_name, &g_identify_dist);
-        if (idx >= 0) {
-            g_identify_match = 1;
-            printf("[REID] Matched: '%s' (dist=%.3f)\r\n", g_identify_name, g_identify_dist);
+        if (g_has_selection) {
+            /* 1:1 verification */
+            int ok = ai_face_verify(embedding, &g_selected_entry, &g_identify_dist);
+            if (ok) {
+                g_identify_match = 1;
+                strncpy(g_identify_name, g_selected_entry.name, FACE_NAME_MAX);
+                printf("[VERIFY] Match: '%s' (dist=%.3f)\r\n",
+                       g_identify_name, g_identify_dist);
+            } else {
+                g_identify_match = 0;
+                printf("[VERIFY] Rejected (dist=%.3f >= %.2f)\r\n",
+                       g_identify_dist, (double)FACE_VERIFY_THRESHOLD);
+            }
         } else {
-            g_identify_match = 0;
-            printf("[REID] No match (dist=%.3f)\r\n", g_identify_dist);
+            /* 1:N identification (original) */
+            int idx = ai_face_identify(embedding, g_identify_name, &g_identify_dist);
+            if (idx >= 0) {
+                g_identify_match = 1;
+                printf("[REID] Matched: '%s' (dist=%.3f)\r\n", g_identify_name, g_identify_dist);
+            } else {
+                g_identify_match = 0;
+                printf("[REID] No match (dist=%.3f)\r\n", g_identify_dist);
+            }
         }
         g_identify_done = 1;
     }
 
-    if (reid_pending == REID_IDENTIFY)
+    if (reid_pending == REID_IDENTIFY) {
+        if (g_auto_dump) send_face_dump();
         reid_pending = REID_IDLE;
+    }
 }
 
 /* -------------------------------------------------------------------------- */

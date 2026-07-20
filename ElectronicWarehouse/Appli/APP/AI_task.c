@@ -24,13 +24,16 @@
 #define BOX_THICKNESS 3
 #define KP_SIZE 5
 #define CMD_BUF_SIZE  64
-#define FACE_CROP_BUF  nn_input_u8  /* reuse camera buffer as face crop */
 
 /* Face size gate: only accept detection when face max(w,h) is in this range.
    Calibrate by standing at a comfortable distance and checking the box size
    printed as "[GATE] face_size=..." on serial. */
-#define FACE_SIZE_MIN  0.28f
-#define FACE_SIZE_MAX  0.56f
+#define FACE_SIZE_MIN  0.56f
+#define FACE_SIZE_MAX  0.80f
+
+/* Multi-frame identify: average N embeddings before comparing to gallery.
+   Reduces single-frame noise from int8 quantization. ~30fps → 5 frames ≈ 167ms. */
+#define IDENTIFY_FRAMES  10
 
 extern uint8_t g_ltdc_framebuf[480 * 800 * 3];
 
@@ -124,6 +127,11 @@ extern uint8_t *buffer_in_fc;
 /* Intermediate buffer for DCMIPP PIPE2 uint8 RGB888 output.
    Must be in .noncacheable section and 32-byte aligned for DMA access. */
 uint8_t nn_input_u8[128 * 128 * 3] __attribute__((section(".noncacheable"), aligned(32)));
+
+/* Dedicated face crop buffer — must NOT alias nn_input_u8 (PIPE2 overwrites it). */
+static uint8_t face_crop_buf[112 * 112 * 3]
+    __attribute__((section(".noncacheable"), aligned(32)));
+#define FACE_CROP_BUF  face_crop_buf
 
 static const char *kp_names[6] = {
     "LEye", "REye", "Nose", "Mouth", "LEar", "REar"
@@ -257,11 +265,13 @@ static void process_serial_commands(void)
 /*                     ReID Pipeline (triggered by serial cmd)                 */
 /* -------------------------------------------------------------------------- */
 
-#define FACE_CROP_BUF  nn_input_u8  /* reuse camera buffer as face crop */
-
 static void send_face_dump(void)
 {
     const uint32_t dump_size = 112 * 112 * 3;  /* 37632 bytes RGB */
+
+    /* Ensure face_crop_buf (written by CPU software resize) is flushed to physical memory */
+    SCB_CleanDCache_by_Addr((uint32_t *)FACE_CROP_BUF, dump_size);
+    __DSB();
 
     printf("[DUMP-FACE] %lu bytes hex follow...\r\n", (unsigned long)dump_size);
 
@@ -296,8 +306,16 @@ static void run_reid_pipeline(ai_result_t *result)
     printf("[REID] DBG1: crop start, box=(%.2f,%.2f,%.2f,%.2f)\r\n",
            best->x_center, best->y_center, best->width, best->height);
 
-    /* Step 1: Crop + resize face from display buffer → 128×128 uint8 */
-    ai_crop_resize_face_112(g_ltdc_framebuf, best, FACE_CROP_BUF);
+    /* Step 1: Stop PIPE1, crop from g_ltdc_framebuf, restart PIPE1.
+       At this point (~6.4ms after VSYNC), PIPE1 has written ~93 lines of
+       the current frame. The crop region (typically y≈140-340 for a centered
+       face) falls in lines 93-377 which are clean camera data from the
+       previous PIPE1 cycle. Stopping PIPE1 prevents concurrent writes during
+       the CPU read. */
+    HAL_DCMIPP_CSI_PIPE_Stop(&hdcmipp, DCMIPP_PIPE1, DCMIPP_VIRTUAL_CHANNEL0);
+    ai_crop_resize_face_112((uint8_t *)g_ltdc_framebuf, best, FACE_CROP_BUF);
+    HAL_DCMIPP_CSI_PIPE_Start(&hdcmipp, DCMIPP_PIPE1, DCMIPP_VIRTUAL_CHANNEL0,
+                               (uint32_t)g_ltdc_framebuf, DCMIPP_MODE_CONTINUOUS);
 
     printf("[REID] DBG2: crop done, quantize start, fc_in=%p\r\n", buffer_in_fc);
 
@@ -398,36 +416,88 @@ static void run_reid_pipeline(ai_result_t *result)
         }
     }
     else if (reid_pending == REID_IDENTIFY) {
-        if (g_has_selection) {
-            /* 1:1 verification */
-            int ok = ai_face_verify(embedding, &g_selected_entry, &g_identify_dist);
-            if (ok) {
-                g_identify_match = 1;
-                strncpy(g_identify_name, g_selected_entry.name, FACE_NAME_MAX);
-                printf("[VERIFY] Match: '%s' (dist=%.3f)\r\n",
-                       g_identify_name, g_identify_dist);
+        /* Multi-frame accumulation: average N embeddings for lower noise */
+        static float  ident_accum[FACE_EMBEDDING_DIM];
+        static int    ident_count;
+        static float  ident_first_dist;  /* single-frame dist for debug */
+
+        if (ident_count == 0) {
+            memset(ident_accum, 0, sizeof(ident_accum));
+        }
+
+        /* Accumulate raw (pre-normalized) embedding */
+        for (int i = 0; i < FACE_EMBEDDING_DIM; i++) {
+            ident_accum[i] += embedding[i];
+        }
+        ident_count++;
+
+        /* Show single-frame stats for the first frame */
+        if (ident_count == 1) {
+            /* Quick single-frame identification for debug comparison */
+            if (g_has_selection) {
+                ai_face_verify(embedding, &g_selected_entry, &ident_first_dist);
+                printf("[VERIFY] frame 1/%d single-dist=%.3f\r\n",
+                       IDENTIFY_FRAMES, ident_first_dist);
             } else {
-                g_identify_match = 0;
-                printf("[VERIFY] Rejected (dist=%.3f >= %.2f)\r\n",
-                       g_identify_dist, (double)FACE_VERIFY_THRESHOLD);
-            }
-        } else {
-            /* 1:N identification (original) */
-            int idx = ai_face_identify(embedding, g_identify_name, &g_identify_dist);
-            if (idx >= 0) {
-                g_identify_match = 1;
-                printf("[REID] Matched: '%s' (dist=%.3f)\r\n", g_identify_name, g_identify_dist);
-            } else {
-                g_identify_match = 0;
-                printf("[REID] No match (dist=%.3f)\r\n", g_identify_dist);
+                int idx = ai_face_identify(embedding, g_identify_name, &ident_first_dist);
+                if (idx >= 0)
+                    printf("[REID] frame 1/%d single-dist=%.3f -> '%s'\r\n",
+                           IDENTIFY_FRAMES, ident_first_dist, g_identify_name);
+                else
+                    printf("[REID] frame 1/%d single-dist=%.3f -> no match\r\n",
+                           IDENTIFY_FRAMES, ident_first_dist);
             }
         }
-        g_identify_done = 1;
-    }
 
-    if (reid_pending == REID_IDENTIFY) {
-        if (g_auto_dump) send_face_dump();
-        reid_pending = REID_IDLE;
+        if (ident_count < IDENTIFY_FRAMES) {
+            /* Keep accumulating — don't reset reid_pending yet */
+            printf("[IDENT] accumulating %d/%d\r\n", ident_count, IDENTIFY_FRAMES);
+        } else {
+            /* All frames collected: average and L2-normalize */
+            float avg[FACE_EMBEDDING_DIM];
+            for (int i = 0; i < FACE_EMBEDDING_DIM; i++) {
+                avg[i] = ident_accum[i] / (float)IDENTIFY_FRAMES;
+            }
+            /* L2-normalize the averaged embedding */
+            float sum_sq = 0.0f;
+            for (int i = 0; i < FACE_EMBEDDING_DIM; i++) sum_sq += avg[i] * avg[i];
+            if (sum_sq > 1e-30f) {
+                float inv = 1.0f / sqrtf(sum_sq);
+                for (int i = 0; i < FACE_EMBEDDING_DIM; i++) avg[i] *= inv;
+            }
+
+            if (g_has_selection) {
+                /* 1:1 verification with averaged embedding */
+                int ok = ai_face_verify(avg, &g_selected_entry, &g_identify_dist);
+                if (ok) {
+                    g_identify_match = 1;
+                    strncpy(g_identify_name, g_selected_entry.name, FACE_NAME_MAX);
+                    printf("[VERIFY] Match: '%s' (avg-dist=%.3f, single-dist=%.3f)\r\n",
+                           g_identify_name, g_identify_dist, ident_first_dist);
+                } else {
+                    g_identify_match = 0;
+                    printf("[VERIFY] Rejected (avg-dist=%.3f >= %.2f, single-dist=%.3f)\r\n",
+                           g_identify_dist, (double)FACE_VERIFY_THRESHOLD, ident_first_dist);
+                }
+            } else {
+                /* 1:N identification with averaged embedding */
+                int idx = ai_face_identify(avg, g_identify_name, &g_identify_dist);
+                if (idx >= 0) {
+                    g_identify_match = 1;
+                    printf("[REID] Matched: '%s' (avg-dist=%.3f, single-dist=%.3f)\r\n",
+                           g_identify_name, g_identify_dist, ident_first_dist);
+                } else {
+                    g_identify_match = 0;
+                    printf("[REID] No match (avg-dist=%.3f, single-dist=%.3f)\r\n",
+                           g_identify_dist, ident_first_dist);
+                }
+            }
+            g_identify_done = 1;
+            ident_count = 0;
+
+            if (g_auto_dump) send_face_dump();
+            reid_pending = REID_IDLE;
+        }
     }
 }
 
@@ -501,13 +571,15 @@ void AI_Task(void *argument)
         }
 #endif
 
-        /* Draw detection boxes + keypoints on LTDC layer 2 overlay */
-        draw_detections_on_display(&result);
         /* Check serial commands */
         process_serial_commands();
 
-        /* Run ReID pipeline if triggered */
+        /* Run ReID pipeline if triggered — stops PIPE1 during CPU crop
+           to read clean camera data, then restarts for draw_detections. */
         run_reid_pipeline(&result);
+
+        /* Draw detection boxes + keypoints on LTDC layer 2 overlay */
+        draw_detections_on_display(&result);
 
         if(g_trigger_identify == 1)
         {

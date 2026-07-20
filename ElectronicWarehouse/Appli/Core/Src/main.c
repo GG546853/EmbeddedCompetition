@@ -226,10 +226,10 @@ int main(void)
       (unsigned long)(g_sd_nand_info_struct.LogBlockNbr / 2 / 1024));
 
   if (storage_init() == 0) {
-//      storage_load_inventory();
-//      storage_load_faces();
-//      storage_load_history();
-//      printf("[STORAGE] All data loaded\r\n");
+      storage_load_inventory();
+      storage_load_faces();
+      storage_load_history();
+      printf("[STORAGE] All data loaded\r\n");
   } else {
       printf("[STORAGE] Mount failed — RAM-only mode\r\n");
   }

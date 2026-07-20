@@ -462,13 +462,13 @@ static void ai_detection_temporal_smooth(ai_result_t *result)
  #define CROP_DISP_W  800
  #define CROP_DISP_H  480
  #define CROP_OUT_SZ  112
- #define CROP_MARGIN  0.0f   /* 30% expansion beyond detection box */
+ #define CROP_MARGIN  0.1f   /* 30% expansion beyond detection box */
 
 #define CROP_TEMP_MAX_PX 480
 #define CROP_TEMP_SIZE  (CROP_TEMP_MAX_PX * CROP_TEMP_MAX_PX * 3)
 
 static uint8_t crop_temp_buf[CROP_TEMP_SIZE]
-    __attribute__((section(".EXTRAM"), aligned(32)));
+    __attribute__((section(".crop_buf"), aligned(32)));
 
  void ai_crop_resize_face_112(uint8_t *src_fb, ai_detection_t *det, uint8_t *output)
  {
@@ -500,34 +500,25 @@ static uint8_t crop_temp_buf[CROP_TEMP_SIZE]
      if (crop_w > CROP_TEMP_MAX_PX) crop_w = CROP_TEMP_MAX_PX;
      if (crop_h > CROP_TEMP_MAX_PX) crop_h = CROP_TEMP_MAX_PX;
 
-     /* Step 1: DMA2D M2M_PFC copies crop region (RGB888) HyperRAM → crop_temp_buf.
-        Source has line stride = CROP_DISP_W * 3 bytes. Dest is tightly packed. */
+     /* Step 1: CPU copy crop region (RGB888) src_fb → crop_temp_buf.
+        Source has line stride = CROP_DISP_W * 3 bytes. Dest is tightly packed.
+        Using CPU copy to rule out DMA2D M2M_PFC as the horizontal-flattening culprit. */
      uint32_t temp_bytes = (uint32_t)crop_w * crop_h * 3;
 
-     hdma2d.Init.Mode          = DMA2D_M2M_PFC;
-     hdma2d.Init.ColorMode     = DMA2D_OUTPUT_RGB888;
-     hdma2d.Init.OutputOffset  = 0;
-     hdma2d.Init.AlphaInverted = DMA2D_REGULAR_ALPHA;
-     hdma2d.Init.RedBlueSwap   = DMA2D_RB_REGULAR;
-     hdma2d.Init.BytesSwap     = DMA2D_BYTES_REGULAR;
-     hdma2d.Init.LineOffsetMode = DMA2D_LOM_PIXELS;
-     HAL_DMA2D_Init(&hdma2d);
+     for (int ry = 0; ry < crop_h; ry++) {
+         uint8_t *src_row = src_fb + ((crop_y0 + ry) * CROP_DISP_W + crop_x0) * 3;
+         uint8_t *dst_row = crop_temp_buf + ry * crop_w * 3;
+         for (int rx = 0; rx < crop_w; rx++) {
+             /* PIPE1 outputs BGR, swap to RGB here */
+             dst_row[rx * 3 + 0] = src_row[rx * 3 + 2];  /* R ← src B */
+             dst_row[rx * 3 + 1] = src_row[rx * 3 + 1];  /* G ← src G */
+             dst_row[rx * 3 + 2] = src_row[rx * 3 + 0];  /* B ← src R */
+         }
+     }
 
-     hdma2d.LayerCfg[0].InputOffset    = CROP_DISP_W - crop_w;
-     hdma2d.LayerCfg[0].InputColorMode = DMA2D_INPUT_RGB888;
-     hdma2d.LayerCfg[0].AlphaMode      = DMA2D_NO_MODIF_ALPHA;
-     hdma2d.LayerCfg[0].InputAlpha     = 0xFF;
-     hdma2d.LayerCfg[0].AlphaInverted  = DMA2D_REGULAR_ALPHA;
-     hdma2d.LayerCfg[0].RedBlueSwap    = DMA2D_RB_REGULAR;
-     HAL_DMA2D_ConfigLayer(&hdma2d, 0);
-
-     HAL_DMA2D_Start(&hdma2d,
-         (uint32_t)(src_fb + (crop_y0 * CROP_DISP_W + crop_x0) * 3),
-         (uint32_t)crop_temp_buf,
-         crop_w, crop_h);
-     HAL_DMA2D_PollForTransfer(&hdma2d, 100);
-
-     SCB_InvalidateDCache_by_Addr((uint32_t *)crop_temp_buf, temp_bytes);
+     /* CPU wrote crop_temp_buf — flush DCache so bilinear resize (CPU) sees it.
+        No-op if DCache is disabled. */
+     SCB_CleanDCache_by_Addr((uint32_t *)crop_temp_buf, temp_bytes);
 
      printf("[CROP] DMA2D copy done, resizing %dx%d → 112×112\r\n", crop_w, crop_h);
 
@@ -590,7 +581,13 @@ static uint8_t crop_temp_buf[CROP_TEMP_SIZE]
  void quantize_u8_to_s8(const uint8_t *u8, int8_t *s8, uint32_t count)
  {
      for (uint32_t i = 0; i < count; i++) {
-         s8[i] = (int8_t)((int16_t)u8[i] - 128);
+         int16_t val = (int16_t)u8[i] - 128;
+         /* odd u8 → fractional 0.5 → round up (clamp to INT8_MAX) */
+         if ((u8[i] & 1) && val < 127) {
+             s8[i] = (int8_t)(val + 1);
+         } else {
+             s8[i] = (int8_t)val;
+         }
      }
  }
 

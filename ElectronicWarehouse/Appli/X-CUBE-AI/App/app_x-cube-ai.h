@@ -42,7 +42,7 @@ void MX_X_CUBE_AI_Process(void);
 #define AI_FD_GRID_1_NB_BOXES  384
 #define AI_FD_BOX_SCALE_W      0.80f
 #define AI_FD_BOX_SCALE_H      1.20f
-#define AI_FD_EMA_ALPHA        0.30f
+#define AI_FD_EMA_ALPHA        0.20f
 #define AI_FD_TRACK_IOU_THRESH 0.50f
 
 /* Detection result structures ----------------------------------------------*/
@@ -75,9 +75,9 @@ void ai_crop_resize_face_112(uint8_t *src_fb, ai_detection_t *det, uint8_t *outp
 #define FACE_MATCH_THRESHOLD    0.40f   /* L2-normalised distance in [0,2]; <1.0 ≈ cos_sim >0.5 */
 #define FACE_RATIO_THRESHOLD    0.93f  /* best_dist / second_dist; <0.75 means confident match */
 #define FACE_CONFIDENT_DIST     0.25f   /* below this distance, skip ratio check entirely */
-#define FACE_VERIFY_THRESHOLD   0.28f   /* 1:1 verification L2 distance threshold */
+#define FACE_VERIFY_THRESHOLD   0.23f   /* 1:1 verification L2 distance threshold */
 #define FACE_NAME_MAX           16
-#define FACE_ENROLL_SAMPLES      5     /* multi-shot enrollment: average N captures */
+#define FACE_ENROLL_SAMPLES      10     /* multi-shot enrollment: average N captures */
 #define ENROLL_QUALITY_COSIM   0.88f  /* reject sample if COSIM vs running avg < this */
 #define ENROLL_QUALITY_REJECT    (-1) /* returned when sample rejected by quality gate */
 

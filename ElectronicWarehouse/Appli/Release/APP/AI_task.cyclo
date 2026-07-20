@@ -1,4 +1,5 @@
-../APP/AI_task.c:262:13:send_face_dump	3
-../APP/AI_task.c:157:13:process_serial_commands	20
-../APP/AI_task.c:47:13:fill_rect.constprop	7
-../APP/AI_task.c:438:6:AI_Task	36
+../APP/AI_task.c:268:13:send_face_dump	4
+../APP/AI_task.c:165:13:process_serial_commands	20
+../APP/AI_task.c:290:13:run_reid_pipeline	34
+../APP/AI_task.c:50:13:fill_rect.constprop	7
+../APP/AI_task.c:508:6:AI_Task	13

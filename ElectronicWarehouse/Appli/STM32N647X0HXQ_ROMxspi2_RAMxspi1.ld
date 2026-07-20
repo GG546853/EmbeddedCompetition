@@ -84,6 +84,14 @@ SECTIONS
     . = ALIGN(32);
   } >EXTRAM_FB
 
+  /* Face crop temp buffer — isolated from NPU activation zone (0x90000000-0x901FFFFF) */
+  .crop_buf (NOLOAD):
+  {
+    . = ALIGN(32);
+    *(.crop_buf)
+    . = ALIGN(32);
+  } >EXTRAM_FB
+
   /* The startup code into "RAM" Ram type memory */
   .isr_vector :
   {

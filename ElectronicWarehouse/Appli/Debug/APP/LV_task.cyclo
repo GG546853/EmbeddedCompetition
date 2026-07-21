@@ -38,5 +38,5 @@
 ../APP/ui/eez-flow.h:4349:1:utf8rcodepoint	6
 ../APP/LV_task.c:26:13:lv_port_init	1
 ../APP/LV_task.c:62:6:LVGL_Task	1
-../APP/LV_task.c:84:6:_exit	1
-../APP/LV_task.c:89:5:_gettimeofday	1
+../APP/LV_task.c:90:6:_exit	1
+../APP/LV_task.c:95:5:_gettimeofday	1

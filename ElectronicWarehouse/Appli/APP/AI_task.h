@@ -11,6 +11,12 @@ extern volatile int g_identify_done;
 extern volatile int g_identify_match;
 extern char         g_identify_name[16];
 
+extern volatile int g_enroll_progress;
+extern volatile int g_enroll_total;
+extern volatile int g_enroll_state;
+extern char         g_enroll_msg[64];
+void ai_start_enroll(const char *name);
+
 void AI_Task(void *argument);
 
 #endif /* __AI_TASK_H__ */

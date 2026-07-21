@@ -46,6 +46,10 @@ char         g_identify_name[FACE_NAME_MAX];
 float        g_identify_dist;
 static uint16_t g_pending_face_code;
 
+volatile int g_enroll_progress = 0;
+volatile int g_enroll_total    = FACE_ENROLL_SAMPLES;
+volatile int g_enroll_state    = 0;  /* 0=idle, 1=enrolling, 2=done, 3=waiting_name */
+char         g_enroll_msg[64]  = {0};
 
 static void fill_rect(int x, int y, int w, int h, uint8_t r, uint8_t g, uint8_t b)
 {
@@ -94,11 +98,11 @@ static void draw_one_detection(ai_detection_t *d, uint8_t r, uint8_t g, uint8_t 
 
     draw_box(bx, by, bw, bh, r, g, b);
 
-//    for (int k = 0; k < 6; k++) {
-//        int kx = (int)(d->keypoints[k][0] * DISP_W);
-//        int ky = (int)(d->keypoints[k][1] * DISP_H);
-//        draw_kp(kx, ky, r, g, b);
-//    }
+    for (int k = 0; k < 6; k++) {
+        int kx = (int)(d->keypoints[k][0] * DISP_W);
+        int ky = (int)(d->keypoints[k][1] * DISP_H);
+        draw_kp(kx, ky, r, g, b);
+    }
 }
 
 static void draw_detections_on_display(ai_result_t *result)
@@ -151,6 +155,17 @@ typedef enum {
 reid_action_t reid_pending;
 static char          reid_name[FACE_NAME_MAX];
 int           g_capture_pending = 0; /* set by 'register' or 's' cmd, consumed by pipeline */
+
+void ai_start_enroll(const char *name) {
+    strncpy(reid_name, name, FACE_NAME_MAX - 1);
+    reid_name[FACE_NAME_MAX - 1] = '\0';
+    reid_pending = REID_REGISTER;
+    g_capture_pending = 1;
+    g_enroll_progress = 0;
+    g_enroll_state = 1;
+    snprintf(g_enroll_msg, sizeof(g_enroll_msg), "Enroll sample 0/%d", FACE_ENROLL_SAMPLES);
+    printf("[REID] Enrolling '%s' — auto-capture enabled\r\n", reid_name);
+}
 
 /* 1:1 verification target (loaded by 'select <name>') */
 static face_entry_t g_selected_entry;
@@ -380,12 +395,15 @@ static void run_reid_pipeline(ai_result_t *result)
             g_capture_pending = 0;
             int remaining = ai_face_enroll_multi(embedding, reid_name);
             if (remaining == ENROLL_QUALITY_REJECT) {
-                /* Sample rejected by quality gate — don't consume g_capture_pending */
+                snprintf(g_enroll_msg, sizeof(g_enroll_msg), "Keep still...");
             }
             else if (remaining == 0) {
                 reid_pending = REID_IDLE;
                 storage_mark_faces_dirty();
                 printf("[REID] Enrolled '%s'\r\n", reid_name);
+
+                g_enroll_state = 3;  /* waiting for ESP32 name */
+                snprintf(g_enroll_msg, sizeof(g_enroll_msg), "Waiting for a name");
 
                 /* Notify ESP32 and wait for name from mini-program */
                 {
@@ -407,12 +425,24 @@ static void run_reid_pipeline(ai_result_t *result)
                     if (g_face_name_ready) {
                         printf("[FACE] Name saved by handler: '%s'\r\n",
                                g_face_name_result);
+                        snprintf(g_enroll_msg, sizeof(g_enroll_msg), "%s",
+                                 g_face_name_result);
                     } else {
                         printf("[FACE] Name timeout, keeping '%s'\r\n", reid_name);
+                        snprintf(g_enroll_msg, sizeof(g_enroll_msg), "%s",
+                                 reid_name);
                     }
+                    g_enroll_state = 2;  /* done */
                 }
             }
-            /* else: keep REID_REGISTER; wait for next 's' */
+            else {
+                /* Sample accepted, still enrolling */
+                g_enroll_progress = FACE_ENROLL_SAMPLES - remaining;
+                snprintf(g_enroll_msg, sizeof(g_enroll_msg),
+                         "Enroll sample %d/%d",
+                         g_enroll_progress, FACE_ENROLL_SAMPLES);
+                g_capture_pending = 1;  /* auto-capture next sample */
+            }
         }
     }
     else if (reid_pending == REID_IDENTIFY) {
@@ -548,6 +578,11 @@ void AI_Task(void *argument)
                     printf("[GATE] face_size=%.2f out of [%.2f, %.2f]\r\n",
                            fs, FACE_SIZE_MIN, FACE_SIZE_MAX);
                     last_fs = fs;
+                }
+                if (reid_pending == REID_REGISTER) {
+                    snprintf(g_enroll_msg, sizeof(g_enroll_msg),
+                             fs < FACE_SIZE_MIN ? "Too far from the camera"
+                                                : "Too close to the camera");
                 }
                 result.nb_detect = 0;
             }

@@ -192,7 +192,28 @@ void action_new_user(lv_event_t * e) {
 }
 
 void action_save_user(lv_event_t * e) {
+    (void)e;
 
+    static int user_seq = 0;
+    char name[16];
+    snprintf(name, sizeof(name), "user%02d", user_seq++);
+
+    HAL_LTDC_ConfigColorKeying(&hltdc, 0, 1);
+    HAL_LTDC_EnableColorKeying(&hltdc, 1);
+    HAL_LTDC_Reload(&hltdc, LTDC_RELOAD_IMMEDIATE);
+
+    memset(g_ltdc_ui_framebuf, 0, sizeof(g_ltdc_ui_framebuf));
+
+    eez_flow_push_screen(SCREEN_ID_CAMERA, LV_SCR_LOAD_ANIM_NONE, 0, 0);
+
+    ai_start_enroll(name);
+
+    if (AITaskHandle == NULL) {
+        AITaskHandle = osThreadNew(AI_Task, NULL, &AITask_attributes);
+    }
+
+    ui_set_flag(FLOW_GLOBAL_VARIABLE_FLAG_SAVE, 1);
+    ui_set_flag(FLOW_GLOBAL_VARIABLE_FLAG_START, 0);
 }
 void action_printer(lv_event_t * e) {
 

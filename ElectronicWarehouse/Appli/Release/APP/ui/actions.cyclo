@@ -41,5 +41,5 @@
 ../APP/ui/actions.c:75:6:action_action_recognize	6
 ../APP/ui/actions.c:116:6:action_iobutton	10
 ../APP/ui/actions.c:179:6:action_new_user	1
-../APP/ui/actions.c:194:6:action_save_user	1
-../APP/ui/actions.c:197:6:action_printer	1
+../APP/ui/actions.c:194:6:action_save_user	2
+../APP/ui/actions.c:218:6:action_printer	1

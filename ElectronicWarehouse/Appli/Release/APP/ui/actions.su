@@ -41,5 +41,5 @@
 ../APP/ui/actions.c:75:6:action_action_recognize	16	static
 ../APP/ui/actions.c:116:6:action_iobutton	48	static
 ../APP/ui/actions.c:179:6:action_new_user	8	static
-../APP/ui/actions.c:194:6:action_save_user	0	static
-../APP/ui/actions.c:197:6:action_printer	0	static
+../APP/ui/actions.c:194:6:action_save_user	24	static
+../APP/ui/actions.c:218:6:action_printer	0	static

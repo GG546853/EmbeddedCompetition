@@ -1,16 +1,12 @@
+#include "cmsis_os.h"
 #include "eez-flow.h"
 #include "vars.h"
 #include "structs.h"
 #include "ui_bridge.h"
+#include "screens.h"
 extern int history_count;
 extern HistoryRecord history_list[32];
 
-typedef void * osMutexId_t;
-#define osWaitForever 0xFFFFFFFFU
-extern "C" {
-int32_t osMutexAcquire(osMutexId_t mutex_id, uint32_t timeout);
-int32_t osMutexRelease(osMutexId_t mutex_id);
-}
 extern osMutexId_t flow_var_mutex;
 
 struct _lv_event_t;
@@ -163,16 +159,59 @@ extern "C" void action_givetime(lv_event_t * e)
     (void)e;
 }
 
+static lv_timer_t *cam_text_timer = NULL;
+
 static void cam_text_clear_cb(lv_timer_t *timer) {
     ui_set_string(FLOW_GLOBAL_VARIABLE_CAM_TEXT, "");
+    cam_text_timer = NULL;
     lv_timer_delete(timer);
 }
 
 extern "C" void ui_set_cam_text(const char *msg) {
+    if (cam_text_timer != NULL) {
+        lv_timer_delete(cam_text_timer);
+        cam_text_timer = NULL;
+    }
     ui_set_string(FLOW_GLOBAL_VARIABLE_CAM_TEXT, msg);
-    lv_timer_create(cam_text_clear_cb, 5000, NULL);
+    cam_text_timer = lv_timer_create(cam_text_clear_cb, 5000, NULL);
 }
 
 extern "C" void ui_set_flag(int var_id, int val) {
     ui_set_integer(var_id, val);
+}
+
+extern "C" void ui_poll_enroll_status(void) {
+    extern volatile int g_enroll_state;
+    extern char g_enroll_msg[64];
+    static int last_state = -1;
+    static char last_msg[64];
+
+    if (g_enroll_state == 3) {
+        /* waiting for ESP32 name — keep refreshing so 5s timer never expires */
+        last_state = 3;
+        ui_set_cam_text(g_enroll_msg);
+        return;
+    }
+
+    if (g_enroll_state == 2 && last_state == 3) {
+        /* waiting → done: stop AI, navigate back to lock screen */
+        extern osThreadId_t AITaskHandle;
+        if (AITaskHandle != NULL) {
+            osThreadTerminate(AITaskHandle);
+            AITaskHandle = NULL;
+        }
+        eez_flow_push_screen(SCREEN_ID_PAGE_LOCK, LV_SCR_LOAD_ANIM_NONE, 0, 0);
+        ui_set_flag(FLOW_GLOBAL_VARIABLE_FLAG_SAVE, 0);
+        ui_set_flag(FLOW_GLOBAL_VARIABLE_FLAG_START, 1);
+    }
+
+    if (g_enroll_state != last_state ||
+        strncmp(g_enroll_msg, last_msg, sizeof(last_msg)) != 0) {
+        last_state = g_enroll_state;
+        strncpy(last_msg, g_enroll_msg, sizeof(last_msg) - 1);
+        last_msg[sizeof(last_msg) - 1] = '\0';
+        if (g_enroll_msg[0] != '\0') {
+            ui_set_cam_text(g_enroll_msg);
+        }
+    }
 }

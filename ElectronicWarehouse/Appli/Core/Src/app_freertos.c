@@ -216,7 +216,7 @@ void StartDefaultTask(void *argument)
   for(;;)
   {
 	  HAL_GPIO_WritePin(GPIOG,GPIO_PIN_10,1);
-	  ui_set_cam_text("hello");
+	  //ui_set_cam_text("hello");
 //    printf("[History] %d records:\r\n", history_count);
 //    for (int i = 0; i < history_count; i++) {
 //        printf("  [%d] t:%s u:%s pc:%s qty:%u act:%s cab:%d\r\n",

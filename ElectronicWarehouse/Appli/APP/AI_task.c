@@ -28,8 +28,8 @@
 /* Face size gate: only accept detection when face max(w,h) is in this range.
    Calibrate by standing at a comfortable distance and checking the box size
    printed as "[GATE] face_size=..." on serial. */
-#define FACE_SIZE_MIN  0.46f
-#define FACE_SIZE_MAX  0.56f
+#define FACE_SIZE_MIN  0.25f
+#define FACE_SIZE_MAX  0.75f
 
 /* Multi-frame identify: average N embeddings before comparing to gallery.
    Reduces single-frame noise from int8 quantization. ~30fps → 5 frames ≈ 167ms. */
@@ -91,8 +91,8 @@ static void draw_kp(int x, int y, uint8_t r, uint8_t g, uint8_t b)
 /* DCMIPP 每帧覆盖整个缓冲区，旧检测框自然被擦除 */
 static void draw_one_detection(ai_detection_t *d, uint8_t r, uint8_t g, uint8_t b)
 {
-    int bx = (int)(d->x_center * DISP_W - d->width  * DISP_W * 0.5f) + DET_BOX_OFFSET_X;
-    int by = (int)(d->y_center * DISP_H - d->height * DISP_H * 0.5f) + DET_BOX_OFFSET_Y;
+    int bx = (int)(d->x_center * DISP_W - d->width  * DISP_W * 0.5f); // + DET_BOX_OFFSET_X
+    int by = (int)(d->y_center * DISP_H - d->height * DISP_H * 0.5f); // + DET_BOX_OFFSET_Y
     int bw = (int)(d->width  * DISP_W);
     int bh = (int)(d->height * DISP_H);
 
@@ -256,6 +256,12 @@ static void process_serial_commands(void)
         printf("  clearface        -- clear face gallery in RAM only\r\n");
         printf("  crccc             -- CRC32 check of network_fc weights\r\n");
         printf("  dumpface          -- hex dump 112x112 face crop for PC comparison\r\n");
+        printf("  --- Camera ---\r\n");
+        printf("  cam status        -- print gain/exposure/AEC/AWB\r\n");
+        printf("  cam auto 0|1      -- 0=manual AEC+AWB off, 1=auto AEC+AWB on\r\n");
+        printf("  cam gain <0-72000>  -- set sensor gain (mdB), disables AEC\r\n");
+        printf("  cam exp <0-33266>   -- set exposure (us), disables AEC\r\n");
+        printf("  cam wb <K>         -- set WB: 0=auto, 2856=A(warm), 4000=TL84, 5000=D50, 6500=D65(cool)\r\n");
     }
     else if (strcmp(cmd, "crccc") == 0) {
         extern uint32_t fc_weight_crc32(void);
@@ -273,6 +279,26 @@ static void process_serial_commands(void)
     else if (strcmp(cmd, "dumpface off") == 0) {
         g_auto_dump = 0;
         printf("[DUMP] Auto-dump OFF\r\n");
+    }
+    /* ---- Camera manual control ---- */
+    else if (strcmp(cmd, "cam status") == 0) {
+        imx335_print_status();
+    }
+    else if (strncmp(cmd, "cam gain ", 9) == 0) {
+        uint32_t val = (uint32_t)atoi(cmd + 9);
+        imx335_set_manual_gain(val);
+    }
+    else if (strncmp(cmd, "cam exp ", 8) == 0) {
+        uint32_t val = (uint32_t)atoi(cmd + 8);
+        imx335_set_manual_exposure(val);
+    }
+    else if (strncmp(cmd, "cam wb ", 7) == 0) {
+        uint32_t ct = (uint32_t)atoi(cmd + 7);
+        imx335_set_wb_mode(ct);
+    }
+    else if (strncmp(cmd, "cam auto ", 9) == 0) {
+        uint8_t en = (uint8_t)atoi(cmd + 9);
+        imx335_set_auto_mode(en);
     }
 }
 
@@ -566,8 +592,9 @@ void AI_Task(void *argument)
         memset(&result, 0, sizeof(result));
         MX_X_CUBE_AI_Process_User(&result);
 
-        /* Face size gate: reject detections too close or too far.
+        /* Face size gate: temporarily disabled for PC comparison.
            Out-of-range → no box drawn, no ReID, no identify. */
+#if 0
         if (result.nb_detect > 0) {
             float fs = (result.detections[0].width > result.detections[0].height)
                        ? result.detections[0].width
@@ -587,6 +614,7 @@ void AI_Task(void *argument)
                 result.nb_detect = 0;
             }
         }
+#endif
 
 #if 0
         /* Print results via serial */

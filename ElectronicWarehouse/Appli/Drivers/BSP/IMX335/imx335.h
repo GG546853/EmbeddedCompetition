@@ -59,4 +59,10 @@ uint8_t imx335_isp_background_process(void);                                    
 void imx335_dcmipp_pipe_frame_cb(DCMIPP_HandleTypeDef *hdcmipp, uint32_t pipe); /* IMX335 DCMIPP pipe 帧事件回调函数 */
 void imx335_dcmipp_pipe_vsync_cb(DCMIPP_HandleTypeDef *hdcmipp, uint32_t pipe); /* IMX335 DCMIPP pipe Vsync事件回调函数 */
 
+/* 手动摄像头参数控制 */
+uint8_t imx335_set_manual_gain(uint32_t gain_mdb);        /* 手动设置传感器增益（0~72000 mdB），自动关闭AEC */
+uint8_t imx335_set_manual_exposure(uint32_t exposure_us); /* 手动设置传感器曝光（0~33266 us），自动关闭AEC */
+void    imx335_set_auto_mode(uint8_t enable);              /* 0=手动模式（停AEC+AWB）, 1=自动模式（启AEC+AWB） */
+void    imx335_print_status(void);                         /* 打印当前摄像头参数 */
+
 #endif

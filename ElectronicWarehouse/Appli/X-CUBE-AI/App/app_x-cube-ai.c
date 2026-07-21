@@ -399,8 +399,8 @@ static void ai_detection_temporal_smooth(ai_result_t *result)
              det.height     = raw[3] * inv_img * AI_FD_BOX_SCALE_H;
              det.confidence = score;
 
-             /* reject boxes smaller than 10% of image */
-             if (det.width < 0.30f || det.height < 0.40f) continue;
+             /* reject boxes smaller than 10% of image — temporarily disabled */
+             // if (det.width < 0.30f || det.height < 0.40f) continue;
 
 #if 0
              /* DEBUG: print first detection above threshold */
@@ -462,7 +462,7 @@ static void ai_detection_temporal_smooth(ai_result_t *result)
  #define CROP_DISP_W  800
  #define CROP_DISP_H  480
  #define CROP_OUT_SZ  112
- #define CROP_MARGIN  0.1f   /* 30% expansion beyond detection box */
+ #define CROP_MARGIN  0.25f   /* 25% expansion beyond detection box */
 
 #define CROP_TEMP_MAX_PX 480
 #define CROP_TEMP_SIZE  (CROP_TEMP_MAX_PX * CROP_TEMP_MAX_PX * 3)
@@ -475,8 +475,8 @@ static uint8_t crop_temp_buf[CROP_TEMP_SIZE]
      extern DMA2D_HandleTypeDef hdma2d;
 
      /* Map detection from [0,1] → display pixel coordinates */
-     float dx = det->x_center * (float)CROP_DISP_W + (float)DET_BOX_OFFSET_X;
-     float dy = det->y_center * (float)CROP_DISP_H + (float)DET_BOX_OFFSET_Y;
+     float dx = det->x_center * (float)CROP_DISP_W; // + (float)DET_BOX_OFFSET_X
+     float dy = det->y_center * (float)CROP_DISP_H; // + (float)DET_BOX_OFFSET_Y
      float dw = det->width    * (float)CROP_DISP_W;
      float dh = det->height   * (float)CROP_DISP_H;
 

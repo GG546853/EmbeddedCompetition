@@ -229,6 +229,87 @@ uint8_t imx335_set_wb_mode(uint32_t color_temp)
 }
 
 /**
+ * @brief   手动设置IMX335传感器增益，同时关闭AEC
+ * @param   gain_mdb: 增益值（毫dB），范围 0~72000
+ * @retval  0=成功, 1=失败
+ */
+uint8_t imx335_set_manual_gain(uint32_t gain_mdb)
+{
+    ISP_SetAECState(&imx335_hisp, 0);
+
+    ISP_SensorGainTypeDef cfg;
+    cfg.gain = gain_mdb;
+    if (ISP_SVC_Sensor_SetGain(&imx335_hisp, &cfg) != ISP_OK)
+    {
+        printf("[IMX335] Set Gain=%lu mdB FAILED\r\n", (unsigned long)gain_mdb);
+        return 1;
+    }
+
+    printf("[IMX335] Gain=%lu mdB\r\n", (unsigned long)gain_mdb);
+    return 0;
+}
+
+/**
+ * @brief   手动设置IMX335传感器曝光，同时关闭AEC
+ * @param   exposure_us: 曝光时间（微秒），范围 0~33266
+ * @retval  0=成功, 1=失败
+ */
+uint8_t imx335_set_manual_exposure(uint32_t exposure_us)
+{
+    ISP_SetAECState(&imx335_hisp, 0);
+
+    ISP_SensorExposureTypeDef cfg;
+    cfg.exposure = exposure_us;
+    if (ISP_SVC_Sensor_SetExposure(&imx335_hisp, &cfg) != ISP_OK)
+    {
+        printf("[IMX335] Set Exposure=%lu us FAILED\r\n", (unsigned long)exposure_us);
+        return 1;
+    }
+
+    printf("[IMX335] Exposure=%lu us\r\n", (unsigned long)exposure_us);
+    return 0;
+}
+
+/**
+ * @brief   切换自动/手动模式
+ * @param   enable: 0=手动（关闭AEC+AWB），1=自动（开启AEC+AWB）
+ */
+void imx335_set_auto_mode(uint8_t enable)
+{
+    ISP_SetAECState(&imx335_hisp, enable);
+    if (enable)
+    {
+        imx335_set_wb_mode(0);
+    }
+    printf("[IMX335] Auto mode %s\r\n", enable ? "ON" : "OFF");
+}
+
+/**
+ * @brief   打印当前摄像头参数（增益、曝光、AEC/AWB状态）
+ */
+void imx335_print_status(void)
+{
+    ISP_SensorGainTypeDef gainCfg;
+    ISP_SensorExposureTypeDef expCfg;
+    uint8_t aec_on, awb_on;
+    uint32_t awb_ct = 0;
+
+    ISP_SVC_Sensor_GetGain(&imx335_hisp, &gainCfg);
+    ISP_SVC_Sensor_GetExposure(&imx335_hisp, &expCfg);
+    ISP_GetAECState(&imx335_hisp, &aec_on);
+    ISP_GetWBRefMode(&imx335_hisp, &awb_on, &awb_ct);
+
+    printf("[CAM] AEC=%d AWB=%d Gain=%lu mdB Exposure=%lu us",
+           aec_on, awb_on,
+           (unsigned long)gainCfg.gain, (unsigned long)expCfg.exposure);
+    if (!awb_on)
+    {
+        printf(" WB=%lu K", (unsigned long)awb_ct);
+    }
+    printf("\r\n");
+}
+
+/**
  * @brief   IMX335 ISP后台处理函数
  * @param   无
  * @retval  处理结果

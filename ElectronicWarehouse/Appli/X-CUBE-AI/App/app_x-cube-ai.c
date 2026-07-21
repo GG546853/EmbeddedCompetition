@@ -883,6 +883,16 @@ uint32_t ai_face_gallery_get_count(void)
     return face_gallery_count;
 }
 
+int ai_face_gallery_find_index(const char *name)
+{
+    for (uint32_t i = 0; i < face_gallery_count; i++) {
+        if (strncmp(face_gallery[i].name, name, FACE_NAME_MAX) == 0) {
+            return (int)i;
+        }
+    }
+    return -1;
+}
+
  /* -------------------------------------------------------------------------- */
  /*                    network_fc Inference Wrapper                             */
  /* -------------------------------------------------------------------------- */

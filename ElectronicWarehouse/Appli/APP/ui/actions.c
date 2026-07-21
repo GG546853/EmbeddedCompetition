@@ -97,6 +97,14 @@ void action_action_recognize(lv_event_t * e) {
         strncpy(Cabinet.User, g_identify_name, sizeof(Cabinet.User) - 1);
         Cabinet.User[sizeof(Cabinet.User) - 1] = '\0';
 
+        /* Notify ESP32: face unlock event */
+        {
+            char evt[32];
+            snprintf(evt, sizeof(evt), "%s:Unlock", g_identify_name);
+            uart4_send_face_event(evt);
+            printf("[FACE] Unlock event sent: %s\r\n", evt);
+        }
+
         Barcode_TaskHandle = osThreadNew(Barcode_Task, NULL, &BarcodeTask_attributes);
 
         eez_flow_push_screen(SCREEN_ID_PAGE_MAIN, LV_SCR_LOAD_ANIM_NONE, 0, 0);

@@ -1,10 +1,10 @@
-../APP/ui/ui_bridge.cpp:40:13:void copy_cab_to_item(InventoryItem*, CabinetValue)	16	static
+../APP/ui/ui_bridge.cpp:41:13:void copy_cab_to_item(InventoryItem*, CabinetValue)	16	static
 ../APP/ui/eez-flow.h:1097:10:bool eez::Value::isArray() const	0	static
 ../APP/ui/eez-flow.h:1014:10:void eez::Value::freeRef()	8	static
 ../APP/ui/eez-flow.h:1021:12:eez::Value& eez::Value::operator=(const eez::Value&)	16	static
 ../APP/ui/eez-flow.h:1006:2:eez::Value::Value(const eez::Value&)	8	static
 ../APP/ui/eez-flow.h:1353:14:eez::Value eez::StringValue(const char*)	8	static
-../APP/ui/ui_bridge.cpp:32:13:void copy_item_to_cab(CabinetValue&, const InventoryItem*)	32	static
+../APP/ui/ui_bridge.cpp:33:13:void copy_item_to_cab(CabinetValue&, const InventoryItem*)	32	static
 ../APP/ui/eez-flow.h:3030:14:utf8_int8_t* utf8cat(utf8_int8_t*, const utf8_int8_t*)	8	static
 ../APP/ui/eez-flow.h:3110:14:utf8_int8_t* utf8cpy(utf8_int8_t*, const utf8_int8_t*)	0	static
 ../APP/ui/eez-flow.h:3181:14:utf8_int8_t* utf8dup_ex(const utf8_int8_t*, utf8_int8_t* (*)(utf8_int8_t*, size_t), utf8_int8_t*)	16	static
@@ -21,19 +21,19 @@
 ../APP/ui/eez-flow.h:4182:36:constexpr utf8_int32_t utf8uprcodepoint(utf8_int32_t)	0	static
 ../APP/ui/eez-flow.h:3999:6:void utf8upr(utf8_int8_t*)	24	static
 ../APP/ui/structs.h:54:5:CabinetValue::CabinetValue()	24	static
-../APP/ui/ui_bridge.cpp:16:6:void ui_set_integer(int, int)	24	static
-../APP/ui/ui_bridge.cpp:20:5:int ui_get_integer(int)	24	static
-../APP/ui/ui_bridge.cpp:24:6:void ui_set_string(int, const char*)	24	static
-../APP/ui/ui_bridge.cpp:164:13:void cam_text_clear_cb(lv_timer_t*)	8	static
-../APP/ui/ui_bridge.cpp:28:13:const char* ui_get_string(int)	24	static
-../APP/ui/ui_bridge.cpp:48:6:void ui_push_inventory(const InventoryItem*, int, const InventoryItem*, int)	64	static
-../APP/ui/ui_bridge.cpp:66:6:void ui_pull_inventory(InventoryItem*, int, InventoryItem*, int)	96	static
-../APP/ui/ui_bridge.cpp:82:6:void ui_push_history(const HistoryRecord*, int)	88	static
-../APP/ui/ui_bridge.cpp:97:5:int ui_pull_history(HistoryRecord*, int)	80	static
-../APP/ui/ui_bridge.cpp:117:5:int ui_get_log_count()	24	static
-../APP/ui/ui_bridge.cpp:124:6:void ui_get_log_entry(int, char*, char*, char*, int*, char*, int*)	88	static
-../APP/ui/ui_bridge.cpp:143:6:void ui_push_alarm(const AlarmRecord*, int)	96	static
-../APP/ui/ui_bridge.cpp:157:17:void action_givetime(lv_event_t*)	0	static
-../APP/ui/ui_bridge.cpp:170:17:void ui_set_cam_text(const char*)	16	static
-../APP/ui/ui_bridge.cpp:179:17:void ui_set_flag(int, int)	0	static
-../APP/ui/ui_bridge.cpp:183:17:void ui_poll_enroll_status()	16	static
+../APP/ui/ui_bridge.cpp:17:6:void ui_set_integer(int, int)	24	static
+../APP/ui/ui_bridge.cpp:21:5:int ui_get_integer(int)	24	static
+../APP/ui/ui_bridge.cpp:25:6:void ui_set_string(int, const char*)	24	static
+../APP/ui/ui_bridge.cpp:165:13:void cam_text_clear_cb(lv_timer_t*)	8	static
+../APP/ui/ui_bridge.cpp:29:13:const char* ui_get_string(int)	24	static
+../APP/ui/ui_bridge.cpp:49:6:void ui_push_inventory(const InventoryItem*, int, const InventoryItem*, int)	64	static
+../APP/ui/ui_bridge.cpp:67:6:void ui_pull_inventory(InventoryItem*, int, InventoryItem*, int)	96	static
+../APP/ui/ui_bridge.cpp:83:6:void ui_push_history(const HistoryRecord*, int)	88	static
+../APP/ui/ui_bridge.cpp:98:5:int ui_pull_history(HistoryRecord*, int)	80	static
+../APP/ui/ui_bridge.cpp:118:5:int ui_get_log_count()	24	static
+../APP/ui/ui_bridge.cpp:125:6:void ui_get_log_entry(int, char*, char*, char*, int*, char*, int*)	88	static
+../APP/ui/ui_bridge.cpp:144:6:void ui_push_alarm(const AlarmRecord*, int)	96	static
+../APP/ui/ui_bridge.cpp:158:17:void action_givetime(lv_event_t*)	0	static
+../APP/ui/ui_bridge.cpp:171:17:void ui_set_cam_text(const char*)	16	static
+../APP/ui/ui_bridge.cpp:180:17:void ui_set_flag(int, int)	0	static
+../APP/ui/ui_bridge.cpp:184:17:void ui_poll_enroll_status()	16	static

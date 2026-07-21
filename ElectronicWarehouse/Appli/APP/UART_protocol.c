@@ -92,6 +92,7 @@ static const FrameDispatchEntry dispatch_table[] = {
 
 void uart4_dispatch_frame(uint8_t type, const uint8_t *payload, uint8_t len)
 {
+    printf("[UART4] RX frame type=0x%02X len=%u\r\n", type, len);
     uint8_t n = sizeof(dispatch_table) / sizeof(dispatch_table[0]);
     for (uint8_t i = 0; i < n; i++) {
         if (dispatch_table[i].type == type) {
@@ -99,6 +100,7 @@ void uart4_dispatch_frame(uint8_t type, const uint8_t *payload, uint8_t len)
             return;
         }
     }
+    printf("[UART4] WARNING: no handler for type=0x%02X\r\n", type);
 }
 
 /* ---- UART4 send helpers ---- */

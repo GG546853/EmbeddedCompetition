@@ -1,6 +1,8 @@
-../APP/AI_task.c:309:13:send_face_dump	4
-../APP/AI_task.c:180:13:process_serial_commands	25
-../APP/AI_task.c:331:13:run_reid_pipeline	35
-../APP/AI_task.c:54:13:fill_rect.constprop	7
-../APP/AI_task.c:159:6:ai_start_enroll	1
-../APP/AI_task.c:564:6:AI_Task	9
+../APP/AI_task.c:312:13:send_face_dump	4
+../APP/AI_task.c:183:13:process_serial_commands	25
+../APP/AI_task.c:334:13:run_reid_pipeline	35
+../APP/AI_task.c:57:13:fill_rect.constprop	7
+../APP/AI_task.c:162:6:ai_start_enroll	1
+../APP/AI_task.c:569:6:AI_Task	9
+../APP/AI_task.c:662:6:ai_select_face_by_index	4
+../APP/AI_task.c:674:6:ai_refresh_dropdown_users	2

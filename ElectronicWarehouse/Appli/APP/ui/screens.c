@@ -4,6 +4,7 @@
 #include "images.h"
 #include "fonts.h"
 #include "actions.h"
+#include "AI_task.h"
 #include "vars.h"
 #include "styles.h"
 #include "ui.h"
@@ -38,6 +39,10 @@ static void event_handler_cb_page_lock_dropdown_users(lv_event_t *e) {
     (void)flowState;
     
     if (event == LV_EVENT_VALUE_CHANGED) {
+        uint16_t idx = lv_dropdown_get_selected(lv_event_get_target(e));
+        if (idx > 0) {
+            ai_select_face_by_index(idx - 1);
+        }
         e->user_data = (void *)0;
         flowPropagateValueLVGLEvent(flowState, -1, 9, e);
     }

@@ -70,6 +70,8 @@ void LVGL_Task(void *argument) {
     ui_init();  // EEZ Flow UI 初始化
     printf("[LV] ui_init done\r\n");
 
+    ai_refresh_dropdown_users();
+
     g_lv_stack_high_water = uxTaskGetStackHighWaterMark(NULL);  // 记录剩余栈
     printf("[LV] stack water: %u words\r\n", (unsigned)g_lv_stack_high_water);
 

@@ -4,6 +4,7 @@
 #include "structs.h"
 #include "ui_bridge.h"
 #include "screens.h"
+#include "AI_task.h"
 extern int history_count;
 extern HistoryRecord history_list[32];
 
@@ -201,6 +202,7 @@ extern "C" void ui_poll_enroll_status(void) {
             AITaskHandle = NULL;
         }
         eez_flow_push_screen(SCREEN_ID_PAGE_LOCK, LV_SCR_LOAD_ANIM_NONE, 0, 0);
+        ai_refresh_dropdown_users();
         ui_set_flag(FLOW_GLOBAL_VARIABLE_FLAG_SAVE, 0);
         ui_set_flag(FLOW_GLOBAL_VARIABLE_FLAG_START, 1);
     }

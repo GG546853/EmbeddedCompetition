@@ -19,6 +19,8 @@
 #include "UART4_RxTask.h"
 #include "usart.h"
 #include "sys.h"
+#include "screens.h"
+#include "lvgl.h"
 #define DISP_W 800
 #define DISP_H 480
 #define BOX_THICKNESS 3
@@ -42,6 +44,7 @@ extern uint8_t g_ltdc_framebuf[480 * 800 * 3];
 volatile int g_trigger_identify = 0;
 volatile int g_identify_done  = 0;
 volatile int g_identify_match = 0;
+volatile int g_identify_index = -1;
 char         g_identify_name[FACE_NAME_MAX];
 float        g_identify_dist;
 static uint16_t g_pending_face_code;
@@ -527,6 +530,7 @@ static void run_reid_pipeline(ai_result_t *result)
                 int ok = ai_face_verify(avg, &g_selected_entry, &g_identify_dist);
                 if (ok) {
                     g_identify_match = 1;
+                    g_identify_index = ai_face_gallery_find_index(g_selected_entry.name);
                     strncpy(g_identify_name, g_selected_entry.name, FACE_NAME_MAX);
                     printf("[VERIFY] Match: '%s' (avg-dist=%.3f, single-dist=%.3f)\r\n",
                            g_identify_name, g_identify_dist, ident_first_dist);
@@ -540,6 +544,7 @@ static void run_reid_pipeline(ai_result_t *result)
                 int idx = ai_face_identify(avg, g_identify_name, &g_identify_dist);
                 if (idx >= 0) {
                     g_identify_match = 1;
+                    g_identify_index = idx;
                     printf("[REID] Matched: '%s' (avg-dist=%.3f, single-dist=%.3f)\r\n",
                            g_identify_name, g_identify_dist, ident_first_dist);
                 } else {
@@ -652,4 +657,31 @@ void AI_Task(void *argument)
         HAL_GPIO_WritePin(GPIOG,GPIO_PIN_10,0);
         vTaskDelay(pdMS_TO_TICKS(1));
     }
+}
+
+void ai_select_face_by_index(int idx) {
+    face_entry_t entries[FACE_GALLERY_MAX];
+    uint32_t count = FACE_GALLERY_MAX;
+    ai_face_gallery_export(entries, &count);
+    if (idx >= 0 && idx < (int)count) {
+        if (ai_face_select(entries[idx].name, &g_selected_entry) == 0) {
+            g_has_selection = 1;
+            printf("[REID] Dropdown selected '%s' for 1:1 verify\r\n", entries[idx].name);
+        }
+    }
+}
+
+void ai_refresh_dropdown_users(void) {
+    face_entry_t entries[FACE_GALLERY_MAX];
+    uint32_t count = FACE_GALLERY_MAX;
+    ai_face_gallery_export(entries, &count);
+
+    static char options[2048];
+    strcpy(options, "   Choose ID");
+    for (uint32_t i = 0; i < count; i++) {
+        strcat(options, "\n");
+        strcat(options, entries[i].name);
+    }
+    lv_dropdown_set_options(objects.dropdown_users, options);
+    lv_dropdown_set_selected(objects.dropdown_users, 0);
 }

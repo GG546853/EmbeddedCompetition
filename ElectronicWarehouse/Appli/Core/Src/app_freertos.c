@@ -35,6 +35,7 @@
 #include "tim.h"
 #include "UART4_RxTask.h"
 #include "Outbound_task.h"
+#include "Encoder_task.h"
 
 #include <stdio.h>
 #include "imx335.h"
@@ -65,7 +66,12 @@ SystemState Cabinet;
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
-
+osThreadId_t StorageFlushHandle;
+const osThreadAttr_t StorageFlushTask_attributes = {
+  .name = "StorageFlush",
+  .priority = (osPriority_t) osPriorityLow,
+  .stack_size = 512 * 4
+};
 /* USER CODE END Variables */
 /* Definitions for defaultTask */
 osThreadId_t defaultTaskHandle;
@@ -74,20 +80,17 @@ const osThreadAttr_t defaultTask_attributes = {
   .priority = (osPriority_t) osPriorityNormal,
   .stack_size = 128 * 4
 };
-/* Definitions for StorageFlush */
-osThreadId_t StorageFlushHandle;
-const osThreadAttr_t StorageFlushTask_attributes = {
-  .name = "StorageFlush",
-  .priority = (osPriority_t) osPriorityLow,
-  .stack_size = 512 * 4
-};
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
 osSemaphoreId_t cam_frame_sem;
 osSemaphoreId_t inventory_sem;//用于协调 Barcode_Task 和 UART4_RxTask 之间的通信
+osSemaphoreId_t face_name_sem;
 const osSemaphoreAttr_t inventory_sem_attributes = {
   .name = "inventory_sem"
+};
+const osSemaphoreAttr_t face_name_sem_attributes = {
+  .name = "face_name_sem"
 };
 const osSemaphoreAttr_t cam_frame_sem_attributes = {
   .name = "cam_frame_sem"
@@ -161,6 +164,7 @@ void MX_FREERTOS_Init(void) {
   /* add semaphores, ... */
 	cam_frame_sem = osSemaphoreNew(1, 0, &cam_frame_sem_attributes);
 	inventory_sem = osSemaphoreNew(1, 0, &inventory_sem_attributes);
+		face_name_sem = osSemaphoreNew(1, 0, &face_name_sem_attributes);
   /* USER CODE END RTOS_SEMAPHORES */
 
   /* USER CODE BEGIN RTOS_TIMERS */
@@ -188,6 +192,7 @@ void MX_FREERTOS_Init(void) {
 
   //Aht10_TaskHandle = osThreadNew(Aht10_Task, NULL, &Aht10Task_attributes);
   UART4_RxTaskHandle = osThreadNew(UART4_RxTask, NULL, &UART4_RxTask_attributes);
+  Encoder_TaskHandle = osThreadNew(Encoder_Task, NULL, &EncoderTask_attributes);
   //VL53L1X_TaskHandle = osThreadNew(VL53L1X_Task, NULL, &VL53L1XTask_attributes);
   StorageFlushHandle = osThreadNew(StorageFlush_Task, NULL, &StorageFlushTask_attributes);
   /* USER CODE END RTOS_THREADS */

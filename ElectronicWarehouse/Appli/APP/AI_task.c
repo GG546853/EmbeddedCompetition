@@ -444,14 +444,8 @@ static void run_reid_pipeline(ai_result_t *result)
                     uart4_send_face_enroll(user_id);
                     printf("[FACE] Sent enroll: %s, waiting for name...\r\n", user_id);
 
-                    g_face_name_ready = 0;
-                    int timeout = 9000;  /* 9000 * 10ms = 90s */
-                    while (!g_face_name_ready && timeout > 0) {
-                        osDelay(10);
-                        timeout--;
-                    }
-
-                    if (g_face_name_ready) {
+                    osStatus_t st = osSemaphoreAcquire(face_name_sem, 90000);
+                    if (st == osOK) {
                         printf("[FACE] Name saved by handler: '%s'\r\n",
                                g_face_name_result);
                         snprintf(g_enroll_msg, sizeof(g_enroll_msg), "%s",

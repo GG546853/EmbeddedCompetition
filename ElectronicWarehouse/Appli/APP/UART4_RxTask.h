@@ -19,7 +19,7 @@ extern char           uart4_resp_str[512];
 extern volatile uint32_t last_heartbeat_tick;
 extern volatile uint8_t  esp32_online;
 extern osSemaphoreId_t inventory_sem;
-extern volatile uint8_t g_face_name_ready;
+extern osSemaphoreId_t face_name_sem;
 extern char g_face_name_result[16];
 
 /* ---- Handler declarations (implementation up to user) ---- */

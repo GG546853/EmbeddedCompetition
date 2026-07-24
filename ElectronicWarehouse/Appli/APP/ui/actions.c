@@ -235,5 +235,5 @@ void action_printer(lv_event_t * e) {
 }
 void action_close_down(lv_event_t * e)
 {
-	HAL_GPIO_WritePin(GPIOG, GPIO_PIN_5, 1);//Power up and raise voltage
+	HAL_GPIO_WritePin(GPIOG, GPIO_PIN_5, 0);//Power up and raise voltage
 }

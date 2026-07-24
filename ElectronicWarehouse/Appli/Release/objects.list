@@ -24,7 +24,6 @@
 "./APP/ui/ui_font_chinese.o"
 "./APP/ui/ui_font_chinese10.o"
 "./APP/ui/ui_font_chinese18.o"
-"./APP/ui/ui_font_chinese24.o"
 "./APP/ui/ui_font_chinese8.o"
 "./APP/ui/ui_font_dk_chinese.o"
 "./APP/ui/ui_font_dk_chinese16.o"

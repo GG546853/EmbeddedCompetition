@@ -43,3 +43,4 @@
 ../APP/ui/actions.c:189:6:action_new_user	1
 ../APP/ui/actions.c:205:6:action_save_user	3
 ../APP/ui/actions.c:233:6:action_printer	1
+../APP/ui/actions.c:236:6:action_close_down	1

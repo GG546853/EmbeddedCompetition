@@ -30,6 +30,7 @@ char           uart4_resp_str[512];
 volatile uint32_t last_heartbeat_tick;
 volatile uint8_t  esp32_online;
 char             g_face_name_result[16];
+volatile int     g_face_name_ready;
 
 static InventoryItem       pending_item;
 static volatile uint8_t    pending_store;
@@ -95,6 +96,7 @@ void handle_face_name(const uint8_t *payload, uint8_t len)
 
     strncpy(g_face_name_result, name, sizeof(g_face_name_result) - 1);
     g_face_name_result[sizeof(g_face_name_result) - 1] = '\0';
+    g_face_name_ready = 1;
     osSemaphoreRelease(face_name_sem);
 
     printf("[FACE] Name received: user_%s -> %s (saved to SD NAND)\r\n", user_id, name);

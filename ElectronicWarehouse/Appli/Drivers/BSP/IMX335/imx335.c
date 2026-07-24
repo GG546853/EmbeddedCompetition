@@ -476,17 +476,32 @@ static uint8_t imx335_dcmipp_init(void)
         return 1;
     }
 
+    /* Center-crop sensor 2592×1944 → 1944×1944 square before downsize.
+       After 1/4 decimation this becomes 486×486, uniform downsize to 128×128. */
+    DCMIPP_CropConfTypeDef pipe2_crop = {0};
+    pipe2_crop.VStart = 0;
+    pipe2_crop.HStart = 324;   /* (2592 - 1944) / 2 */
+    pipe2_crop.VSize  = 1944;
+    pipe2_crop.HSize  = 1944;
+    pipe2_crop.PipeArea = DCMIPP_POSITIVE_AREA;
+    if (HAL_DCMIPP_PIPE_SetCropConfig(&hdcmipp, DCMIPP_PIPE2, &pipe2_crop) != HAL_OK)
+    {
+        return 1;
+    }
+    if (HAL_DCMIPP_PIPE_EnableCrop(&hdcmipp, DCMIPP_PIPE2) != HAL_OK)
+    {
+        return 1;
+    }
+
     DCMIPP_DownsizeTypeDef pipe2_down_size = {0};
     pipe2_down_size.HSize = 128;
     pipe2_down_size.VSize = 128;
 
-    pipe2_down_size.HDivFactor = 202;
-
+    /* Uniform downsize 486×486 → 128×128 (H and V use same factors) */
+    pipe2_down_size.HDivFactor = 269;
     pipe2_down_size.VDivFactor = 269;
-
     pipe2_down_size.VRatio = 31284;
-
-    pipe2_down_size.HRatio = 41734;
+    pipe2_down_size.HRatio = 31284;
 
     if (HAL_DCMIPP_PIPE_SetDownsizeConfig(&hdcmipp, DCMIPP_PIPE2, &pipe2_down_size) != HAL_OK)
     {

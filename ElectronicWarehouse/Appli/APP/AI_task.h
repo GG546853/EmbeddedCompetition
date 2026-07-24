@@ -15,11 +15,14 @@ extern volatile int g_identify_done;
 extern volatile int g_identify_match;
 extern char         g_identify_name[16];
 extern volatile int g_identify_index;
+extern volatile int g_auto_unlock;
 
 extern volatile int g_enroll_progress;
 extern volatile int g_enroll_total;
 extern volatile int g_enroll_state;
 extern char         g_enroll_msg[64];
+extern int          g_capture_pending;
+extern int          g_model2_enabled;
 void ai_start_enroll(const char *name);
 
 void ai_select_face_by_index(int idx);

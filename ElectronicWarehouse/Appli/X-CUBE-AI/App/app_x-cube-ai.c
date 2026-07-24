@@ -475,9 +475,9 @@ static uint8_t crop_temp_buf[CROP_TEMP_SIZE]
      extern DMA2D_HandleTypeDef hdma2d;
 
      /* Map detection from [0,1] → display pixel coordinates */
-     float dx = det->x_center * (float)CROP_DISP_W; // + (float)DET_BOX_OFFSET_X
-     float dy = det->y_center * (float)CROP_DISP_H; // + (float)DET_BOX_OFFSET_Y
-     float dw = det->width    * (float)CROP_DISP_W;
+     float dx = det->x_center * 600.0f + 100.0f; /* PIPE2 crop: NN cols [324,2268] → disp [100,700] */
+     float dy = det->y_center * (float)CROP_DISP_H;
+     float dw = det->width    * 600.0f;
      float dh = det->height   * (float)CROP_DISP_H;
 
      /* Square crop with margin, integer-clamped to image bounds */
@@ -519,8 +519,6 @@ static uint8_t crop_temp_buf[CROP_TEMP_SIZE]
      /* CPU wrote crop_temp_buf — flush DCache so bilinear resize (CPU) sees it.
         No-op if DCache is disabled. */
      SCB_CleanDCache_by_Addr((uint32_t *)crop_temp_buf, temp_bytes);
-
-     printf("[CROP] DMA2D copy done, resizing %dx%d → 112×112\r\n", crop_w, crop_h);
 
      /* Step 2: Software bilinear resize crop_temp_buf (RGB888) → 112×112 RGB888 */
      float inv_step = (float)(CROP_OUT_SZ - 1);
@@ -798,8 +796,8 @@ static uint8_t crop_temp_buf[CROP_TEMP_SIZE]
          float ratio = best_dist / second_dist;
          if (ratio > FACE_RATIO_THRESHOLD) {
              if (dist_out) *dist_out = best_dist;
-             printf("[REID] Rejected: ratio=%.3f (best=%.3f second=%.3f threshold=%.2f)\r\n",
-                    ratio, best_dist, second_dist, (double)FACE_RATIO_THRESHOLD);
+             printf("[REID] Rejected: ratio=%.3f dist=%.3f (threshold=%.2f)\r\n",
+                    ratio, best_dist, (double)FACE_MATCH_THRESHOLD);
              return -1;
          }
      }
@@ -883,16 +881,6 @@ uint32_t ai_face_gallery_get_count(void)
     return face_gallery_count;
 }
 
-int ai_face_gallery_find_index(const char *name)
-{
-    for (uint32_t i = 0; i < face_gallery_count; i++) {
-        if (strncmp(face_gallery[i].name, name, FACE_NAME_MAX) == 0) {
-            return (int)i;
-        }
-    }
-    return -1;
-}
-
  /* -------------------------------------------------------------------------- */
  /*                    network_fc Inference Wrapper                             */
  /* -------------------------------------------------------------------------- */
@@ -901,52 +889,20 @@ int ai_face_gallery_find_index(const char *name)
  {
      LL_ATON_RT_RetValues_t ret;
 
-     printf("[FC] Init start...\r\n");
      LL_ATON_RT_Init_Network(&NN_Instance_network_fc);
 
-     /* DEBUG: print buffer info */
-     {
-         const LL_Buffer_InfoTypeDef *ib_fc_dbg = NN_Interface_network_fc.input_buffers_info();
-         const LL_Buffer_InfoTypeDef *ob_fc_dbg = NN_Interface_network_fc.output_buffers_info();
-         printf("[FC-DBG] IN: addr=0x%08lX size=%lu type=%d\r\n",
-                (unsigned long)LL_Buffer_addr_start(&ib_fc_dbg[0]),
-                (unsigned long)LL_Buffer_len(&ib_fc_dbg[0]),
-                ib_fc_dbg[0].type);
-         printf("[FC-DBG] OUT: addr=0x%08lX size=%lu type=%d\r\n",
-                (unsigned long)LL_Buffer_addr_start(&ob_fc_dbg[0]),
-                (unsigned long)LL_Buffer_len(&ob_fc_dbg[0]),
-                ob_fc_dbg[0].type);
-         if (ob_fc_dbg[0].scale) printf("[FC-DBG] OUT scale=%.10f\r\n", *ob_fc_dbg[0].scale);
-         if (ob_fc_dbg[0].offset) printf("[FC-DBG] OUT zp=%d\r\n", *ob_fc_dbg[0].offset);
-     }
-
-     printf("[FC] Init done, running epochs...\r\n");
-
-     int epoch_cnt = 0;
      do {
          ret = LL_ATON_RT_RunEpochBlock(&NN_Instance_network_fc);
          if (ret == LL_ATON_RT_WFE) {
              LL_ATON_OSAL_WFE();
          }
-         epoch_cnt++;
      } while (ret != LL_ATON_RT_DONE);
-     printf("[FC] Epochs done (%d), decoding output...\r\n", epoch_cnt);
 
      /* Invalidate output cache */
      const LL_Buffer_InfoTypeDef *ob_fc = NN_Interface_network_fc.output_buffers_info();
      SCB_InvalidateDCache_by_Addr(
          (uint32_t *)LL_Buffer_addr_start(&ob_fc[0]),
          LL_Buffer_len(&ob_fc[0]));
-
-     /* DEBUG: raw output hex dump (first 8 float32) */
-     {
-         uint32_t *raw_out = (uint32_t *)LL_Buffer_addr_start(&ob_fc[0]);
-         printf("[FC-RAW] first 8 f32 hex: %08lX %08lX %08lX %08lX %08lX %08lX %08lX %08lX\r\n",
-                (unsigned long)raw_out[0], (unsigned long)raw_out[1],
-                (unsigned long)raw_out[2], (unsigned long)raw_out[3],
-                (unsigned long)raw_out[4], (unsigned long)raw_out[5],
-                (unsigned long)raw_out[6], (unsigned long)raw_out[7]);
-     }
 
      /* Decode output: handle both float32 and int8 */
      if (ob_fc[0].type == DataType_FLOAT) {
@@ -965,7 +921,6 @@ int ai_face_gallery_find_index(const char *name)
      }
 
      LL_ATON_RT_DeInit_Network(&NN_Instance_network_fc);
-     printf("[FC] DeInit done\r\n");
  }
 
  void MX_X_CUBE_AI_Process_User(ai_result_t *result)
@@ -993,7 +948,6 @@ int ai_face_gallery_find_index(const char *name)
 /* USER CODE END includes */
 
 /* Entry points --------------------------------------------------------------*/
-
 
 
 void set_clk_sleep_mode(void)

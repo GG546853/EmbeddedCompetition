@@ -15,3 +15,4 @@
 ../Drivers/BSP/RGBLCD/rgblcd.c:653:6:rgblcd_show_num	56	static
 ../Drivers/BSP/RGBLCD/rgblcd.c:696:6:rgblcd_show_xnum	64	static
 ../Drivers/BSP/RGBLCD/rgblcd.c:744:6:rgblcd_show_string	56	static
+../Drivers/BSP/RGBLCD/rgblcd.c:873:6:rgblcd_color_bar_test	48	static

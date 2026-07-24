@@ -1,0 +1,9 @@
+❯ zs0本人识别：
+  [VERIFY] Match: 'zs0' (dist=0.239)
+  [VERIFY] Match: 'zs0' (dist=0.181)
+  [VERIFY] Match: 'zs0' (dist=0.211)
+  [VERIFY] Match: 'zs0' (dist=0.192)
+  [VERIFY] Match: 'zs0' (dist=0.186)
+  [VERIFY] Match: 'zs0' (dist=0.193)
+  非zs0识别：
+  [VERIFY] Match: 'zs0' (dist=0.185)

@@ -80,6 +80,7 @@ void LVGL_Task(void *argument) {
         lv_timer_handler();
         ui_tick();
         ui_poll_enroll_status();
+        ui_poll_auto_unlock();
         vTaskDelay(pdMS_TO_TICKS(5));
 
     }

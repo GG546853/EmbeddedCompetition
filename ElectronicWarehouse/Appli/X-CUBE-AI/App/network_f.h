@@ -2,7 +2,7 @@
   ******************************************************************************
   * @file    network_f.h
   * @author  STEdgeAI
-  * @date    2026-07-21 21:51:40
+  * @date    2026-07-24 12:58:14
   * @brief   Minimal description of the generated c-implemention of the network
   ******************************************************************************
   * @attention

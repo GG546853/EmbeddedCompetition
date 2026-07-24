@@ -1,6 +1,9 @@
 #include "Sensor_task.h"
 #include "imx335.h"
 #include "rgblcd.h"
+
+/* 彩条测试模式：1=显示彩条（不启动摄像头）, 0=正常摄像头模式 */
+#define COLOR_BAR_TEST_MODE 0
 osThreadId_t Sensor_TaskHandle;
 const osThreadAttr_t SensorTask_attributes = {
   .name = "SensorTask",
@@ -27,6 +30,12 @@ void Sensor_Task(void *argument)
 
 	  printf("[Sensor] Camera init OK, I2C mutex active\r\n");
 
+#if COLOR_BAR_TEST_MODE
+	  printf("[Sensor] COLOR BAR TEST MODE\r\n");
+	  rgblcd_color_bar_test();
+	  /* 彩条测试模式下不启动摄像头，挂起当前任务 */
+	  vTaskSuspend(NULL);
+#else
 	  if (imx335_start_capture((uint32_t)g_ltdc_framebuf) != 0) {
 	      printf("[Sensor] start_capture FAILED\r\n");
 	  }
@@ -36,4 +45,5 @@ void Sensor_Task(void *argument)
 		  imx335_isp_background_process();
 		  vTaskDelay(pdMS_TO_TICKS(10));
 	  }
+#endif
 }

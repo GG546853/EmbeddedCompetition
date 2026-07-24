@@ -19,8 +19,9 @@
 #include "UART4_RxTask.h"
 #include "usart.h"
 #include "sys.h"
-#include "screens.h"
 #include "lvgl.h"
+#include "ui/screens.h"
+#include "ui/ui_bridge.h"
 #define DISP_W 800
 #define DISP_H 480
 #define BOX_THICKNESS 3
@@ -33,9 +34,7 @@
 #define FACE_SIZE_MIN  0.25f
 #define FACE_SIZE_MAX  0.75f
 
-/* Multi-frame identify: average N embeddings before comparing to gallery.
-   Reduces single-frame noise from int8 quantization. ~30fps → 5 frames ≈ 167ms. */
-#define IDENTIFY_FRAMES  10
+/* Model 2 (face recognition) only runs during enrollment, not during idle. */
 
 extern uint8_t g_ltdc_framebuf[480 * 800 * 3];
 
@@ -44,7 +43,8 @@ extern uint8_t g_ltdc_framebuf[480 * 800 * 3];
 volatile int g_trigger_identify = 0;
 volatile int g_identify_done  = 0;
 volatile int g_identify_match = 0;
-volatile int g_identify_index = -1;
+volatile int g_identify_index = 0;
+volatile int g_auto_unlock    = 0;  /* 1 = auto-execute unlock on next poll */
 char         g_identify_name[FACE_NAME_MAX];
 float        g_identify_dist;
 static uint16_t g_pending_face_code;
@@ -92,17 +92,24 @@ static void draw_kp(int x, int y, uint8_t r, uint8_t g, uint8_t b)
 }
 
 /* DCMIPP 每帧覆盖整个缓冲区，旧检测框自然被擦除 */
+/* PIPE2 center-crop compensation: NN sees sensor columns [324,2268] of full [0,2592].
+   On the 800-wide display this region maps to x ∈ [100, 700].
+   x_display = x_nn * (1944/2592 * 800) + (324/2592 * 800) = x_nn * 600 + 100 */
+#define NN2DISP_SCALE_X  600.0f
+#define NN2DISP_OFFSET_X 100.0f
+
 static void draw_one_detection(ai_detection_t *d, uint8_t r, uint8_t g, uint8_t b)
 {
-    int bx = (int)(d->x_center * DISP_W - d->width  * DISP_W * 0.5f); // + DET_BOX_OFFSET_X
-    int by = (int)(d->y_center * DISP_H - d->height * DISP_H * 0.5f); // + DET_BOX_OFFSET_Y
-    int bw = (int)(d->width  * DISP_W);
+    int bx = (int)(d->x_center * NN2DISP_SCALE_X + NN2DISP_OFFSET_X
+                   - d->width  * NN2DISP_SCALE_X * 0.5f);
+    int by = (int)(d->y_center * DISP_H - d->height * DISP_H * 0.5f);
+    int bw = (int)(d->width  * NN2DISP_SCALE_X);
     int bh = (int)(d->height * DISP_H);
 
     draw_box(bx, by, bw, bh, r, g, b);
 
     for (int k = 0; k < 6; k++) {
-        int kx = (int)(d->keypoints[k][0] * DISP_W);
+        int kx = (int)(d->keypoints[k][0] * NN2DISP_SCALE_X + NN2DISP_OFFSET_X);
         int ky = (int)(d->keypoints[k][1] * DISP_H);
         draw_kp(kx, ky, r, g, b);
     }
@@ -152,12 +159,12 @@ extern osSemaphoreId_t cam_frame_sem;
 typedef enum {
     REID_IDLE,
     REID_REGISTER,
-    REID_IDENTIFY,
 } reid_action_t;
 
+int g_model2_enabled = 0;  /* 1 = Model 2 runs (identify or enroll), 0 = off */
 reid_action_t reid_pending;
 static char          reid_name[FACE_NAME_MAX];
-int           g_capture_pending = 0; /* set by 'register' or 's' cmd, consumed by pipeline */
+int           g_capture_pending = 0;
 
 void ai_start_enroll(const char *name) {
     strncpy(reid_name, name, FACE_NAME_MAX - 1);
@@ -210,12 +217,7 @@ static void process_serial_commands(void)
         }
     }
     else if (strcmp(cmd, "identify") == 0) {
-        reid_pending = REID_IDENTIFY;
-        if (g_has_selection) {
-            printf("[REID] Will verify as '%s' on next frame\r\n", g_selected_entry.name);
-        } else {
-            printf("[REID] Will identify face on next frame (no selection)\r\n");
-        }
+        printf("[REID] Identification is continuous — results print every frame.\r\n");
     }
     else if (strncmp(cmd, "select ", 7) == 0) {
         char *sel_name = cmd + 7;
@@ -259,12 +261,6 @@ static void process_serial_commands(void)
         printf("  clearface        -- clear face gallery in RAM only\r\n");
         printf("  crccc             -- CRC32 check of network_fc weights\r\n");
         printf("  dumpface          -- hex dump 112x112 face crop for PC comparison\r\n");
-        printf("  --- Camera ---\r\n");
-        printf("  cam status        -- print gain/exposure/AEC/AWB\r\n");
-        printf("  cam auto 0|1      -- 0=manual AEC+AWB off, 1=auto AEC+AWB on\r\n");
-        printf("  cam gain <0-72000>  -- set sensor gain (mdB), disables AEC\r\n");
-        printf("  cam exp <0-33266>   -- set exposure (us), disables AEC\r\n");
-        printf("  cam wb <K>         -- set WB: 0=auto, 2856=A(warm), 4000=TL84, 5000=D50, 6500=D65(cool)\r\n");
     }
     else if (strcmp(cmd, "crccc") == 0) {
         extern uint32_t fc_weight_crc32(void);
@@ -283,30 +279,10 @@ static void process_serial_commands(void)
         g_auto_dump = 0;
         printf("[DUMP] Auto-dump OFF\r\n");
     }
-    /* ---- Camera manual control ---- */
-    else if (strcmp(cmd, "cam status") == 0) {
-        imx335_print_status();
-    }
-    else if (strncmp(cmd, "cam gain ", 9) == 0) {
-        uint32_t val = (uint32_t)atoi(cmd + 9);
-        imx335_set_manual_gain(val);
-    }
-    else if (strncmp(cmd, "cam exp ", 8) == 0) {
-        uint32_t val = (uint32_t)atoi(cmd + 8);
-        imx335_set_manual_exposure(val);
-    }
-    else if (strncmp(cmd, "cam wb ", 7) == 0) {
-        uint32_t ct = (uint32_t)atoi(cmd + 7);
-        imx335_set_wb_mode(ct);
-    }
-    else if (strncmp(cmd, "cam auto ", 9) == 0) {
-        uint8_t en = (uint8_t)atoi(cmd + 9);
-        imx335_set_auto_mode(en);
-    }
 }
 
 /* -------------------------------------------------------------------------- */
-/*                     ReID Pipeline (triggered by serial cmd)                 */
+/*                     Face Recognition Pipeline (continuous)                  */
 /* -------------------------------------------------------------------------- */
 
 static void send_face_dump(void)
@@ -333,226 +309,112 @@ static void send_face_dump(void)
 
 static void run_reid_pipeline(ai_result_t *result)
 {
-    if (reid_pending == REID_IDLE) return;
-    if (result->nb_detect == 0) {
-        /* In multi-enroll mode keep waiting for a face; otherwise skip. */
-        if (reid_pending != REID_REGISTER)
-            reid_pending = REID_IDLE;
-        return;
-    }
-    /* Waiting for 's' trigger — don't run inference until then */
-    if (reid_pending == REID_REGISTER && !g_capture_pending)
-        return;
+    if (!g_model2_enabled) return;
+    if (result->nb_detect == 0) return;
 
-    /* Use the highest-confidence detection */
+    if (reid_pending == REID_REGISTER) {
+        if (!g_capture_pending) return;
+    } else {
+        /* Identify mode: time gate to keep Model 1 smooth */
+        static uint32_t last_tick = 0;
+        uint32_t now = xTaskGetTickCount();
+        uint32_t elapsed = (last_tick == 0) ? 999
+                          : (now - last_tick) * portTICK_PERIOD_MS;
+        if (elapsed < 300) return;
+        last_tick = now;
+    }
+
     ai_detection_t *best = &result->detections[0];
 
-    printf("[REID] DBG1: crop start, box=(%.2f,%.2f,%.2f,%.2f)\r\n",
-           best->x_center, best->y_center, best->width, best->height);
-
-    /* Step 1: Stop PIPE1, crop from g_ltdc_framebuf, restart PIPE1.
-       At this point (~6.4ms after VSYNC), PIPE1 has written ~93 lines of
-       the current frame. The crop region (typically y≈140-340 for a centered
-       face) falls in lines 93-377 which are clean camera data from the
-       previous PIPE1 cycle. Stopping PIPE1 prevents concurrent writes during
-       the CPU read. */
+    /* Crop face from LTDC framebuffer */
     HAL_DCMIPP_CSI_PIPE_Stop(&hdcmipp, DCMIPP_PIPE1, DCMIPP_VIRTUAL_CHANNEL0);
     ai_crop_resize_face_112((uint8_t *)g_ltdc_framebuf, best, FACE_CROP_BUF);
     HAL_DCMIPP_CSI_PIPE_Start(&hdcmipp, DCMIPP_PIPE1, DCMIPP_VIRTUAL_CHANNEL0,
                                (uint32_t)g_ltdc_framebuf, DCMIPP_MODE_CONTINUOUS);
 
-    printf("[REID] DBG2: crop done, quantize start, fc_in=%p\r\n", buffer_in_fc);
-
-    /* Step 2: uint8 → int8 quantization */
+    /* Quantize + cache flush + inference */
     quantize_u8_to_s8(FACE_CROP_BUF, (int8_t *)buffer_in_fc,
                       LL_ATON_NETWORK_FC_IN_1_SIZE_BYTES);
-
-    printf("[REID] DBG3: quantize done, cache flush\r\n");
-
-    /* Step 3: Cache maintenance for network_fc input */
     SCB_CleanInvalidateDCache_by_Addr(
         (uint32_t *)buffer_in_fc, LL_ATON_NETWORK_FC_IN_1_SIZE_BYTES);
 
-    printf("[REID] DBG4: starting fc inference...\r\n");
-
-    /* Step 4: Run network_fc inference */
     float embedding[FACE_EMBEDDING_DIM];
     ai_face_reid_run(embedding);
 
-    printf("[REID] DBG5: fc inference done\r\n");
-
-    /* DEBUG: print full 128-dim embedding */
-    printf("[REID-EMB] ");
-    for (int i = 0; i < FACE_EMBEDDING_DIM; i++) {
-        printf("%.4f ", embedding[i]);
-        if ((i + 1) % 16 == 0 && i < FACE_EMBEDDING_DIM - 1)
-            printf("\r\n[REID-EMB] ");
-    }
-    printf("\r\n");
-
-    /* Quick statistics to detect garbage at a glance */
-    float emb_min = embedding[0], emb_max = embedding[0], emb_sum_sq = 0.0f;
-    for (int i = 0; i < FACE_EMBEDDING_DIM; i++) {
-        if (embedding[i] < emb_min) emb_min = embedding[i];
-        if (embedding[i] > emb_max) emb_max = embedding[i];
-        emb_sum_sq += embedding[i] * embedding[i];
-    }
-    printf("[REID-STAT] min=%.4f max=%.4f rms=%.4f l2norm=%.4f\r\n",
-           emb_min, emb_max, sqrtf(emb_sum_sq / FACE_EMBEDDING_DIM), sqrtf(emb_sum_sq));
-
-    /* Cosine similarity with previous embedding (same face should be > 0.7) */
-    {
-        static float prev_emb[FACE_EMBEDDING_DIM];
-        static int has_prev = 0;
-        if (has_prev) {
-            float dot = 0.0f, na = 0.0f, nb = 0.0f;
-            for (int i = 0; i < FACE_EMBEDDING_DIM; i++) {
-                dot += prev_emb[i] * embedding[i];
-                na += prev_emb[i] * prev_emb[i];
-                nb += embedding[i] * embedding[i];
-            }
-            printf("[REID-COSIM] prev_vs_curr=%.6f\r\n",
-                   dot / (sqrtf(na) * sqrtf(nb) + 1e-30f));
-        }
-        memcpy(prev_emb, embedding, sizeof(prev_emb));
-        has_prev = 1;
-    }
-
-    /* Step 5: Enroll or identify */
     if (reid_pending == REID_REGISTER) {
-        if (g_capture_pending) {
-            g_capture_pending = 0;
-            int remaining = ai_face_enroll_multi(embedding, reid_name);
-            if (remaining == ENROLL_QUALITY_REJECT) {
-                snprintf(g_enroll_msg, sizeof(g_enroll_msg), "Keep still...");
-            }
-            else if (remaining == 0) {
-                reid_pending = REID_IDLE;
-                storage_mark_faces_dirty();
-                printf("[REID] Enrolled '%s'\r\n", reid_name);
-
-                g_enroll_state = 3;  /* waiting for ESP32 name */
-                snprintf(g_enroll_msg, sizeof(g_enroll_msg), "Waiting for a name");
-
-                /* Notify ESP32 and wait for name from mini-program */
-                {
-                    char user_id[32];
-                    uint32_t idx = ai_face_gallery_get_count() - 1;
-                    g_pending_face_code = sys_rng_get_4digit();
-                    snprintf(user_id, sizeof(user_id), "user_%03lu:%04u",
-                             idx + 1, g_pending_face_code);
-                    uart4_send_face_enroll(user_id);
-                    printf("[FACE] Sent enroll: %s, waiting for name...\r\n", user_id);
-
-                    osStatus_t st = osSemaphoreAcquire(face_name_sem, 90000);
-                    if (st == osOK) {
-                        printf("[FACE] Name saved by handler: '%s'\r\n",
-                               g_face_name_result);
-                        snprintf(g_enroll_msg, sizeof(g_enroll_msg), "%s",
-                                 g_face_name_result);
-                    } else {
-                        printf("[FACE] Name timeout, keeping '%s'\r\n", reid_name);
-                        snprintf(g_enroll_msg, sizeof(g_enroll_msg), "%s",
-                                 reid_name);
-                    }
-                    g_enroll_state = 2;  /* done */
-                }
-            }
-            else {
-                /* Sample accepted, still enrolling */
-                g_enroll_progress = FACE_ENROLL_SAMPLES - remaining;
-                snprintf(g_enroll_msg, sizeof(g_enroll_msg),
-                         "Enroll sample %d/%d",
-                         g_enroll_progress, FACE_ENROLL_SAMPLES);
-                g_capture_pending = 1;  /* auto-capture next sample */
-            }
+        /* --- Enrollment --- */
+        g_capture_pending = 0;
+        int remaining = ai_face_enroll_multi(embedding, reid_name);
+        if (remaining == ENROLL_QUALITY_REJECT) {
+            snprintf(g_enroll_msg, sizeof(g_enroll_msg), "Keep still...");
         }
-    }
-    else if (reid_pending == REID_IDENTIFY) {
-        /* Multi-frame accumulation: average N embeddings for lower noise */
-        static float  ident_accum[FACE_EMBEDDING_DIM];
-        static int    ident_count;
-        static float  ident_first_dist;  /* single-frame dist for debug */
-
-        if (ident_count == 0) {
-            memset(ident_accum, 0, sizeof(ident_accum));
-        }
-
-        /* Accumulate raw (pre-normalized) embedding */
-        for (int i = 0; i < FACE_EMBEDDING_DIM; i++) {
-            ident_accum[i] += embedding[i];
-        }
-        ident_count++;
-
-        /* Show single-frame stats for the first frame */
-        if (ident_count == 1) {
-            /* Quick single-frame identification for debug comparison */
-            if (g_has_selection) {
-                ai_face_verify(embedding, &g_selected_entry, &ident_first_dist);
-                printf("[VERIFY] frame 1/%d single-dist=%.3f\r\n",
-                       IDENTIFY_FRAMES, ident_first_dist);
-            } else {
-                int idx = ai_face_identify(embedding, g_identify_name, &ident_first_dist);
-                if (idx >= 0)
-                    printf("[REID] frame 1/%d single-dist=%.3f -> '%s'\r\n",
-                           IDENTIFY_FRAMES, ident_first_dist, g_identify_name);
-                else
-                    printf("[REID] frame 1/%d single-dist=%.3f -> no match\r\n",
-                           IDENTIFY_FRAMES, ident_first_dist);
-            }
-        }
-
-        if (ident_count < IDENTIFY_FRAMES) {
-            /* Keep accumulating — don't reset reid_pending yet */
-            printf("[IDENT] accumulating %d/%d\r\n", ident_count, IDENTIFY_FRAMES);
-        } else {
-            /* All frames collected: average and L2-normalize */
-            float avg[FACE_EMBEDDING_DIM];
-            for (int i = 0; i < FACE_EMBEDDING_DIM; i++) {
-                avg[i] = ident_accum[i] / (float)IDENTIFY_FRAMES;
-            }
-            /* L2-normalize the averaged embedding */
-            float sum_sq = 0.0f;
-            for (int i = 0; i < FACE_EMBEDDING_DIM; i++) sum_sq += avg[i] * avg[i];
-            if (sum_sq > 1e-30f) {
-                float inv = 1.0f / sqrtf(sum_sq);
-                for (int i = 0; i < FACE_EMBEDDING_DIM; i++) avg[i] *= inv;
-            }
-
-            if (g_has_selection) {
-                /* 1:1 verification with averaged embedding */
-                int ok = ai_face_verify(avg, &g_selected_entry, &g_identify_dist);
-                if (ok) {
-                    g_identify_match = 1;
-                    g_identify_index = ai_face_gallery_find_index(g_selected_entry.name);
-                    strncpy(g_identify_name, g_selected_entry.name, FACE_NAME_MAX);
-                    printf("[VERIFY] Match: '%s' (avg-dist=%.3f, single-dist=%.3f)\r\n",
-                           g_identify_name, g_identify_dist, ident_first_dist);
-                } else {
-                    g_identify_match = 0;
-                    printf("[VERIFY] Rejected (avg-dist=%.3f >= %.2f, single-dist=%.3f)\r\n",
-                           g_identify_dist, (double)FACE_VERIFY_THRESHOLD, ident_first_dist);
-                }
-            } else {
-                /* 1:N identification with averaged embedding */
-                int idx = ai_face_identify(avg, g_identify_name, &g_identify_dist);
-                if (idx >= 0) {
-                    g_identify_match = 1;
-                    g_identify_index = idx;
-                    printf("[REID] Matched: '%s' (avg-dist=%.3f, single-dist=%.3f)\r\n",
-                           g_identify_name, g_identify_dist, ident_first_dist);
-                } else {
-                    g_identify_match = 0;
-                    printf("[REID] No match (avg-dist=%.3f, single-dist=%.3f)\r\n",
-                           g_identify_dist, ident_first_dist);
-                }
-            }
-            g_identify_done = 1;
-            ident_count = 0;
-
-            if (g_auto_dump) send_face_dump();
+        else if (remaining == 0) {
             reid_pending = REID_IDLE;
+            storage_mark_faces_dirty();
+            printf("[REID] Enrolled '%s'\r\n", reid_name);
+
+            g_enroll_state = 3;
+            snprintf(g_enroll_msg, sizeof(g_enroll_msg), "Waiting for a name");
+            {
+                char user_id[32];
+                uint32_t idx = ai_face_gallery_get_count() - 1;
+                g_pending_face_code = sys_rng_get_4digit();
+                snprintf(user_id, sizeof(user_id), "user_%03lu:%04u",
+                         idx + 1, g_pending_face_code);
+                uart4_send_face_enroll(user_id);
+                printf("[FACE] Sent enroll: %s, waiting for name...\r\n", user_id);
+
+                g_face_name_ready = 0;
+                int timeout = 9000;
+                while (!g_face_name_ready && timeout > 0) {
+                    osDelay(10);
+                    timeout--;
+                }
+                if (g_face_name_ready) {
+                    snprintf(g_enroll_msg, sizeof(g_enroll_msg), "%s",
+                             g_face_name_result);
+                } else {
+                    snprintf(g_enroll_msg, sizeof(g_enroll_msg), "%s", reid_name);
+                }
+                g_enroll_state = 2;
+            }
         }
+        else {
+            g_enroll_progress = FACE_ENROLL_SAMPLES - remaining;
+            snprintf(g_enroll_msg, sizeof(g_enroll_msg),
+                     "Enroll sample %d/%d", g_enroll_progress, FACE_ENROLL_SAMPLES);
+        }
+    } else {
+        /* --- Continuous identify --- */
+        float dist;
+        char name[FACE_NAME_MAX];
+        int ok;
+
+        if (g_has_selection) {
+            ok = ai_face_verify(embedding, &g_selected_entry, &dist);
+            if (ok) {
+                strncpy(name, g_selected_entry.name, FACE_NAME_MAX);
+            }
+        } else {
+            ok = (ai_face_identify(embedding, name, &dist) >= 0);
+        }
+
+        g_identify_dist = dist;
+        if (ok) {
+            g_identify_match = 1;
+            g_auto_unlock = 1;
+            strncpy(g_identify_name, name, FACE_NAME_MAX);
+            printf("[REID] %s dist=%.3f\r\n", name, dist);
+        } else {
+            g_identify_match = 0;
+            printf("[REID] unknown dist=%.3f\r\n", dist);
+        }
+        {
+            char buf[16];
+            snprintf(buf, sizeof(buf), "%.3f", dist);
+            ui_set_cam_text(buf);
+        }
+        g_identify_done = 1;
     }
 }
 
@@ -577,10 +439,13 @@ void AI_Task(void *argument)
         SCB_CleanInvalidateDCache_by_Addr(
             (uint32_t *)nn_input_u8, sizeof(nn_input_u8));
 
-        /* Software uint8→float32 normalization: nn_input_u8 → buffer_in */
+        /* Software uint8→float32 normalization with BGR→RGB swap.
+           DCMIPP outputs BGR order; model was trained on RGB. */
         float *fin = (float *)buffer_in;
-        for (uint32_t i = 0; i < 128 * 128 * 3; i++) {
-            fin[i] = (float)nn_input_u8[i] / 255.0f;
+        for (uint32_t i = 0; i < 128 * 128 * 3; i += 3) {
+            fin[i + 0] = (float)nn_input_u8[i + 2] / 255.0f;  /* R ← B */
+            fin[i + 1] = (float)nn_input_u8[i + 1] / 255.0f;  /* G ← G */
+            fin[i + 2] = (float)nn_input_u8[i + 0] / 255.0f;  /* B ← R */
         }
 
         /* Cache maintenance: CPU wrote to buffer_in */
@@ -636,46 +501,50 @@ void AI_Task(void *argument)
         /* Check serial commands */
         process_serial_commands();
 
-        /* Run ReID pipeline if triggered — stops PIPE1 during CPU crop
-           to read clean camera data, then restarts for draw_detections. */
+        /* Run face recognition (Model 2) every frame when face detected */
         run_reid_pipeline(&result);
 
         /* Draw detection boxes + keypoints on LTDC layer 2 overlay */
         draw_detections_on_display(&result);
 
-        if(g_trigger_identify == 1)
-        {
-        	g_trigger_identify = 0;
-        	reid_pending = REID_IDENTIFY;
-        }
         HAL_GPIO_WritePin(GPIOG,GPIO_PIN_10,0);
         vTaskDelay(pdMS_TO_TICKS(1));
     }
 }
 
-void ai_select_face_by_index(int idx) {
+/* Select a face from the gallery by index for 1:1 verification.
+   Called from LVGL dropdown event handler on the lock screen. */
+void ai_select_face_by_index(int idx)
+{
+    uint32_t count = ai_face_gallery_get_count();
+    if (idx < 0 || (uint32_t)idx >= count) return;
+
     face_entry_t entries[FACE_GALLERY_MAX];
-    uint32_t count = FACE_GALLERY_MAX;
-    ai_face_gallery_export(entries, &count);
-    if (idx >= 0 && idx < (int)count) {
-        if (ai_face_select(entries[idx].name, &g_selected_entry) == 0) {
-            g_has_selection = 1;
-            printf("[REID] Dropdown selected '%s' for 1:1 verify\r\n", entries[idx].name);
-        }
-    }
+    uint32_t n = 0;
+    ai_face_gallery_export(entries, &n);
+    if (idx >= (int)n) return;
+
+    ai_face_select(entries[idx].name, &g_selected_entry);
+    g_has_selection = 1;
+    printf("[REID] Selected '%s' for 1:1 verification\r\n", entries[idx].name);
 }
 
-void ai_refresh_dropdown_users(void) {
+/* Refresh the LVGL dropdown list with currently enrolled faces.
+   Called after UI init and after enrollment completes. */
+void ai_refresh_dropdown_users(void)
+{
     face_entry_t entries[FACE_GALLERY_MAX];
-    uint32_t count = FACE_GALLERY_MAX;
+    uint32_t count = 0;
     ai_face_gallery_export(entries, &count);
 
-    static char options[2048];
-    strcpy(options, "   Choose ID");
+    /* Build dropdown string: "Choose ID\nName1\nName2\n..." */
+    static char opts[512];
+    strcpy(opts, "Choose ID");
     for (uint32_t i = 0; i < count; i++) {
-        strcat(options, "\n");
-        strcat(options, entries[i].name);
+        strcat(opts, "\n");
+        strcat(opts, entries[i].name);
     }
-    lv_dropdown_set_options(objects.dropdown_users, options);
+
+    lv_dropdown_set_options(objects.dropdown_users, opts);
     lv_dropdown_set_selected(objects.dropdown_users, 0);
 }

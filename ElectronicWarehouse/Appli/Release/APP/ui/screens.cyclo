@@ -1,3 +1,4 @@
+../APP/ui/screens.c:1452:6:tick_screen_page_lock	1
 ../APP/ui/screens.c:36:13:event_handler_cb_page_lock_dropdown_users	3
 ../APP/ui/screens.c:947:13:event_handler_cb_page_main_obj412	2
 ../APP/ui/screens.c:936:13:event_handler_cb_page_main_obj410	2
@@ -103,8 +104,7 @@
 ../APP/ui/screens.c:969:13:event_handler_cb_page_choose_c1_6	2
 ../APP/ui/screens.c:958:13:event_handler_cb_page_choose_c1_5	2
 ../APP/ui/screens.c:16139:6:tick_screen_page_choose	137
-../APP/ui/screens.c:1742:6:tick_screen_camera	6
-../APP/ui/screens.c:1508:6:tick_screen_page_lock	19
+../APP/ui/screens.c:1621:6:tick_screen_camera	24
 ../APP/ui/screens.c:548:13:event_handler_cb_page_main_obj331	3
 ../APP/ui/screens.c:149:13:event_handler_cb_page_main_obj13	3
 ../APP/ui/screens.c:131:13:event_handler_cb_page_main_dashboard_2	4
@@ -112,9 +112,9 @@
 ../APP/ui/screens.c:95:13:event_handler_cb_page_main_dashboard	4
 ../APP/ui/screens.c:10766:6:tick_screen_page_main	476
 ../APP/ui/screens.c:25:13:event_handler_cb_page_lock_btn_verify	2
-../APP/ui/screens.c:73:13:event_handler_cb_camera_obj11	2
-../APP/ui/screens.c:62:13:event_handler_cb_camera_obj10	2
-../APP/ui/screens.c:51:13:event_handler_cb_camera_obj8	2
+../APP/ui/screens.c:73:13:event_handler_cb_camera_obj6	2
+../APP/ui/screens.c:62:13:event_handler_cb_camera_obj5	2
+../APP/ui/screens.c:51:13:event_handler_cb_camera_obj3	2
 ../APP/ui/screens.c:573:13:event_handler_cb_page_main_obj343	2
 ../APP/ui/screens.c:562:13:event_handler_cb_page_main_obj332	2
 ../APP/ui/screens.c:163:13:event_handler_cb_page_main_obj20	2
@@ -157,7 +157,7 @@
 ../APP/ui/eez-flow.h:3999:6:utf8upr	3
 ../APP/ui/eez-flow.h:4349:1:utf8rcodepoint	6
 ../APP/ui/screens.c:1336:6:create_screen_page_lock	1
-../APP/ui/screens.c:1634:6:create_screen_camera	1
+../APP/ui/screens.c:1457:6:create_screen_camera	1
 ../APP/ui/screens.c:1782:6:create_screen_page_main	1
 ../APP/ui/screens.c:14563:6:create_screen_page_choose	1
 ../APP/ui/screens.c:17035:6:tick_screen	2

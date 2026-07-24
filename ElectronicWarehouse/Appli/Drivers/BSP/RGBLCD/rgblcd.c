@@ -865,3 +865,40 @@ static uint32_t rgblcd_pow(uint8_t m, uint8_t n)
 
     return result;
 }
+
+/**
+ * @brief   SMPTE彩条测试图案（绘制到Layer 0摄像头图层）
+ * @retval  无
+ */
+void rgblcd_color_bar_test(void)
+{
+    /* 8条标准SMPTE彩条颜色 (RGB888) */
+    static const uint32_t colors[8] = {
+        0xFFFFFF,  /* White  */
+        0xFFFF00,  /* Yellow */
+        0x00FFFF,  /* Cyan   */
+        0x00FF00,  /* Green  */
+        0xFF00FF,  /* Magenta*/
+        0xFF0000,  /* Red    */
+        0x0000FF,  /* Blue   */
+        0x000000,  /* Black  */
+    };
+
+    uint32_t bar_w = rgblcddev.pwidth / 8;
+
+    for (int i = 0; i < 8; i++)
+    {
+        uint16_t sx = (uint16_t)(i * bar_w);
+        uint16_t ex = (uint16_t)(sx + bar_w - 1);
+
+        hdma2d.Init.Mode = DMA2D_R2M;
+        hdma2d.Init.ColorMode = DMA2D_OUTPUT_RGB888;
+        hdma2d.Init.OutputOffset = rgblcddev.pwidth - (ex - sx + 1);
+        HAL_DMA2D_Init(&hdma2d);
+        HAL_DMA2D_Start(&hdma2d, colors[i],
+                        (uint32_t)&g_ltdc_framebuf[(0 * rgblcddev.pwidth + sx) * 3],
+                        ex - sx + 1,
+                        rgblcddev.pheight);
+        HAL_DMA2D_PollForTransfer(&hdma2d, 50);
+    }
+}

@@ -48,6 +48,8 @@ void action_ver(lv_event_t * e) {
     ui_set_flag(FLOW_GLOBAL_VARIABLE_FLAG_START, 1);
 
 	    // ④ 创建 AI 任务（人脸检测 + 识别）
+
+    g_model2_enabled = 1;  /* Model 2 on for unlock identify */
 	    AITaskHandle = osThreadNew(AI_Task, NULL, &AITask_attributes);
 }
 
@@ -75,19 +77,19 @@ void action_action_stop_camera(lv_event_t * e) {
 void action_action_recognize(lv_event_t * e) {
     (void)e;
 
-    g_identify_done  = 0;
-    g_identify_match = 0;
-    g_trigger_identify = 1;
-
-    /* 等待 AI 任务完成识别，超时 2 秒 */
-    int timeout = 200;
-    while (!g_identify_done && timeout > 0) {
-        vTaskDelay(pdMS_TO_TICKS(10));
-        timeout--;
-    }
-
-    if (g_identify_match) {
-        /* 匹配成功：关 AI + 摄像头，开扫码，进主页 */
+//    g_identify_done  = 0;
+//    g_identify_match = 0;
+//    g_trigger_identify = 1;
+//
+//    /* 等待 AI 任务完成识别，超时 2 秒 */
+//    int timeout = 200;
+//    while (!g_identify_done && timeout > 0) {
+//        vTaskDelay(pdMS_TO_TICKS(10));
+//        timeout--;
+//    }
+//
+//    if (g_identify_match) {
+        /* 匹配成功：关 AI ，开扫码，进主页 */
         if (AITaskHandle != NULL) {
             osThreadTerminate(AITaskHandle);
             AITaskHandle = NULL;
@@ -108,15 +110,15 @@ void action_action_recognize(lv_event_t * e) {
         Barcode_TaskHandle = osThreadNew(Barcode_Task, NULL, &BarcodeTask_attributes);
 
         eez_flow_push_screen(SCREEN_ID_PAGE_MAIN, LV_SCR_LOAD_ANIM_NONE, 0, 0);
-    } else {
-        /* 未匹配：关 AI，返回锁屏 */
-        if (AITaskHandle != NULL) {
-            osThreadTerminate(AITaskHandle);
-            AITaskHandle = NULL;
-        }
-
-        eez_flow_push_screen(SCREEN_ID_PAGE_LOCK, LV_SCR_LOAD_ANIM_NONE, 0, 0);
-    }
+//    } else {
+//        /* 未匹配：关 AI，返回锁屏 */
+//        if (AITaskHandle != NULL) {
+//            osThreadTerminate(AITaskHandle);
+//            AITaskHandle = NULL;
+//        }
+//
+//        eez_flow_push_screen(SCREEN_ID_PAGE_LOCK, LV_SCR_LOAD_ANIM_NONE, 0, 0);
+//    }
 }
 
 
@@ -196,16 +198,12 @@ void action_new_user(lv_event_t * e) {
     eez_flow_push_screen(SCREEN_ID_CAMERA, LV_SCR_LOAD_ANIM_NONE, 0, 0);
     ui_set_flag(FLOW_GLOBAL_VARIABLE_FLAG_SAVE, 1);
     ui_set_flag(FLOW_GLOBAL_VARIABLE_FLAG_START, 0);
+    g_model2_enabled = 0;  /* Model 2 off during new user */
     AITaskHandle = osThreadNew(AI_Task, NULL, &AITask_attributes);
 }
 
 void action_save_user(lv_event_t * e) {
     (void)e;
-
-    static int user_seq = 0;
-    char name[16];
-    snprintf(name, sizeof(name), "user%02d", user_seq++);
-
     HAL_LTDC_ConfigColorKeying(&hltdc, 0, 1);
     HAL_LTDC_EnableColorKeying(&hltdc, 1);
     HAL_LTDC_Reload(&hltdc, LTDC_RELOAD_IMMEDIATE);
@@ -214,8 +212,17 @@ void action_save_user(lv_event_t * e) {
 
     eez_flow_push_screen(SCREEN_ID_CAMERA, LV_SCR_LOAD_ANIM_NONE, 0, 0);
 
-    ai_start_enroll(name);
+    if (g_enroll_state == 1) {
+        /* Already enrolling: just capture one more sample */
+        g_capture_pending = 1;
+    } else {
+        static int user_seq = 0;
+        char name[16];
+        snprintf(name, sizeof(name), "user%02d", user_seq++);
+        ai_start_enroll(name);
+    }
 
+    g_model2_enabled = 1;  /* Model 2 on for enrollment */
     if (AITaskHandle == NULL) {
         AITaskHandle = osThreadNew(AI_Task, NULL, &AITask_attributes);
     }

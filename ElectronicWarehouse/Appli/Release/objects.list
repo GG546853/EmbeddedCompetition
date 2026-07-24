@@ -2,6 +2,7 @@
 "./APP/Aht10_task.o"
 "./APP/Barcode_task.o"
 "./APP/Electromagnet.o"
+"./APP/Encoder_task.o"
 "./APP/LCD_task.o"
 "./APP/LV_task.o"
 "./APP/Outbound_task.o"

@@ -5,6 +5,14 @@
 #include "ui_bridge.h"
 #include "screens.h"
 #include "AI_task.h"
+extern "C" {
+#include "Electromagnet.h"
+#include "UART_protocol.h"
+#include "Barcode_task.h"
+}
+extern "C" {
+#include "app_types.h"
+}
 extern int history_count;
 extern HistoryRecord history_list[32];
 
@@ -216,4 +224,41 @@ extern "C" void ui_poll_enroll_status(void) {
             ui_set_cam_text(g_enroll_msg);
         }
     }
+}
+
+extern "C" void ui_poll_auto_unlock(void) {
+    extern volatile int g_auto_unlock;
+    extern volatile int g_identify_match;
+    extern char g_identify_name[16];
+    extern osThreadId_t AITaskHandle;
+
+    if (!g_auto_unlock) return;
+    g_auto_unlock = 0;
+
+    /* Stop AI task */
+    if (AITaskHandle != NULL) {
+        osThreadTerminate(AITaskHandle);
+        AITaskHandle = NULL;
+    }
+
+    /* Open lock */
+    osThreadNew(ElectromagnetLock_Task, NULL, &ElectromagnetLockTask_attributes);
+
+    /* Set user */
+    strncpy(Cabinet.User, g_identify_name, sizeof(Cabinet.User) - 1);
+    Cabinet.User[sizeof(Cabinet.User) - 1] = '\0';
+
+    /* Notify ESP32 */
+    {
+        char evt[32];
+        snprintf(evt, sizeof(evt), "%s:Unlock", g_identify_name);
+        uart4_send_face_event(evt);
+        printf("[FACE] Unlock event sent: %s\r\n", evt);
+    }
+
+    /* Start barcode scanner */
+    Barcode_TaskHandle = osThreadNew(Barcode_Task, NULL, &BarcodeTask_attributes);
+
+    /* Navigate to main screen */
+    eez_flow_push_screen(SCREEN_ID_PAGE_MAIN, LV_SCR_LOAD_ANIM_NONE, 0, 0);
 }

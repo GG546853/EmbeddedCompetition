@@ -21,6 +21,7 @@ extern volatile uint8_t  esp32_online;
 extern osSemaphoreId_t inventory_sem;
 extern osSemaphoreId_t face_name_sem;
 extern char g_face_name_result[16];
+extern volatile int g_face_name_ready;
 
 /* ---- Handler declarations (implementation up to user) ---- */
 void handle_led(const uint8_t *payload, uint8_t len);

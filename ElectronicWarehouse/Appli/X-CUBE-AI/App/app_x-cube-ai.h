@@ -72,17 +72,17 @@ void ai_crop_resize_face_112(uint8_t *src_fb, ai_detection_t *det, uint8_t *outp
 /* --- Face Re-ID definitions ------------------------------------------------ */
 #define FACE_EMBEDDING_DIM     128
 #define FACE_GALLERY_MAX        10
-#define FACE_MATCH_THRESHOLD    0.40f   /* L2-normalised distance in [0,2]; <1.0 ≈ cos_sim >0.5 */
-#define FACE_RATIO_THRESHOLD    0.93f  /* best_dist / second_dist; <0.75 means confident match */
-#define FACE_CONFIDENT_DIST     0.25f   /* below this distance, skip ratio check entirely */
-#define FACE_VERIFY_THRESHOLD   0.3f   /* 1:1 verification L2 distance threshold */
+#define FACE_MATCH_THRESHOLD    0.40f   /* 1:N match L2 distance upper bound */
+#define FACE_RATIO_THRESHOLD    0.93f   /* best_L2 / second_L2 ratio check */
+#define FACE_CONFIDENT_DIST     0.25f   /* below this L2 distance, skip ratio check */
+#define FACE_VERIFY_THRESHOLD   0.13f  /* 1:1 verification L2 distance upper bound */
 
 /* Detection box calibration offsets in pixels. Positive X → right, Positive Y → down.
    Applied to both display box drawing and face crop. */
 #define DET_BOX_OFFSET_X  20
 #define DET_BOX_OFFSET_Y  0
 #define FACE_NAME_MAX           16
-#define FACE_ENROLL_SAMPLES      10     /* multi-shot enrollment: average N captures  */
+#define FACE_ENROLL_SAMPLES      10     /* multi-shot enrollment: average N captures */
 #define ENROLL_QUALITY_COSIM   0.88f  /* reject sample if COSIM vs running avg < this */
 #define ENROLL_QUALITY_REJECT    (-1) /* returned when sample rejected by quality gate */
 
@@ -113,7 +113,6 @@ void ai_face_gallery_export(face_entry_t *out_entries, uint32_t *out_count);
 void ai_face_gallery_import(const face_entry_t *in_entries, uint32_t in_count);
 void ai_face_gallery_set_name(int idx, const char *name);
 uint32_t ai_face_gallery_get_count(void);
-int ai_face_gallery_find_index(const char *name);
 /* USER CODE END includes */
 #ifdef __cplusplus
 }

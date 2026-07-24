@@ -1,6 +1,6 @@
 #include "images.h"
 
-const ext_img_desc_t images[15] = {
+const ext_img_desc_t images[16] = {
     { "p-iamge", &img_p_iamge },
     { "page-wms", &img_page_wms },
     { "page-dashboard", &img_page_dashboard },
@@ -16,4 +16,5 @@ const ext_img_desc_t images[15] = {
     { "page_power", &img_page_power },
     { "page_con", &img_page_con },
     { "page_gj", &img_page_gj },
+    { "page_renlian", &img_page_renlian },
 };

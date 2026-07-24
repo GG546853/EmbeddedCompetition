@@ -30,6 +30,7 @@
     "ui_image_page_inventory.c",
     "ui_image_page_power.c",
     "ui_image_page_printfer.c",
+    "ui_image_page_renlian.c",
     "ui_image_page_sdu.c",
     "ui_image_page_search.c",
     "ui_image_page_set.c",

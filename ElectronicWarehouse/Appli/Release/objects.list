@@ -38,6 +38,7 @@
 "./APP/ui/ui_image_page_inventory.o"
 "./APP/ui/ui_image_page_power.o"
 "./APP/ui/ui_image_page_printfer.o"
+"./APP/ui/ui_image_page_renlian.o"
 "./APP/ui/ui_image_page_sdu.o"
 "./APP/ui/ui_image_page_search.o"
 "./APP/ui/ui_image_page_set.o"

@@ -242,6 +242,21 @@ static void process_serial_commands(void)
         ai_face_gallery_import(empty, 0);
         printf("[TEST] Gallery cleared in RAM (SD NAND NOT modified)\r\n");
     }
+    else if (strcmp(cmd, "cam status") == 0) {
+        imx335_print_status();
+    }
+    else if (strncmp(cmd, "cam gain ", 9) == 0) {
+        imx335_set_manual_gain((uint32_t)atoi(cmd + 9));
+    }
+    else if (strncmp(cmd, "cam exp ", 8) == 0) {
+        imx335_set_manual_exposure((uint32_t)atoi(cmd + 8));
+    }
+    else if (strncmp(cmd, "cam wb ", 7) == 0) {
+        imx335_set_wb_mode((uint32_t)atoi(cmd + 7));
+    }
+    else if (strncmp(cmd, "cam auto ", 9) == 0) {
+        imx335_set_auto_mode((uint8_t)atoi(cmd + 9));
+    }
     else if (strcmp(cmd, "saveface") == 0) {
         storage_save_faces();
     }
@@ -259,6 +274,12 @@ static void process_serial_commands(void)
         printf("  saveface         -- save face gallery to SD NAND\r\n");
         printf("  loadface         -- load face gallery from SD NAND\r\n");
         printf("  clearface        -- clear face gallery in RAM only\r\n");
+        printf("  --- Camera ---\r\n");
+        printf("  cam status       -- print camera Gain/Exposure/WB/AEC/AWB\r\n");
+        printf("  cam gain <val>   -- set manual gain 0~72000 mdB\r\n");
+        printf("  cam exp <val>    -- set manual exposure 0~33266 us\r\n");
+        printf("  cam wb <temp>    -- WB: 0=auto, 2856=A, 4000=TL84, 5000=D50, 6500=D65\r\n");
+        printf("  cam auto <0|1>   -- 0=manual, 1=auto (AEC+AWB)\r\n");
         printf("  crccc             -- CRC32 check of network_fc weights\r\n");
         printf("  dumpface          -- hex dump 112x112 face crop for PC comparison\r\n");
     }

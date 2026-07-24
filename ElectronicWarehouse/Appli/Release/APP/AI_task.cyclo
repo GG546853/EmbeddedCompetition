@@ -1,6 +1,6 @@
-../APP/AI_task.c:190:13:process_serial_commands	22
+../APP/AI_task.c:190:13:process_serial_commands	27
 ../APP/AI_task.c:57:13:fill_rect.constprop	7
 ../APP/AI_task.c:169:6:ai_start_enroll	1
-../APP/AI_task.c:425:6:AI_Task	24
-../APP/AI_task.c:517:6:ai_select_face_by_index	4
-../APP/AI_task.c:534:6:ai_refresh_dropdown_users	2
+../APP/AI_task.c:446:6:AI_Task	24
+../APP/AI_task.c:538:6:ai_select_face_by_index	4
+../APP/AI_task.c:555:6:ai_refresh_dropdown_users	2

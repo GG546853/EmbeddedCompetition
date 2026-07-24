@@ -180,30 +180,6 @@ void Encoder_Task(void *argument)
             }
         }
 
-        /* ---- check serial commands (debug UART) ---- */
-        if (g_uart_rx_sta & 0x8000) {
-            uint16_t len = g_uart_rx_sta & 0x3FFF;
-            char cmd[64];
-            if (len >= 63) len = 63;
-            memcpy(cmd, g_uart_rx_buf, len);
-            cmd[len] = '\0';
-            g_uart_rx_sta = 0;
-
-            if (strcmp(cmd, "cam status") == 0) {
-                imx335_print_status();
-            } else if (strncmp(cmd, "cam gain ", 9) == 0) {
-                imx335_set_manual_gain((uint32_t)atoi(cmd + 9));
-            } else if (strncmp(cmd, "cam exp ", 8) == 0) {
-                imx335_set_manual_exposure((uint32_t)atoi(cmd + 8));
-            } else if (strncmp(cmd, "cam wb ", 7) == 0) {
-                imx335_set_wb_mode((uint32_t)atoi(cmd + 7));
-            } else if (strncmp(cmd, "cam auto ", 9) == 0) {
-                imx335_set_auto_mode((uint8_t)atoi(cmd + 9));
-            } else {
-                printf("[CMD] unknown: %s\r\n", cmd);
-            }
-        }
-
         if (!menu_vis) {
             vTaskDelay(pdMS_TO_TICKS(10));
             continue;

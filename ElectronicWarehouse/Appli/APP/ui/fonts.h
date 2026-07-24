@@ -12,6 +12,11 @@ extern const lv_font_t ui_font_chinese24;
 extern const lv_font_t ui_font_chinese18;
 extern const lv_font_t ui_font_chinese10;
 extern const lv_font_t ui_font_chinese8;
+extern const lv_font_t ui_font_dk_chinese24;
+extern const lv_font_t ui_font_dk_chinese;
+extern const lv_font_t ui_font_dk_chinese18;
+extern const lv_font_t ui_font_dk_chinese16;
+extern const lv_font_t ui_font_dk_chinese48;
 
 #ifndef EXT_FONT_DESC_T
 #define EXT_FONT_DESC_T

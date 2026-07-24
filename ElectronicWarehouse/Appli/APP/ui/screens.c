@@ -1027,8 +1027,8 @@ void create_screen_page_lock() {
                     objects.obj0 = obj;
                     lv_obj_set_pos(obj, 25, 23);
                     lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
-                    lv_image_set_src(obj, &img_p_iamge);
-                    lv_image_set_scale(obj, 40);
+                    lv_image_set_src(obj, &img_page_tx);
+                    lv_image_set_scale(obj, 100);
                     lv_obj_set_style_width(obj, 65, LV_PART_MAIN | LV_STATE_DEFAULT);
                     lv_obj_set_style_height(obj, 65, LV_PART_MAIN | LV_STATE_DEFAULT);
                     lv_obj_set_style_image_recolor(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -1265,10 +1265,10 @@ void create_screen_camera() {
         }
         {
             lv_obj_t *obj = lv_image_create(parent_obj);
-            lv_obj_set_pos(obj, 344, 177);
+            lv_obj_set_pos(obj, 338, 185);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
             lv_image_set_src(obj, &img_page_renlian);
-            lv_image_set_scale(obj, 600);
+            lv_image_set_scale(obj, 900);
         }
     }
     
@@ -9540,7 +9540,7 @@ void create_screen_page_main() {
                         {
                             lv_obj_t *obj = lv_obj_create(parent_obj);
                             objects.obj354 = obj;
-                            lv_obj_set_pos(obj, 0, 0);
+                            lv_obj_set_pos(obj, -136, 639);
                             lv_obj_set_size(obj, 560, 480);
                             lv_obj_set_style_border_width(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
                             lv_obj_set_style_radius(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -9560,7 +9560,7 @@ void create_screen_page_main() {
                                 lv_obj_t *parent_obj = obj;
                                 {
                                     lv_obj_t *obj = lv_obj_create(parent_obj);
-                                    lv_obj_set_pos(obj, -2264, 1195);
+                                    lv_obj_set_pos(obj, -2374, 1710);
                                     lv_obj_set_size(obj, 520, 460);
                                     lv_obj_set_style_pad_left(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
                                     lv_obj_set_style_pad_top(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);

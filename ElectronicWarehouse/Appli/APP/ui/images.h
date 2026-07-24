@@ -7,7 +7,6 @@
 extern "C" {
 #endif
 
-extern const lv_img_dsc_t img_p_iamge;
 extern const lv_img_dsc_t img_page_wms;
 extern const lv_img_dsc_t img_page_dashboard;
 extern const lv_img_dsc_t img_page_inventory;
@@ -20,9 +19,10 @@ extern const lv_img_dsc_t img_page_wendu;
 extern const lv_img_dsc_t img_page_sdu;
 extern const lv_img_dsc_t img_page_power;
 extern const lv_img_dsc_t img_page_con;
-extern const lv_img_dsc_t img_page_sz;
 extern const lv_img_dsc_t img_page_guanji;
 extern const lv_img_dsc_t img_page_renlian;
+extern const lv_img_dsc_t img_page_tx;
+extern const lv_img_dsc_t img_page_sz;
 
 #ifndef EXT_IMG_DESC_T
 #define EXT_IMG_DESC_T

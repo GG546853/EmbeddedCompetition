@@ -16,7 +16,6 @@
     "ui_font_chinese.c",
     "ui_font_chinese10.c",
     "ui_font_chinese18.c",
-    "ui_font_chinese24.c",
     "ui_font_chinese8.c",
     "ui_font_dk_chinese.c",
     "ui_font_dk_chinese16.c",

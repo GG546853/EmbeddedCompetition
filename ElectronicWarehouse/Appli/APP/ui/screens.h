@@ -14,15 +14,13 @@ enum ScreensEnum {
     SCREEN_ID_PAGE_LOCK = 1,
     SCREEN_ID_CAMERA = 2,
     SCREEN_ID_PAGE_MAIN = 3,
-    SCREEN_ID_PAGE_CHOOSE = 4,
-    _SCREEN_ID_LAST = 4
+    _SCREEN_ID_LAST = 3
 };
 
 typedef struct _objects_t {
     lv_obj_t *page_lock;
     lv_obj_t *camera;
     lv_obj_t *page_main;
-    lv_obj_t *page_choose;
     lv_obj_t *ring_container;
     lv_obj_t *obj0;
     lv_obj_t *btn_verify;
@@ -689,74 +687,6 @@ typedef struct _objects_t {
     lv_obj_t *obj550;
     lv_obj_t *obj551;
     lv_obj_t *obj552;
-    lv_obj_t *c1_5;
-    lv_obj_t *active_border_7;
-    lv_obj_t *c1_6;
-    lv_obj_t *active_border_8;
-    lv_obj_t *c1_7;
-    lv_obj_t *active_border_9;
-    lv_obj_t *c1_8;
-    lv_obj_t *active_border_10;
-    lv_obj_t *c1_9;
-    lv_obj_t *active_border_11;
-    lv_obj_t *c1_10;
-    lv_obj_t *active_border_12;
-    lv_obj_t *c1_11;
-    lv_obj_t *active_border_13;
-    lv_obj_t *c1_12;
-    lv_obj_t *active_border_14;
-    lv_obj_t *c1_13;
-    lv_obj_t *active_border_15;
-    lv_obj_t *c1_14;
-    lv_obj_t *active_border_16;
-    lv_obj_t *c1_15;
-    lv_obj_t *active_border_17;
-    lv_obj_t *c1_16;
-    lv_obj_t *active_border_18;
-    lv_obj_t *c1_17;
-    lv_obj_t *active_border_19;
-    lv_obj_t *c1_18;
-    lv_obj_t *active_border_20;
-    lv_obj_t *c1_19;
-    lv_obj_t *active_border_21;
-    lv_obj_t *c1_20;
-    lv_obj_t *active_border_22;
-    lv_obj_t *c1_21;
-    lv_obj_t *active_border_23;
-    lv_obj_t *c1_22;
-    lv_obj_t *active_border_24;
-    lv_obj_t *c1_23;
-    lv_obj_t *active_border_25;
-    lv_obj_t *c1_24;
-    lv_obj_t *active_border_26;
-    lv_obj_t *c1_25;
-    lv_obj_t *active_border_27;
-    lv_obj_t *c1_26;
-    lv_obj_t *active_border_28;
-    lv_obj_t *c1_27;
-    lv_obj_t *active_border_29;
-    lv_obj_t *c1_28;
-    lv_obj_t *active_border_30;
-    lv_obj_t *c1_29;
-    lv_obj_t *active_border_31;
-    lv_obj_t *c1_30;
-    lv_obj_t *active_border_32;
-    lv_obj_t *c1_31;
-    lv_obj_t *active_border_33;
-    lv_obj_t *c1_32;
-    lv_obj_t *active_border_34;
-    lv_obj_t *c1_33;
-    lv_obj_t *active_border_35;
-    lv_obj_t *c1_34;
-    lv_obj_t *active_border_36;
-    lv_obj_t *c1_35;
-    lv_obj_t *active_border_37;
-    lv_obj_t *c1_36;
-    lv_obj_t *active_border_38;
-    lv_obj_t *c1_37;
-    lv_obj_t *active_border_39;
-    lv_obj_t *c1_38;
-    lv_obj_t *active_border_40;
 } objects_t;
 
 extern objects_t objects;
@@ -769,9 +699,6 @@ void tick_screen_camera();
 
 void create_screen_page_main();
 void tick_screen_page_main();
-
-void create_screen_page_choose();
-void tick_screen_page_choose();
 
 void tick_screen_by_id(enum ScreensEnum screenId);
 void tick_screen(int screen_index);

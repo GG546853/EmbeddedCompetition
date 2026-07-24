@@ -193,7 +193,7 @@ void MX_FREERTOS_Init(void) {
   //Aht10_TaskHandle = osThreadNew(Aht10_Task, NULL, &Aht10Task_attributes);
   UART4_RxTaskHandle = osThreadNew(UART4_RxTask, NULL, &UART4_RxTask_attributes);
   Encoder_TaskHandle = osThreadNew(Encoder_Task, NULL, &EncoderTask_attributes);
-  //VL53L1X_TaskHandle = osThreadNew(VL53L1X_Task, NULL, &VL53L1XTask_attributes);
+  VL53L1X_TaskHandle = osThreadNew(VL53L1X_Task, NULL, &VL53L1XTask_attributes);
   StorageFlushHandle = osThreadNew(StorageFlush_Task, NULL, &StorageFlushTask_attributes);
   /* USER CODE END RTOS_THREADS */
 

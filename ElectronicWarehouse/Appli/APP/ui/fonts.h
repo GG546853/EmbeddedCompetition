@@ -8,7 +8,6 @@ extern "C" {
 #endif
 
 extern const lv_font_t ui_font_chinese;
-extern const lv_font_t ui_font_chinese24;
 extern const lv_font_t ui_font_chinese18;
 extern const lv_font_t ui_font_chinese10;
 extern const lv_font_t ui_font_chinese8;

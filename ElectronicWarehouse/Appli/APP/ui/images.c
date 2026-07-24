@@ -10,11 +10,11 @@ const ext_img_desc_t images[16] = {
     { "page-search", &img_page_search },
     { "page-printfer", &img_page_printfer },
     { "page_set", &img_page_set },
-    { "page_set1", &img_page_set1 },
     { "page_wendu", &img_page_wendu },
     { "page_sdu", &img_page_sdu },
     { "page_power", &img_page_power },
     { "page_con", &img_page_con },
-    { "page_gj", &img_page_gj },
+    { "page_sz", &img_page_sz },
+    { "page_guanji", &img_page_guanji },
     { "page_renlian", &img_page_renlian },
 };

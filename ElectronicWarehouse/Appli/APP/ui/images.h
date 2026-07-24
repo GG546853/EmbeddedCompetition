@@ -16,12 +16,12 @@ extern const lv_img_dsc_t img_page_uimode;
 extern const lv_img_dsc_t img_page_search;
 extern const lv_img_dsc_t img_page_printfer;
 extern const lv_img_dsc_t img_page_set;
-extern const lv_img_dsc_t img_page_set1;
 extern const lv_img_dsc_t img_page_wendu;
 extern const lv_img_dsc_t img_page_sdu;
 extern const lv_img_dsc_t img_page_power;
 extern const lv_img_dsc_t img_page_con;
-extern const lv_img_dsc_t img_page_gj;
+extern const lv_img_dsc_t img_page_sz;
+extern const lv_img_dsc_t img_page_guanji;
 extern const lv_img_dsc_t img_page_renlian;
 
 #ifndef EXT_IMG_DESC_T

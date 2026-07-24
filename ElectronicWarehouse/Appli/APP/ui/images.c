@@ -1,7 +1,6 @@
 #include "images.h"
 
 const ext_img_desc_t images[16] = {
-    { "p-iamge", &img_p_iamge },
     { "page-wms", &img_page_wms },
     { "page-dashboard", &img_page_dashboard },
     { "page-inventory", &img_page_inventory },
@@ -14,7 +13,8 @@ const ext_img_desc_t images[16] = {
     { "page_sdu", &img_page_sdu },
     { "page_power", &img_page_power },
     { "page_con", &img_page_con },
-    { "page_sz", &img_page_sz },
     { "page_guanji", &img_page_guanji },
     { "page_renlian", &img_page_renlian },
+    { "page_tx", &img_page_tx },
+    { "page_sz", &img_page_sz },
 };

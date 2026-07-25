@@ -36,6 +36,7 @@
     "ui_image_page_sz.c",
     "ui_image_page_tx.c",
     "ui_image_page_uimode.c",
+    "ui_image_page_user.c",
     "ui_image_page_wendu.c",
     "ui_image_page_wms.c",
     "vars.h"

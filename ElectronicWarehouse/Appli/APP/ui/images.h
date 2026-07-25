@@ -23,6 +23,7 @@ extern const lv_img_dsc_t img_page_guanji;
 extern const lv_img_dsc_t img_page_renlian;
 extern const lv_img_dsc_t img_page_tx;
 extern const lv_img_dsc_t img_page_sz;
+extern const lv_img_dsc_t img_page_user;
 
 #ifndef EXT_IMG_DESC_T
 #define EXT_IMG_DESC_T
@@ -32,7 +33,7 @@ typedef struct _ext_img_desc_t {
 } ext_img_desc_t;
 #endif
 
-extern const ext_img_desc_t images[16];
+extern const ext_img_desc_t images[17];
 
 #ifdef __cplusplus
 }

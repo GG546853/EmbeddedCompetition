@@ -59,30 +59,31 @@
 ../APP/ui/structs.h:174:10:void LSWValue::name(const char*)	40	static
 ../APP/ui/structs.h:181:10:void LSWValue::CNUM(int)	40	static
 ../APP/ui/structs.h:188:10:void LSWValue::STOCK(int)	40	static
-../APP/ui/ui_bridge.cpp:17:6:void ui_set_integer(int, int)	40	static
-../APP/ui/ui_bridge.cpp:21:5:int ui_get_integer(int)	40	static
-../APP/ui/ui_bridge.cpp:25:6:void ui_set_string(int, const char*)	40	static
-../APP/ui/ui_bridge.cpp:29:13:const char* ui_get_string(int)	40	static
-../APP/ui/ui_bridge.cpp:33:13:void copy_item_to_cab(CabinetValue&, const InventoryItem*)	16	static
-../APP/ui/ui_bridge.cpp:41:13:void copy_cab_to_item(InventoryItem*, CabinetValue)	24	static
+../APP/ui/ui_bridge.cpp:25:6:void ui_set_integer(int, int)	40	static
+../APP/ui/ui_bridge.cpp:29:5:int ui_get_integer(int)	40	static
+../APP/ui/ui_bridge.cpp:33:6:void ui_set_string(int, const char*)	40	static
+../APP/ui/ui_bridge.cpp:37:13:const char* ui_get_string(int)	40	static
+../APP/ui/ui_bridge.cpp:41:13:void copy_item_to_cab(CabinetValue&, const InventoryItem*)	16	static
+../APP/ui/ui_bridge.cpp:49:13:void copy_cab_to_item(InventoryItem*, CabinetValue)	24	static
 ../APP/ui/eez-flow.h:1355:8:eez::ArrayOf<CabinetValue, 81920>::~ArrayOf()	16	static
 ../APP/ui/structs.h:51:8:CabinetValue::~CabinetValue()	16	static
-../APP/ui/ui_bridge.cpp:49:6:void ui_push_inventory(const InventoryItem*, int, const InventoryItem*, int)	120	static
-../APP/ui/ui_bridge.cpp:67:6:void ui_pull_inventory(InventoryItem*, int, InventoryItem*, int)	128	static
+../APP/ui/ui_bridge.cpp:57:6:void ui_push_inventory(const InventoryItem*, int, const InventoryItem*, int)	120	static
+../APP/ui/ui_bridge.cpp:75:6:void ui_pull_inventory(InventoryItem*, int, InventoryItem*, int)	128	static
 ../APP/ui/eez-flow.h:1355:8:eez::ArrayOf<LogEntryValue, 81921>::~ArrayOf()	16	static
 ../APP/ui/structs.h:101:8:LogEntryValue::~LogEntryValue()	16	static
-../APP/ui/ui_bridge.cpp:83:6:void ui_push_history(const HistoryRecord*, int)	72	static
-../APP/ui/ui_bridge.cpp:98:5:int ui_pull_history(HistoryRecord*, int)	96	static
-../APP/ui/ui_bridge.cpp:118:5:int ui_get_log_count()	40	static
-../APP/ui/ui_bridge.cpp:125:6:void ui_get_log_entry(int, char*, char*, char*, int*, char*, int*)	96	static
+../APP/ui/ui_bridge.cpp:91:6:void ui_push_history(const HistoryRecord*, int)	72	static
+../APP/ui/ui_bridge.cpp:106:5:int ui_pull_history(HistoryRecord*, int)	96	static
+../APP/ui/ui_bridge.cpp:126:5:int ui_get_log_count()	40	static
+../APP/ui/ui_bridge.cpp:133:6:void ui_get_log_entry(int, char*, char*, char*, int*, char*, int*)	96	static
 ../APP/ui/eez-flow.h:1355:8:eez::ArrayOf<LSWValue, 81922>::~ArrayOf()	16	static
 ../APP/ui/structs.h:158:8:LSWValue::~LSWValue()	16	static
-../APP/ui/ui_bridge.cpp:144:6:void ui_push_alarm(const AlarmRecord*, int)	72	static
-../APP/ui/ui_bridge.cpp:158:17:void action_givetime(lv_event_t*)	16	static
-../APP/ui/ui_bridge.cpp:165:13:void cam_text_clear_cb(lv_timer_t*)	16	static
-../APP/ui/ui_bridge.cpp:171:17:void ui_set_cam_text(const char*)	16	static
-../APP/ui/ui_bridge.cpp:180:17:void ui_set_flag(int, int)	16	static
-../APP/ui/ui_bridge.cpp:184:17:void ui_poll_enroll_status()	8	static
+../APP/ui/ui_bridge.cpp:152:6:void ui_push_alarm(const AlarmRecord*, int)	72	static
+../APP/ui/ui_bridge.cpp:166:17:void action_givetime(lv_event_t*)	16	static
+../APP/ui/ui_bridge.cpp:173:13:void cam_text_clear_cb(lv_timer_t*)	16	static
+../APP/ui/ui_bridge.cpp:179:17:void ui_set_cam_text(const char*)	16	static
+../APP/ui/ui_bridge.cpp:188:17:void ui_set_flag(int, int)	16	static
+../APP/ui/ui_bridge.cpp:192:17:void ui_poll_enroll_status()	8	static
+../APP/ui/ui_bridge.cpp:229:17:void ui_poll_auto_unlock()	40	static
 ../APP/ui/eez-flow.h:216:14:static void eez::ObjectAllocator<T>::deallocate(T*) [with T = eez::Ref]	16	static
 ../APP/ui/eez-flow.h:1357:5:eez::ArrayOf<T, ARRAY_TYPE>::ArrayOf(size_t) [with T = CabinetValue; long unsigned int ARRAY_TYPE = 81920]	40	static
 ../APP/ui/eez-flow.h:1369:10:void eez::ArrayOf<T, ARRAY_TYPE>::at(int, const T&) [with T = CabinetValue; long unsigned int ARRAY_TYPE = 81920]	24	static

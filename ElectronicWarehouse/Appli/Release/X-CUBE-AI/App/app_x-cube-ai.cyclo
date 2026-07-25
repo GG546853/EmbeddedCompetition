@@ -20,6 +20,6 @@
 ../X-CUBE-AI/App/app_x-cube-ai.c:879:10:ai_face_gallery_get_count	1
 ../X-CUBE-AI/App/app_x-cube-ai.c:888:7:ai_face_reid_run	14
 ../X-CUBE-AI/App/app_x-cube-ai.c:926:7:MX_X_CUBE_AI_Process_User	39
-../X-CUBE-AI/App/app_x-cube-ai.c:953:6:set_clk_sleep_mode	1
-../X-CUBE-AI/App/app_x-cube-ai.c:992:6:MX_X_CUBE_AI_Init	1
-../X-CUBE-AI/App/app_x-cube-ai.c:1056:6:MX_X_CUBE_AI_Process	3
+../X-CUBE-AI/App/app_x-cube-ai.c:954:6:set_clk_sleep_mode	1
+../X-CUBE-AI/App/app_x-cube-ai.c:993:6:MX_X_CUBE_AI_Init	1
+../X-CUBE-AI/App/app_x-cube-ai.c:1057:6:MX_X_CUBE_AI_Process	3

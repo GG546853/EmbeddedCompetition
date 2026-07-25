@@ -950,6 +950,7 @@ uint32_t ai_face_gallery_get_count(void)
 /* Entry points --------------------------------------------------------------*/
 
 
+
 void set_clk_sleep_mode(void)
 {
   /* Leave clocks enabled in Low Power modes */

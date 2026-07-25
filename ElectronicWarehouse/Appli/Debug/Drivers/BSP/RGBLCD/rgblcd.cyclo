@@ -17,3 +17,4 @@
 ../Drivers/BSP/RGBLCD/rgblcd.c:775:17:rgblcd_panelid_read	4
 ../Drivers/BSP/RGBLCD/rgblcd.c:835:16:rgblcd_ltdc_clk_set	2
 ../Drivers/BSP/RGBLCD/rgblcd.c:857:17:rgblcd_pow	2
+../Drivers/BSP/RGBLCD/rgblcd.c:873:6:rgblcd_color_bar_test	2

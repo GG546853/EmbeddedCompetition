@@ -36,6 +36,7 @@
 #include "UART4_RxTask.h"
 #include "Outbound_task.h"
 #include "Encoder_task.h"
+#include "Battery_task.h"
 
 #include <stdio.h>
 #include "imx335.h"
@@ -190,10 +191,11 @@ void MX_FREERTOS_Init(void) {
   //Outbound_TaskHandle = osThreadNew(Outbound_Task, NULL, &OutboundTask_attributes);
 
 
-  //Aht10_TaskHandle = osThreadNew(Aht10_Task, NULL, &Aht10Task_attributes);
+  Aht10_TaskHandle = osThreadNew(Aht10_Task, NULL, &Aht10Task_attributes);
   UART4_RxTaskHandle = osThreadNew(UART4_RxTask, NULL, &UART4_RxTask_attributes);
   Encoder_TaskHandle = osThreadNew(Encoder_Task, NULL, &EncoderTask_attributes);
-  VL53L1X_TaskHandle = osThreadNew(VL53L1X_Task, NULL, &VL53L1XTask_attributes);
+  //VL53L1X_TaskHandle = osThreadNew(VL53L1X_Task, NULL, &VL53L1XTask_attributes);
+  Battery_TaskHandle = osThreadNew(Battery_Task, NULL, &BatteryTask_attributes);
   StorageFlushHandle = osThreadNew(StorageFlush_Task, NULL, &StorageFlushTask_attributes);
   /* USER CODE END RTOS_THREADS */
 
@@ -212,28 +214,10 @@ void MX_FREERTOS_Init(void) {
 void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN defaultTask */
-	//osThreadNew(RGBLED_Task, (void *)(uintptr_t)0xfffffff, &RGBLEDTask_attributes);
-	//RGBLED_Flash(0xfffffff);
   vTaskDelay(pdMS_TO_TICKS(3500));
-	//char now[32];
-	//osThreadNew(RGBLED_Task, (void *)(uintptr_t)0xfffffff, &RGBLEDTask_attributes);
-	//osThreadNew(Electromagnet_Task, (void *)(uintptr_t)0x30, &ElectromagnetTask_attributes);
   for(;;)
   {
 	  HAL_GPIO_WritePin(GPIOG,GPIO_PIN_10,1);
-	  //ui_set_cam_text("hello");
-//    printf("[History] %d records:\r\n", history_count);
-//    for (int i = 0; i < history_count; i++) {
-//        printf("  [%d] t:%s u:%s pc:%s qty:%u act:%s cab:%d\r\n",
-//               i,
-//               history_list[i].time,
-//               history_list[i].user,
-//               history_list[i].pc,
-//               history_list[i].quantity,
-//               history_list[i].action,
-//               history_list[i].cabinet_id);
-//    }
-
     osDelay(10000);
   }
   /* USER CODE END defaultTask */

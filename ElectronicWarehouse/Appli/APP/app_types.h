@@ -27,6 +27,8 @@ typedef struct {
     float humidity;
     float temperature_th;
     float humidity_th;
+    bool Battery_state;
+    float battery_voltage;
     bool Scan_state;
     int Count;
     char User[32];

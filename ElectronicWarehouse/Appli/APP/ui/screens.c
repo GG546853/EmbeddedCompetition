@@ -30,10 +30,6 @@ static void event_handler_cb_page_lock_btn_verify(lv_event_t *e) {
         e->user_data = (void *)0;
         action_ver(e);
     }
-    if (event == LV_EVENT_CLICKED) {
-        e->user_data = (void *)0;
-        flowPropagateValueLVGLEvent(flowState, 3, 0, e);
-    }
 }
 
 static void event_handler_cb_page_lock_dropdown_users(lv_event_t *e) {

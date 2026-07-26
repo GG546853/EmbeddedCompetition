@@ -77,19 +77,19 @@ void action_action_stop_camera(lv_event_t * e) {
 void action_action_recognize(lv_event_t * e) {
     (void)e;
 
-//    g_identify_done  = 0;
-//    g_identify_match = 0;
-//    g_trigger_identify = 1;
-//
-//    /* 等待 AI 任务完成识别，超时 2 秒 */
-//    int timeout = 200;
-//    while (!g_identify_done && timeout > 0) {
-//        vTaskDelay(pdMS_TO_TICKS(10));
-//        timeout--;
-//    }
-//
-//    if (g_identify_match) {
-        /* 匹配成功：关 AI ，开扫码，进主页 */
+    g_identify_done  = 0;
+    g_identify_match = 0;
+    g_trigger_identify = 1;
+
+    /* Wait for AI task to complete identify, timeout 2 seconds */
+    int timeout = 200;
+    while (!g_identify_done && timeout > 0) {
+        vTaskDelay(pdMS_TO_TICKS(10));
+        timeout--;
+    }
+
+    if (g_identify_match) {
+        /* Match: stop AI, open electromagnet, enter main */
         if (AITaskHandle != NULL) {
             osThreadTerminate(AITaskHandle);
             AITaskHandle = NULL;
@@ -114,15 +114,15 @@ void action_action_recognize(lv_event_t * e) {
         Barcode_TaskHandle = osThreadNew(Barcode_Task, NULL, &BarcodeTask_attributes);
 
         eez_flow_push_screen(SCREEN_ID_PAGE_MAIN, LV_SCR_LOAD_ANIM_NONE, 0, 0);
-//    } else {
-//        /* 未匹配：关 AI，返回锁屏 */
-//        if (AITaskHandle != NULL) {
-//            osThreadTerminate(AITaskHandle);
-//            AITaskHandle = NULL;
-//        }
-//
-//        eez_flow_push_screen(SCREEN_ID_PAGE_LOCK, LV_SCR_LOAD_ANIM_NONE, 0, 0);
-//    }
+    } else {
+        /* No match: stop AI, return to lock screen */
+        if (AITaskHandle != NULL) {
+            osThreadTerminate(AITaskHandle);
+            AITaskHandle = NULL;
+        }
+
+        eez_flow_push_screen(SCREEN_ID_PAGE_LOCK, LV_SCR_LOAD_ANIM_NONE, 0, 0);
+    }
 }
 
 

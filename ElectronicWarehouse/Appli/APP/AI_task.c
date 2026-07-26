@@ -392,13 +392,8 @@ static void run_reid_pipeline(ai_result_t *result)
     if (reid_pending == REID_REGISTER) {
         if (!g_capture_pending && !g_dump_once) return;
     } else {
-        /* Identify mode: time gate to keep Model 1 smooth */
-        static uint32_t last_tick = 0;
-        uint32_t now = xTaskGetTickCount();
-        uint32_t elapsed = (last_tick == 0) ? 999
-                          : (now - last_tick) * portTICK_PERIOD_MS;
-        if (elapsed < 300) return;
-        last_tick = now;
+        /* Identify mode: only run once when triggered */
+        if (!g_trigger_identify) return;
     }
 
     ai_detection_t *best = &result->detections[0];
@@ -469,8 +464,11 @@ static void run_reid_pipeline(ai_result_t *result)
         }
         } // if (g_capture_pending)
     } else {
-        /* --- Continuous identify --- */
-        if (g_auto_unlock) return;  /* unlock pending, skip further frames */
+        /* --- K-of-N Voting Identify --- */
+        if (g_auto_unlock) return;
+
+        static int vote_pass = 0;
+        static int vote_total = 0;
 
         float dist;
         char name[FACE_NAME_MAX];
@@ -485,22 +483,35 @@ static void run_reid_pipeline(ai_result_t *result)
             ok = (ai_face_identify(embedding, name, &dist) >= 0);
         }
 
-        g_identify_dist = dist;
+        vote_total++;
         if (ok) {
-            g_identify_match = 1;
+            vote_pass++;
+            g_identify_dist = dist;
             strncpy(g_identify_name, name, FACE_NAME_MAX);
-            printf("[REID] %s dist=%.3f\r\n", name, dist);
-            g_auto_unlock = 1;
+            printf("[REID] vote %d/%d: %s dist=%.3f\r\n",
+                   vote_total, VOTE_N, name, dist);
         } else {
-            g_identify_match = 0;
-            printf("[REID] unknown dist=%.3f\r\n", dist);
+            printf("[REID] vote %d/%d: unknown dist=%.3f\r\n",
+                   vote_total, VOTE_N, dist);
         }
         {
             char buf[16];
             snprintf(buf, sizeof(buf), "%.3f", dist);
             ui_set_cam_text(buf);
         }
-        g_identify_done = 1;
+
+        if (vote_total >= VOTE_N) {
+            g_identify_match = (vote_pass >= VOTE_K) ? 1 : 0;
+            if (g_identify_match) {
+                printf("[REID] Vote %d/%d PASS\r\n", vote_pass, VOTE_N);
+            } else {
+                printf("[REID] Vote %d/%d FAIL\r\n", vote_pass, VOTE_N);
+            }
+            g_identify_done = 1;
+            g_trigger_identify = 0;
+            vote_pass = 0;
+            vote_total = 0;
+        }
     }
     if (g_auto_dump || g_dump_once) { send_face_dump(); g_dump_once = 0; }
 }

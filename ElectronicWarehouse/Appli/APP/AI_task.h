@@ -17,6 +17,9 @@ extern char         g_identify_name[16];
 extern volatile int g_identify_index;
 extern volatile int g_auto_unlock;
 
+#define VOTE_N  5   // K-of-N voting: total frames
+#define VOTE_K  2   // K-of-N voting: required passes
+
 extern volatile int g_enroll_progress;
 extern volatile int g_enroll_total;
 extern volatile int g_enroll_state;

@@ -38,7 +38,7 @@
 ../APP/ui/eez-flow.h:4349:1:utf8rcodepoint	6
 ../APP/ui/actions.c:33:6:action_ver	1
 ../APP/ui/actions.c:56:6:action_action_stop_camera	2
-../APP/ui/actions.c:77:6:action_action_recognize	3
+../APP/ui/actions.c:77:6:action_action_recognize	7
 ../APP/ui/actions.c:130:6:action_iobutton	11
 ../APP/ui/actions.c:195:6:action_new_user	1
 ../APP/ui/actions.c:211:6:action_save_user	3

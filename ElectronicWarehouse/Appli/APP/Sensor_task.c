@@ -39,7 +39,9 @@ void Sensor_Task(void *argument)
 	  if (imx335_start_capture((uint32_t)g_ltdc_framebuf) != 0) {
 	      printf("[Sensor] start_capture FAILED\r\n");
 	  }
-
+	  imx335_set_wb_mode(4000);
+	  imx335_set_manual_exposure(33266);
+	  imx335_set_manual_gain(10537);
 	  while(1)
 	  {
 		  imx335_isp_background_process();

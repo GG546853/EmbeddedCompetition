@@ -22,6 +22,7 @@
 #include "lvgl.h"
 #include "ui/screens.h"
 #include "ui/ui_bridge.h"
+#include "Outbound_task.h"
 #define DISP_W 800
 #define DISP_H 480
 #define BOX_THICKNESS 3
@@ -180,9 +181,12 @@ void ai_start_enroll(const char *name) {
 /* 1:1 verification target (loaded by 'select <name>') */
 static face_entry_t g_selected_entry;
 static int          g_has_selection = 0;
-static int          g_auto_dump    = 0;  /* 1 = hex dump face crop on every identify */
+static int          g_auto_dump   = 0;
+static int          g_dump_once   = 0;
+static int          g_enroll_dump = 0;
 
 static void send_face_dump(void);
+static void send_enroll_face_dump(int sample_idx, int total);
 
 /* BSP interrupt-driven RX accumulates into g_uart_rx_buf[].
    g_uart_rx_sta bit15 = line ready (received \r\n). */
@@ -206,12 +210,14 @@ static void process_serial_commands(void)
         strncpy(reid_name, cmd + 9, FACE_NAME_MAX - 1);
         reid_name[FACE_NAME_MAX - 1] = '\0';
         reid_pending = REID_REGISTER;
-        g_capture_pending = 1;  /* first capture at current angle */
+        g_capture_pending = 1;
+        g_model2_enabled = 1;
         printf("[REID] Enrolling '%s' — send 's' for next sample\r\n", reid_name);
     }
     else if (strcmp(cmd, "s") == 0) {
         if (reid_pending == REID_REGISTER) {
             g_capture_pending = 1;
+            printf("[REID] Capture triggered\r\n");
         } else {
             printf("[REID] Not enrolling — use 'register <name>' first\r\n");
         }
@@ -263,6 +269,21 @@ static void process_serial_commands(void)
     else if (strcmp(cmd, "loadface") == 0) {
         storage_load_faces();
     }
+    else if (strcmp(cmd, "saveinv") == 0) {
+        storage_save_inventory();
+        printf("[TEST] Inventory saved to SD NAND\r\n");
+    }
+    else if (strcmp(cmd, "loadinv") == 0) {
+        storage_load_inventory();
+        ui_push_inventory(inventory_item_T, 28, inventory_item_D, 6);
+        printf("[TEST] Inventory loaded from SD NAND\r\n");
+    }
+    else if (strcmp(cmd, "clearinv") == 0) {
+        memset(inventory_item_T, 0, sizeof(inventory_item_T));
+        memset(inventory_item_D, 0, sizeof(inventory_item_D));
+        ui_push_inventory(inventory_item_T, 28, inventory_item_D, 6);
+        printf("[TEST] Inventory + history cleared in RAM (SD NAND NOT modified)\r\n");
+    }
     else if (strcmp(cmd, "help") == 0) {
         printf("[HELP] Commands:\r\n");
         printf("  register <name>  -- start enrolling current face\r\n");
@@ -274,14 +295,20 @@ static void process_serial_commands(void)
         printf("  saveface         -- save face gallery to SD NAND\r\n");
         printf("  loadface         -- load face gallery from SD NAND\r\n");
         printf("  clearface        -- clear face gallery in RAM only\r\n");
+        printf("  saveinv          -- save inventory to SD NAND\r\n");
+        printf("  loadinv          -- load inventory from SD NAND\r\n");
+        printf("  clearinv         -- clear inventory in RAM only\r\n");
         printf("  --- Camera ---\r\n");
         printf("  cam status       -- print camera Gain/Exposure/WB/AEC/AWB\r\n");
         printf("  cam gain <val>   -- set manual gain 0~72000 mdB\r\n");
         printf("  cam exp <val>    -- set manual exposure 0~33266 us\r\n");
         printf("  cam wb <temp>    -- WB: 0=auto, 2856=A, 4000=TL84, 5000=D50, 6500=D65\r\n");
         printf("  cam auto <0|1>   -- 0=manual, 1=auto (AEC+AWB)\r\n");
-        printf("  crccc             -- CRC32 check of network_fc weights\r\n");
-        printf("  dumpface          -- hex dump 112x112 face crop for PC comparison\r\n");
+        printf("  crccc            -- CRC32 check of network_fc weights\r\n");
+        printf("  --- Dump ---\r\n");
+        printf("  dumpface         -- one-shot hex dump of face crop\r\n");
+        printf("  dumpface on/off  -- auto-dump on every identify frame\r\n");
+        printf("  enrolldump on/off-- auto-dump on every enrollment capture\r\n");
     }
     else if (strcmp(cmd, "crccc") == 0) {
         extern uint32_t fc_weight_crc32(void);
@@ -290,7 +317,7 @@ static void process_serial_commands(void)
                (unsigned long)crc);
     }
     else if (strcmp(cmd, "dumpface") == 0) {
-        send_face_dump();
+        g_dump_once = 1;
     }
     else if (strcmp(cmd, "dumpface on") == 0) {
         g_auto_dump = 1;
@@ -299,6 +326,14 @@ static void process_serial_commands(void)
     else if (strcmp(cmd, "dumpface off") == 0) {
         g_auto_dump = 0;
         printf("[DUMP] Auto-dump OFF\r\n");
+    }
+    else if (strcmp(cmd, "enrolldump on") == 0) {
+        g_enroll_dump = 1;
+        printf("[DUMP] Enroll-dump ON — face crop sent on every enrollment capture\r\n");
+    }
+    else if (strcmp(cmd, "enrolldump off") == 0) {
+        g_enroll_dump = 0;
+        printf("[DUMP] Enroll-dump OFF\r\n");
     }
 }
 
@@ -328,13 +363,34 @@ static void send_face_dump(void)
     printf("[DUMP-FACE] done\r\n");
 }
 
+static void send_enroll_face_dump(int sample_idx, int total)
+{
+    const uint32_t dump_size = 112 * 112 * 3;
+
+    SCB_CleanDCache_by_Addr((uint32_t *)FACE_CROP_BUF, dump_size);
+    __DSB();
+
+    printf("[DUMP-ENROLL] sample %d/%d %lu bytes hex follow...\r\n",
+           sample_idx, total, (unsigned long)dump_size);
+
+    for (uint32_t i = 0; i < dump_size; i += 48) {
+        uint32_t chunk = (i + 48 <= dump_size) ? 48 : (dump_size - i);
+        for (uint32_t j = 0; j < chunk; j++) {
+            printf("%02X", FACE_CROP_BUF[i + j]);
+        }
+        printf("\r\n");
+    }
+
+    printf("[DUMP-ENROLL] sample %d/%d done\r\n", sample_idx, total);
+}
+
 static void run_reid_pipeline(ai_result_t *result)
 {
     if (!g_model2_enabled) return;
     if (result->nb_detect == 0) return;
 
     if (reid_pending == REID_REGISTER) {
-        if (!g_capture_pending) return;
+        if (!g_capture_pending && !g_dump_once) return;
     } else {
         /* Identify mode: time gate to keep Model 1 smooth */
         static uint32_t last_tick = 0;
@@ -364,14 +420,19 @@ static void run_reid_pipeline(ai_result_t *result)
 
     if (reid_pending == REID_REGISTER) {
         /* --- Enrollment --- */
+        if (g_capture_pending) {
         g_capture_pending = 0;
         int remaining = ai_face_enroll_multi(embedding, reid_name);
+        if (remaining != ENROLL_QUALITY_REJECT && g_enroll_dump) {
+            send_enroll_face_dump(FACE_ENROLL_SAMPLES - remaining, FACE_ENROLL_SAMPLES);
+        }
         if (remaining == ENROLL_QUALITY_REJECT) {
             snprintf(g_enroll_msg, sizeof(g_enroll_msg), "Keep still...");
         }
         else if (remaining == 0) {
             reid_pending = REID_IDLE;
             storage_mark_faces_dirty();
+            printf("[REID] Captured %d/%d\r\n", FACE_ENROLL_SAMPLES, FACE_ENROLL_SAMPLES);
             printf("[REID] Enrolled '%s'\r\n", reid_name);
 
             g_enroll_state = 3;
@@ -404,9 +465,13 @@ static void run_reid_pipeline(ai_result_t *result)
             g_enroll_progress = FACE_ENROLL_SAMPLES - remaining;
             snprintf(g_enroll_msg, sizeof(g_enroll_msg),
                      "Enroll sample %d/%d", g_enroll_progress, FACE_ENROLL_SAMPLES);
+            printf("[REID] Captured %d/%d\r\n", g_enroll_progress, FACE_ENROLL_SAMPLES);
         }
+        } // if (g_capture_pending)
     } else {
         /* --- Continuous identify --- */
+        if (g_auto_unlock) return;  /* unlock pending, skip further frames */
+
         float dist;
         char name[FACE_NAME_MAX];
         int ok;
@@ -423,9 +488,9 @@ static void run_reid_pipeline(ai_result_t *result)
         g_identify_dist = dist;
         if (ok) {
             g_identify_match = 1;
-            g_auto_unlock = 1;
             strncpy(g_identify_name, name, FACE_NAME_MAX);
             printf("[REID] %s dist=%.3f\r\n", name, dist);
+            g_auto_unlock = 1;
         } else {
             g_identify_match = 0;
             printf("[REID] unknown dist=%.3f\r\n", dist);
@@ -437,6 +502,7 @@ static void run_reid_pipeline(ai_result_t *result)
         }
         g_identify_done = 1;
     }
+    if (g_auto_dump || g_dump_once) { send_face_dump(); g_dump_once = 0; }
 }
 
 /* -------------------------------------------------------------------------- */

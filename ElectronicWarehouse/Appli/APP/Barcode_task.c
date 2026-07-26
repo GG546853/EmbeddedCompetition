@@ -104,7 +104,9 @@ void Barcode_Task(void *argument)
                         Electromagnet_Open((uint8_t)(1u << (cab_id - 28)));
                     }
 
-                    HistoryRecord *r = &history_list[history_count];
+                    if (history_count >= 32) history_count = 31;
+					memmove(&history_list[1], &history_list[0], (size_t)history_count * sizeof(HistoryRecord));
+					HistoryRecord *r = &history_list[0];
                     get_current_time_str(r->time, sizeof(r->time));
                     strncpy(r->action, "put", sizeof(r->action));
                     strncpy(r->pc, inventory_item.pc, sizeof(r->pc));
@@ -113,7 +115,7 @@ void Barcode_Task(void *argument)
                     r->quantity   = inventory_item.quantity;
                     history_count++;
                     storage_mark_inventory_dirty();
-                    storage_mark_history_dirty();
+                    // storage_mark_history_dirty();  // disabled: history SD persistence
                     uart4_send_history(r);
                     ui_push_history(history_list, history_count);
                 } else {
@@ -150,7 +152,9 @@ void Barcode_Task(void *argument)
                                 Electromagnet_Open((uint8_t)(1u << (cid - 28)));
                             }
 
-                            HistoryRecord *r = &history_list[history_count];
+                            if (history_count >= 32) history_count = 31;
+					memmove(&history_list[1], &history_list[0], (size_t)history_count * sizeof(HistoryRecord));
+					HistoryRecord *r = &history_list[0];
                             get_current_time_str(r->time, sizeof(r->time));
                             strncpy(r->action, "put", sizeof(r->action));
                             strncpy(r->pc, inventory_item.pc, sizeof(r->pc));

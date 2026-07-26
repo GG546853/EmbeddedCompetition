@@ -45,6 +45,7 @@
 "./APP/ui/ui_image_page_sz.o"
 "./APP/ui/ui_image_page_tx.o"
 "./APP/ui/ui_image_page_uimode.o"
+"./APP/ui/ui_image_page_user.o"
 "./APP/ui/ui_image_page_wendu.o"
 "./APP/ui/ui_image_page_wms.o"
 "./Core/Src/adc.o"

@@ -34,6 +34,7 @@ void handle_time(const uint8_t *payload, uint8_t len);
 void handle_store(const uint8_t *payload, uint8_t len);
 void handle_miniapp_outbound(const uint8_t *payload, uint8_t len);
 void handle_face_name(const uint8_t *payload, uint8_t len);
+void handle_qty_unalert(const uint8_t *payload, uint8_t len);
 void get_current_time_str(char *buf, int bufsize);
 
 /* Inventory source callbacks (user implements) */

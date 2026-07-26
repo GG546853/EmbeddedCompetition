@@ -9,7 +9,7 @@ osThreadId_t VL53L1X_TaskHandle;
 const osThreadAttr_t VL53L1XTask_attributes = {
   .name = "VL53L1XTask",
   .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 256 * 4
+  .stack_size = 512 * 4
 };
 
 void VL53L1X_Task(void *argument)
@@ -20,9 +20,11 @@ void VL53L1X_Task(void *argument)
     Cabinet.System_state = true;
     Cabinet.distance_mm_th = 400;
     /* Wait for sensor to boot */
+    uint8_t ret;
     do {
-        vl53l1x_boot_state(&state);
-        vTaskDelay(pdMS_TO_TICKS(2));
+    	ret = vl53l1x_boot_state(&state);
+       // printf("boot_state: state=%u, ret=%u\r\n", state, ret);
+        vTaskDelay(pdMS_TO_TICKS(100));
     } while (state == 0);
 
     /* Verify sensor ID */

@@ -233,7 +233,7 @@ int main(void)
   if (storage_init() == 0) {
       storage_load_inventory();
       storage_load_faces();
-      storage_load_history();
+      // storage_load_history();  // disabled: history SD persistence removed
       printf("[STORAGE] All data loaded\r\n");
   } else {
       printf("[STORAGE] Mount failed — RAM-only mode\r\n");

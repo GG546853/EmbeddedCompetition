@@ -163,6 +163,13 @@ void ui_push_alarm(const AlarmRecord *list, int count) {
     osMutexRelease(flow_var_mutex);
 }
 
+void ui_clear_alarm(void) {
+    osMutexAcquire(flow_var_mutex, osWaitForever);
+    ArrayOfLSWValue lsws(0);
+    eez::flow::setGlobalVariable(FLOW_GLOBAL_VARIABLE_LSW, lsws);
+    osMutexRelease(flow_var_mutex);
+}
+
 extern "C" void action_givetime(lv_event_t * e)
 {
     (void)e;
@@ -247,6 +254,7 @@ extern "C" void ui_poll_auto_unlock(void) {
     /* Set user */
     strncpy(Cabinet.User, g_identify_name, sizeof(Cabinet.User) - 1);
     Cabinet.User[sizeof(Cabinet.User) - 1] = '\0';
+    ui_set_string(FLOW_GLOBAL_VARIABLE_USER, g_identify_name);
 
     /* Notify ESP32 */
     {

@@ -75,6 +75,7 @@ extern void handle_store(const uint8_t *payload, uint8_t len);
 extern void handle_miniapp_outbound(const uint8_t *payload, uint8_t len);
 extern void handle_qty_alert(const uint8_t *payload, uint8_t len);
 extern void handle_face_name(const uint8_t *payload, uint8_t len);
+extern void handle_qty_unalert(const uint8_t *payload, uint8_t len);
 
 static const FrameDispatchEntry dispatch_table[] = {
     { FRAME_TYPE_LED,        handle_led },
@@ -88,6 +89,7 @@ static const FrameDispatchEntry dispatch_table[] = {
     { FRAME_TYPE_MINIOUT,    handle_miniapp_outbound },
     { FRAME_TYPE_QTY_ALERT,  handle_qty_alert },
     { FRAME_TYPE_FACE_NAME,  handle_face_name },
+    { FRAME_TYPE_QTY_UNALERT, handle_qty_unalert },
 };
 
 void uart4_dispatch_frame(uint8_t type, const uint8_t *payload, uint8_t len)

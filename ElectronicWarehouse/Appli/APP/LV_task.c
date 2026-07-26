@@ -9,6 +9,7 @@
 #include "vars.h"
 #include "ui_bridge.h"
 #include "app_types.h"
+#include "Outbound_task.h"
 #include <sys/time.h>
 
 
@@ -71,6 +72,20 @@ void LVGL_Task(void *argument) {
     printf("[LV] ui_init done\r\n");
 
     ai_refresh_dropdown_users();
+
+    ui_push_inventory(inventory_item_T, 28, inventory_item_D, 6);
+    // ui_push_history(history_list, history_count);  // disabled: history SD persistence
+
+    int ctg = 0, total_qty = 0;
+    for (int i = 0; i < 28; i++) {
+        if (inventory_item_T[i].quantity > 0) { ctg++; total_qty += inventory_item_T[i].quantity; }
+    }
+    for (int i = 0; i < 6; i++) {
+        if (inventory_item_D[i].quantity > 0) { ctg++; total_qty += inventory_item_D[i].quantity; }
+    }
+    ui_set_integer(FLOW_GLOBAL_VARIABLE_DASH_CTG, ctg);
+    ui_set_integer(FLOW_GLOBAL_VARIABLE_DASH_LS, total_qty);
+    printf("[LV] UI synced from SD data, ctg=%d ls=%d\r\n", ctg, total_qty);
 
     g_lv_stack_high_water = uxTaskGetStackHighWaterMark(NULL);  // 记录剩余栈
     printf("[LV] stack water: %u words\r\n", (unsigned)g_lv_stack_high_water);

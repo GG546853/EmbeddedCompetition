@@ -21,6 +21,7 @@ int  ui_get_log_count(void);
 void ui_get_log_entry(int index, char *time, char *user, char *pc,
                       int *qty, char *action, int *cab_id);
 void ui_push_alarm(const AlarmRecord *list, int count);
+void ui_clear_alarm(void);
 void ui_set_cam_text(const char *msg);
 void ui_set_flag(int var_id, int val);
 void ui_poll_enroll_status(void);

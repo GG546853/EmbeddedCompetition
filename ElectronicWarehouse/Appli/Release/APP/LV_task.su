@@ -36,6 +36,6 @@
 ../APP/ui/eez-flow.h:3974:27:utf8islower	8	static
 ../APP/ui/eez-flow.h:3999:6:utf8upr	24	static
 ../APP/ui/eez-flow.h:4349:1:utf8rcodepoint	0	static
-../APP/LV_task.c:62:6:LVGL_Task	64	static
-../APP/LV_task.c:93:6:_exit	0	static
-../APP/LV_task.c:98:5:_gettimeofday	0	static
+../APP/LV_task.c:63:6:LVGL_Task	72	static
+../APP/LV_task.c:108:6:_exit	0	static
+../APP/LV_task.c:113:5:_gettimeofday	0	static

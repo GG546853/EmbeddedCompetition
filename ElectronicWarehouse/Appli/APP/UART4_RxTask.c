@@ -116,8 +116,6 @@ void handle_alert(const uint8_t *payload, uint8_t len)
         Cabinet.humidity_th    = val;
     }
 
-    ui_set_integer(FLOW_GLOBAL_VARIABLE_DASH_TS,
-        ui_get_integer(FLOW_GLOBAL_VARIABLE_DASH_TS) + 1);
 }
 
 void handle_heartbeat(const uint8_t *payload, uint8_t len)
@@ -310,7 +308,9 @@ void handle_store(const uint8_t *payload, uint8_t len)
         Electromagnet_Open((uint8_t)(1u << (cab_id - 28)));
     }
 
-    HistoryRecord *r = &history_list[history_count];
+    if (history_count >= 32) history_count = 31;
+	memmove(&history_list[1], &history_list[0], (size_t)history_count * sizeof(HistoryRecord));
+	HistoryRecord *r = &history_list[0];
     get_current_time_str(r->time, sizeof(r->time));
     strncpy(r->action, "put", sizeof(r->action));
     strncpy(r->pc, pending_item.pc, sizeof(r->pc));
@@ -318,7 +318,7 @@ void handle_store(const uint8_t *payload, uint8_t len)
     r->cabinet_id = cab_id;
     r->quantity   = pending_item.quantity;
     history_count++;
-    storage_mark_history_dirty();
+    // storage_mark_history_dirty();  // disabled: history SD persistence
     uart4_send_history(r);
     ui_push_history(history_list, history_count);
 
@@ -379,6 +379,23 @@ void handle_qty_alert(const uint8_t *payload, uint8_t len)
     alarm_list[0].quantity    = qty;
 
     ui_push_alarm(alarm_list, 1);
+    ui_set_integer(FLOW_GLOBAL_VARIABLE_DASH_TS,
+        ui_get_integer(FLOW_GLOBAL_VARIABLE_DASH_TS) + 1);
+}
+
+void handle_qty_unalert(const uint8_t *payload, uint8_t len)
+{
+    if (len < 1) return;
+
+    uint8_t cabinet_id = payload[0];
+
+    if (alarm_list[0].pc[0] != '\0' && alarm_list[0].cabinet_id == cabinet_id) {
+        memset(&alarm_list[0], 0, sizeof(AlarmRecord));
+        ui_clear_alarm();
+        ui_set_integer(FLOW_GLOBAL_VARIABLE_DASH_TS,
+            ui_get_integer(FLOW_GLOBAL_VARIABLE_DASH_TS) - 1);
+        printf("[QTY] Unalert cabinet %u\r\n", cabinet_id);
+    }
 }
 
 void inventory_store_to_slot(const InventoryItem *item, const char *location)

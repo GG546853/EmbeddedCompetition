@@ -98,11 +98,15 @@ void action_action_recognize(lv_event_t * e) {
 
         strncpy(Cabinet.User, g_identify_name, sizeof(Cabinet.User) - 1);
         Cabinet.User[sizeof(Cabinet.User) - 1] = '\0';
+        if (Cabinet.User[0] == '\0') {
+            strncpy(Cabinet.User, "suuser", sizeof(Cabinet.User) - 1);
+        }
+        ui_set_string(FLOW_GLOBAL_VARIABLE_USER, Cabinet.User);
 
         /* Notify ESP32: face unlock event */
         {
             char evt[32];
-            snprintf(evt, sizeof(evt), "%s:Unlock", g_identify_name);
+            snprintf(evt, sizeof(evt), "%s:Unlock", Cabinet.User);
             uart4_send_face_event(evt);
             printf("[FACE] Unlock event sent: %s\r\n", evt);
         }
@@ -167,7 +171,9 @@ void action_iobutton(lv_event_t * e) {
 
     const char *pc = (cabinet <= 27) ? inventory_item_T[cabinet].pc
                                      : inventory_item_D[cabinet - 28].pc;
-    HistoryRecord *r = &history_list[history_count];
+    if (history_count >= 32) history_count = 31;
+    memmove(&history_list[1], &history_list[0], (size_t)history_count * sizeof(HistoryRecord));
+    HistoryRecord *r = &history_list[0];
     get_current_time_str(r->time, sizeof(r->time));
     strncpy(r->action, (qty > 0) ? "put" : "out", sizeof(r->action));
     strncpy(r->pc, pc, sizeof(r->pc));
@@ -176,7 +182,7 @@ void action_iobutton(lv_event_t * e) {
     r->quantity   = (uint16_t)((qty > 0) ? qty : -qty);
     history_count++;
     storage_mark_inventory_dirty();
-    storage_mark_history_dirty();
+    // storage_mark_history_dirty();  // disabled: history SD persistence
     uart4_send_history(r);
     ui_push_history(history_list, history_count);
 

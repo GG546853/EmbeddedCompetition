@@ -393,7 +393,7 @@ static void ai_detection_temporal_smooth(ai_result_t *result)
              float ay = anchors[i * 2 + 1];
 
              ai_detection_t det;
-             det.x_center   = raw[0] * inv_img + ax;
+             det.x_center   = raw[0] * inv_img + ax + AI_FD_X_BIAS;
              det.y_center   = raw[1] * inv_img + ay;
              det.width      = raw[2] * inv_img * AI_FD_BOX_SCALE_W;
              det.height     = raw[3] * inv_img * AI_FD_BOX_SCALE_H;
@@ -416,7 +416,7 @@ static void ai_detection_temporal_smooth(ai_result_t *result)
 #endif
 
              for (int k = 0; k < 6; k++) {
-                 det.keypoints[k][0] = raw[4 + k * 2]     * inv_img + ax;
+                 det.keypoints[k][0] = raw[4 + k * 2]     * inv_img + ax + AI_FD_X_BIAS;
                  det.keypoints[k][1] = raw[4 + k * 2 + 1] * inv_img + ay;
              }
 
@@ -462,7 +462,13 @@ static void ai_detection_temporal_smooth(ai_result_t *result)
  #define CROP_DISP_W  800
  #define CROP_DISP_H  480
  #define CROP_OUT_SZ  112
- #define CROP_MARGIN  0.25f   /* 25% expansion beyond detection box */
+ #define CROP_MARGIN       0.0f
+#define EYE_CROP_FACTOR   2.4f   /* crop size = eye_dist * factor */
+#define VERT_OFFSET        0.1f  /* center offset below eye line, as fraction of eye_dist */
+#define BOX_PAD_RATIO      0.1f  /* detection box padding for direct-resize mode */
+
+/* Crop mode: 0 = eye-distance square crop, 1 = detection-box direct resize */
+#define CROP_MODE 1
 
 #define CROP_TEMP_MAX_PX 480
 #define CROP_TEMP_SIZE  (CROP_TEMP_MAX_PX * CROP_TEMP_MAX_PX * 3)
@@ -474,18 +480,51 @@ static uint8_t crop_temp_buf[CROP_TEMP_SIZE]
  {
      extern DMA2D_HandleTypeDef hdma2d;
 
-     /* Map detection from [0,1] → display pixel coordinates */
-     float dx = det->x_center * 600.0f + 100.0f; /* PIPE2 crop: NN cols [324,2268] → disp [100,700] */
-     float dy = det->y_center * (float)CROP_DISP_H;
-     float dw = det->width    * 600.0f;
-     float dh = det->height   * (float)CROP_DISP_H;
+#if CROP_MODE == 0
+     /* --- Eye-distance square crop --- */
+     float le_x = det->keypoints[0][0] * 600.0f + 100.0f;
+     float le_y = det->keypoints[0][1] * (float)CROP_DISP_H;
+     float re_x = det->keypoints[1][0] * 600.0f + 100.0f;
+     float re_y = det->keypoints[1][1] * (float)CROP_DISP_H;
 
-     /* Square crop with margin, integer-clamped to image bounds */
-     float size = (dw > dh ? dw : dh) * (1.0f + CROP_MARGIN);
+     float eye_dx = re_x - le_x;
+     float eye_dy = re_y - le_y;
+     float eye_dist = sqrtf(eye_dx * eye_dx + eye_dy * eye_dy);
+
+     float dx, dy, size;
+
+     if (eye_dist > 15.0f) {
+         dx   = (le_x + re_x) * 0.5f;
+         dy   = (le_y + re_y) * 0.5f + eye_dist * VERT_OFFSET;
+         size = eye_dist * EYE_CROP_FACTOR;
+     } else {
+         dx   = det->x_center * 600.0f + 100.0f;
+         dy   = det->y_center * (float)CROP_DISP_H;
+         float dw = det->width    * 600.0f;
+         float dh = det->height   * (float)CROP_DISP_H;
+         size = (dw > dh ? dw : dh) * (1.0f + CROP_MARGIN);
+     }
+
      int crop_x0 = (int)(dx - size * 0.5f);
      int crop_y0 = (int)(dy - size * 0.5f);
      int crop_w  = (int)size;
      int crop_h  = (int)size;
+
+#elif CROP_MODE == 1
+     /* --- Detection-box direct resize with padding --- */
+     float bx = det->x_center * 600.0f + 100.0f;
+     float by = det->y_center * (float)CROP_DISP_H;
+     float bw = det->width  * 600.0f;
+     float bh = det->height * (float)CROP_DISP_H;
+
+     float pad_w = bw * BOX_PAD_RATIO;
+     float pad_h = bh * BOX_PAD_RATIO;
+
+     int crop_x0 = (int)(bx - bw * 0.5f - pad_w);
+     int crop_y0 = (int)(by - bh * 0.5f - pad_h);
+     int crop_w  = (int)(bw + pad_w * 2.0f);
+     int crop_h  = (int)(bh + pad_h * 2.0f);
+#endif
 
      if (crop_x0 < 0) { crop_w += crop_x0; crop_x0 = 0; }
      if (crop_y0 < 0) { crop_h += crop_y0; crop_y0 = 0; }
@@ -493,8 +532,8 @@ static uint8_t crop_temp_buf[CROP_TEMP_SIZE]
      if (crop_y0 + crop_h > CROP_DISP_H) crop_h = CROP_DISP_H - crop_y0;
      if (crop_w <= 0 || crop_h <= 0) return;
 
-     printf("[CROP] dx=%.1f dy=%.1f size=%.1f x0=%d y0=%d w=%d h=%d\r\n",
-            dx, dy, size, crop_x0, crop_y0, crop_w, crop_h);
+//     printf("[CROP] eye_dist=%.1f dx=%.1f dy=%.1f size=%.1f x0=%d y0=%d w=%d h=%d\r\n",
+//            eye_dist, dx, dy, size, crop_x0, crop_y0, crop_w, crop_h);
 
      /* Clamp crop to temp buffer capacity */
      if (crop_w > CROP_TEMP_MAX_PX) crop_w = CROP_TEMP_MAX_PX;

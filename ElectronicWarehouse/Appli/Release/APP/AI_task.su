@@ -1,6 +1,6 @@
-../APP/AI_task.c:190:13:process_serial_commands	5376	static,ignoring_inline_asm
-../APP/AI_task.c:57:13:fill_rect.constprop	40	static
-../APP/AI_task.c:169:6:ai_start_enroll	8	static
-../APP/AI_task.c:446:6:AI_Task	696	static,ignoring_inline_asm
-../APP/AI_task.c:538:6:ai_select_face_by_index	5296	static
-../APP/AI_task.c:555:6:ai_refresh_dropdown_users	5304	static
+../APP/AI_task.c:194:13:process_serial_commands	5360	static
+../APP/AI_task.c:58:13:fill_rect.constprop	40	static
+../APP/AI_task.c:170:6:ai_start_enroll	8	static
+../APP/AI_task.c:512:6:AI_Task	704	static,ignoring_inline_asm
+../APP/AI_task.c:604:6:ai_select_face_by_index	5296	static
+../APP/AI_task.c:621:6:ai_refresh_dropdown_users	5304	static

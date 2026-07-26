@@ -166,6 +166,8 @@ extern int history_count;
 
 int storage_load_history(void)
 {
+    return 0; /* disabled: history SD persistence removed */
+#if 0
     FIL file;
     UINT br;
     int32_t count = 0;
@@ -190,10 +192,13 @@ int storage_load_history(void)
     history_count = (int)count;
     printf("[STORAGE] History loaded (%d records)\r\n", history_count);
     return 0;
+#endif
 }
 
 int storage_save_history(void)
 {
+    return 0; /* disabled: history SD persistence removed */
+#if 0
     FIL file;
     UINT bw;
     int32_t count = (int32_t)history_count;
@@ -215,6 +220,7 @@ int storage_save_history(void)
 
     printf("[STORAGE] History saved (%d records)\r\n", history_count);
     return 0;
+#endif
 }
 
 /* ========================================================================== */
@@ -223,7 +229,8 @@ int storage_save_history(void)
 
 void storage_mark_inventory_dirty(void) { g_inventory_dirty = true; }
 void storage_mark_faces_dirty(void)     { g_faces_dirty     = true; }
-void storage_mark_history_dirty(void)   { g_history_dirty   = true; }
+// void storage_mark_history_dirty(void)   { g_history_dirty   = true; }
+void storage_mark_history_dirty(void)   { /* disabled */ }
 
 void storage_flush(void)
 {
@@ -242,10 +249,10 @@ void storage_flush(void)
         if (storage_save_faces() == 0)
             g_faces_dirty = false;
     }
-    if (g_history_dirty) {
-        if (storage_save_history() == 0)
-            g_history_dirty = false;
-    }
+    // if (g_history_dirty) {
+    //     if (storage_save_history() == 0)
+    //         g_history_dirty = false;
+    // }
 
     if (storage_mutex != NULL) {
         osMutexRelease(storage_mutex);
@@ -261,12 +268,13 @@ static int save_buf(const char *path, const void *buf, uint32_t size)
     FIL file;
     UINT bw;
 
-    if (f_open(&file, path, FA_CREATE_ALWAYS | FA_WRITE) != FR_OK) {
-        printf("[STORAGE] %s open failed\r\n", path);
+    FRESULT res = f_open(&file, path, FA_CREATE_ALWAYS | FA_WRITE);
+    if (res != FR_OK) {
+        printf("[STORAGE] %s open failed (FRESULT=%d)\r\n", path, (int)res);
         return -1;
     }
 
-    FRESULT res = f_write(&file, buf, size, &bw);
+    res = f_write(&file, buf, size, &bw);
     f_close(&file);
 
     if (res != FR_OK || bw != size) {

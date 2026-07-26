@@ -44,6 +44,7 @@ void MX_X_CUBE_AI_Process(void);
 #define AI_FD_BOX_SCALE_H      1.00f
 #define AI_FD_EMA_ALPHA        0.20f
 #define AI_FD_TRACK_IOU_THRESH 0.50f
+#define AI_FD_X_BIAS           0.015f  /* systematic X offset correction (normalized [0,1]) */
 
 /* Detection result structures ----------------------------------------------*/
 typedef struct {
@@ -75,8 +76,8 @@ void ai_crop_resize_face_112(uint8_t *src_fb, ai_detection_t *det, uint8_t *outp
 #define FACE_MATCH_THRESHOLD    0.40f   /* 1:N match L2 distance upper bound */
 #define FACE_RATIO_THRESHOLD    0.93f   /* best_L2 / second_L2 ratio check */
 #define FACE_CONFIDENT_DIST     0.25f   /* below this L2 distance, skip ratio check */
-#define FACE_VERIFY_THRESHOLD   0.13f  /* 1:1 verification L2 distance upper bound */
-
+#define FACE_VERIFY_THRESHOLD   0.176f  /* 1:1 verification L2 distance upper bound */
+//zs4 0.17
 /* Detection box calibration offsets in pixels. Positive X → right, Positive Y → down.
    Applied to both display box drawing and face crop. */
 #define DET_BOX_OFFSET_X  20

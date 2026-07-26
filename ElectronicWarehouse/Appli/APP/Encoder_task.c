@@ -27,7 +27,7 @@ static const uint32_t WB_VALUES[] = { 0, 2856, 4000, 5000, 6500 };
 /* button debounce / long-press timing */
 #define DEBOUNCE_MS           30
 #define LONG_PRESS_MS         800
-#define POWER_LONG_PRESS_MS   2000     /* 3 s hold to power off */
+#define POWER_LONG_PRESS_MS   1000     /* 3 s hold to power off */
 
 /* encoder: 4 counts per detent in TI12 mode */
 #define ENC_COUNTS_PER_DETENT 1

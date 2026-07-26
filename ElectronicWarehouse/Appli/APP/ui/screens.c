@@ -9540,7 +9540,7 @@ void create_screen_page_main() {
                         {
                             lv_obj_t *obj = lv_obj_create(parent_obj);
                             objects.obj354 = obj;
-                            lv_obj_set_pos(obj, 0, 0);
+                            lv_obj_set_pos(obj, -192, 532);
                             lv_obj_set_size(obj, 560, 480);
                             lv_obj_set_style_border_width(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
                             lv_obj_set_style_radius(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);

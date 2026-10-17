@@ -1,0 +1,7 @@
+../Middlewares/Third_Party/Percepio/TraceRecorder/trcPrint.c:229:20:prvTraceVPrintF	10
+../Middlewares/Third_Party/Percepio/TraceRecorder/trcPrint.c:21:13:xTracePrintInitialize	1
+../Middlewares/Third_Party/Percepio/TraceRecorder/trcPrint.c:37:13:xTracePrint	4
+../Middlewares/Third_Party/Percepio/TraceRecorder/trcPrint.c:88:13:xTracePrintCompactF	12
+../Middlewares/Third_Party/Percepio/TraceRecorder/trcPrint.c:185:13:xTraceVPrintF	7
+../Middlewares/Third_Party/Percepio/TraceRecorder/trcPrint.c:61:13:xTraceConsoleChannelPrintF	4
+../Middlewares/Third_Party/Percepio/TraceRecorder/trcPrint.c:166:13:xTracePrintF	2

@@ -1,0 +1,8 @@
+../Middlewares/Third_Party/Percepio/TraceRecorder/trcEntryTable.c:37:13:xTraceEntryIndexTableInitialize	4	static
+../Middlewares/Third_Party/Percepio/TraceRecorder/trcEntryTable.c:47:13:xTraceEntryTableInitialize	4	static
+../Middlewares/Third_Party/Percepio/TraceRecorder/trcEntryTable.c:78:13:xTraceEntryCreate	16	static,ignoring_inline_asm
+../Middlewares/Third_Party/Percepio/TraceRecorder/trcEntryTable.c:125:13:xTraceEntryDelete	8	static,ignoring_inline_asm
+../Middlewares/Third_Party/Percepio/TraceRecorder/trcEntryTable.c:166:13:xTraceEntryFind	20	static
+../Middlewares/Third_Party/Percepio/TraceRecorder/trcEntryTable.c:195:13:xTraceEntrySetSymbol	16	static
+../Middlewares/Third_Party/Percepio/TraceRecorder/trcEntryTable.c:230:13:xTraceEntryGetCount	0	static
+../Middlewares/Third_Party/Percepio/TraceRecorder/trcEntryTable.c:243:13:xTraceEntryGetAtIndex	0	static

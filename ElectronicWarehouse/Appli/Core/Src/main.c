@@ -49,6 +49,7 @@
 #include "../Drivers/BSP/SoftI2C/soft_i2c.h"
 #include "sd_nand.h"
 #include "storage.h"
+#include "trcRecorder.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -96,7 +97,7 @@ int main(void)
   /* USER CODE BEGIN 1 */
 	//SCB->VTOR = 0x34000400;
 #ifdef DEBUG
-    // Debug 模式：通常指向 RAM 中的向量�?
+// Debug 模式：通常指向 RAM 中的向量�?
     SCB->VTOR = 0x34000400;
 #else
     // Release 模式：指向外�?Flash 的起始地址
@@ -293,7 +294,10 @@ int main(void)
   /* USER CODE END 2 */
 
   /* Init scheduler */
+  SystemCoreClockUpdate();
+  xTraceInitialize();
   osKernelInitialize();
+  xTraceEnable(TRC_START);
   /* Call init function for freertos objects (in app_freertos.c) */
   MX_FREERTOS_Init();
 

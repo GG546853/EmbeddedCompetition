@@ -69,6 +69,8 @@ Middlewares/ST/AI/Npu/Devices/STM32N6XX \
 Middlewares/ST/AI/Npu/ll_aton \
 Middlewares/ST/Third_Party/FATFS \
 Middlewares/STM32_MW_ISP/isp/Src \
+Middlewares/Third_Party/Percepio/TraceRecorder/streamports/RingBuffer \
+Middlewares/Third_Party/Percepio/TraceRecorder \
 Middlewares/lvgl-release-v9.4/src/core \
 Middlewares/lvgl-release-v9.4/src/display \
 Middlewares/lvgl-release-v9.4/src/draw/convert/helium \

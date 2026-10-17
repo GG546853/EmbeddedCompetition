@@ -162,6 +162,8 @@ RM := rm -rf
 -include Middlewares/lvgl-release-v9.4/src/display/subdir.mk
 -include Middlewares/lvgl-release-v9.4/src/core/subdir.mk
 -include Middlewares/lvgl-release-v9.4/src/subdir.mk
+-include Middlewares/Third_Party/Percepio/TraceRecorder/streamports/RingBuffer/subdir.mk
+-include Middlewares/Third_Party/Percepio/TraceRecorder/subdir.mk
 -include Middlewares/STM32_MW_ISP/isp/Src/subdir.mk
 -include Middlewares/ST/Third_Party/FATFS/subdir.mk
 -include Middlewares/ST/AI/Npu/ll_aton/subdir.mk

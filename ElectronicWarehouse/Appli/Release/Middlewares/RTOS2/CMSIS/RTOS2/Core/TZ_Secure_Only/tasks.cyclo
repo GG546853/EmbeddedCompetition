@@ -22,7 +22,7 @@ C:/Users/96022/Desktop/EmbeddedCompetition/ElectronicWarehouse/Middlewares/Third
 C:/Users/96022/Desktop/EmbeddedCompetition/ElectronicWarehouse/Middlewares/Third_Party/FreeRTOS/Source/tasks.c:2346:13:uxTaskGetNumberOfTasks	1
 C:/Users/96022/Desktop/EmbeddedCompetition/ElectronicWarehouse/Middlewares/Third_Party/FreeRTOS/Source/tasks.c:2354:8:pcTaskGetName	3
 C:/Users/96022/Desktop/EmbeddedCompetition/ElectronicWarehouse/Middlewares/Third_Party/FreeRTOS/Source/tasks.c:2503:16:xTaskGetStaticBuffers	6
-C:/Users/96022/Desktop/EmbeddedCompetition/ElectronicWarehouse/Middlewares/Third_Party/FreeRTOS/Source/tasks.c:2781:12:xTaskIncrementTick	11
+C:/Users/96022/Desktop/EmbeddedCompetition/ElectronicWarehouse/Middlewares/Third_Party/FreeRTOS/Source/tasks.c:2781:12:xTaskIncrementTick	14
 C:/Users/96022/Desktop/EmbeddedCompetition/ElectronicWarehouse/Middlewares/Third_Party/FreeRTOS/Source/tasks.c:2188:12:xTaskResumeAll	14
 C:/Users/96022/Desktop/EmbeddedCompetition/ElectronicWarehouse/Middlewares/Third_Party/FreeRTOS/Source/tasks.c:1218:16:xTaskDelayUntil	10
 C:/Users/96022/Desktop/EmbeddedCompetition/ElectronicWarehouse/Middlewares/Third_Party/FreeRTOS/Source/tasks.c:1305:10:vTaskDelay	4

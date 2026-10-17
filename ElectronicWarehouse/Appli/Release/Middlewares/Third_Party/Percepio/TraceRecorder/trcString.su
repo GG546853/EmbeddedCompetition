@@ -1,0 +1,2 @@
+../Middlewares/Third_Party/Percepio/TraceRecorder/trcString.c:16:13:xTraceStringRegister	24	static
+../Middlewares/Third_Party/Percepio/TraceRecorder/trcString.c:48:21:xTraceRegisterString	16	static

@@ -1,7 +1,32 @@
 {
   "permissions": {
     "allow": [
-      "Bash(python *)"
+      "Bash(python *)",
+      "Bash(Get-ChildItem -Recurse \"C:\\\\Users\\\\96022\\\\Desktop\\\\EmbeddedCompetition\\\\ElectronicWarehouse\\\\Appli\\\\X-CUBE-AI\\\\App\\\\my_mpools\",\"C:\\\\Users\\\\96022\\\\Desktop\\\\EmbeddedCompetition\\\\ElectronicWarehouse\\\\Appli\\\\X-CUBE-AI\\\\App\\\\st_ai_ws\")",
+      "Bash(Select-Object FullName,Length)",
+      "Bash(Get-ChildItem \"C:\\\\Users\\\\96022\\\\Desktop\\\\EmbeddedCompetition\\\\ElectronicWarehouse\\\\Appli\\\\Model\" -Recurse)",
+      "Bash(xargs grep -ln \"ll_aton\")",
+      "WebSearch",
+      "Bash(cd *)",
+      "Bash(echo \"exit=$?\")",
+      "PowerShell(Get-Content *)",
+      "PowerShell(\"--- View root ---\"; Get-ChildItem -Path \"C:\\\\Program Files\\\\Percepio\\\\View for FreeRTOS\" -Name; \"--- FreeRTOS dir ---\"; Get-ChildItem -Path \"C:\\\\Program Files\\\\Percepio\\\\View for FreeRTOS\\\\FreeRTOS\" -Name; \"--- TraceRecorder dir ---\"; Get-ChildItem -Path \"C:\\\\Program Files\\\\Percepio\\\\View for FreeRTOS\\\\FreeRTOS\\\\TraceRecorder\" -Name; \"--- streamports exists? ---\"; Test-Path -LiteralPath \"C:\\\\Program Files\\\\Percepio\\\\View for FreeRTOS\\\\FreeRTOS\\\\TraceRecorder\\\\streamports\"; \"--- RingBuffer exists? ---\"; Test-Path -LiteralPath \"C:\\\\Program Files\\\\Percepio\\\\View for FreeRTOS\\\\FreeRTOS\\\\TraceRecorder\\\\streamports\\\\RingBuffer\")",
+      "PowerShell($p='C:\\\\Users\\\\96022\\\\Desktop\\\\EmbeddedCompetition\\\\ElectronicWarehouse\\\\network_f_atonbuf.xSPI2.raw'; $b=[IO.File]::ReadAllBytes\\($p\\); \\($b[0..63] | ForEach-Object { $_.ToString\\('X2'\\) }\\) -join ' '; $b.Length)",
+      "Bash(\"/c/ST/STM32CubeIDE_1.19.0/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.13.3.rel1.win32_1.0.0.202411081344/tools/bin/arm-none-eabi-readelf.exe\" -l \"Release/ElectronicWarehouse_Appli.elf\")",
+      "Bash(cd C:\\\\Users\\\\96022\\\\Desktop\\\\EmbeddedCompetition *)",
+      "Bash(git -C \"C:/Users/96022/Desktop/EmbeddedCompetition\" ls-files)",
+      "Bash(git -C \"C:/Users/96022/Desktop/EmbeddedCompetition\" log --all --oneline -- \"ElectronicWarehouse/Appli/Drivers/STM32_ExtMem_Manager/boot/stm32_boot_xip.c\")",
+      "Bash(git -C \"C:/Users/96022/Desktop/EmbeddedCompetition\" show aa7626d --stat)",
+      "Bash(git -C \"C:/Users/96022/Desktop/EmbeddedCompetition\" log --oneline -S \"0x70100400\" -- ElectronicWarehouse/Appli/Core/Src/main.c)",
+      "Bash(git -C \"C:/Users/96022/Desktop/EmbeddedCompetition\" show aa7626d:ElectronicWarehouse/Appli/Drivers/STM32_ExtMem_Manager/boot/stm32_boot_xip.c)",
+      "Bash(git -C \"C:/Users/96022/Desktop/EmbeddedCompetition\" show aa7626d:ElectronicWarehouse/Appli/Drivers/STM32_ExtMem_Manager/boot/stm32_boot_xip.h)",
+      "Bash(echo *)",
+      "Bash(git -C \"C:/Users/96022/Desktop/EmbeddedCompetition\" show aa7626d:ElectronicWarehouse/Appli/Drivers/BSP/NORFlash/extmem_user_driver.c)",
+      "PowerShell(Write-Output \\(\"Debug loader exists: \" + \\(Test-Path 'C:\\\\Users\\\\96022\\\\Desktop\\\\STM32n6\\\\MX25UM25645G_ATK-CNN647B_ExtMemLoader.stldr'\\)\\); Write-Output \\(\"Release loader exists: \" + \\(Test-Path 'E:\\\\n6Project\\\\MX25UM25645G_ATK-CNN647B_ExtMemLoader.stldr'\\)\\); Write-Output \\(\"FSBL project exists: \" + \\(Test-Path 'E:\\\\n6Project\\\\FSBL\\\\MX25UM25645G_W958D8NBYA5I_Example'\\)\\); Write-Output \\(\"emply exists: \" + \\(Test-Path 'E:\\\\n6Project\\\\emply'\\)\\))",
+      "Read(//c/ST/**)",
+      "Read(//c/Program Files/STMicroelectronics/**)",
+      "Read(//c/Users/96022/AppData/Roaming/**)",
+      "PowerShell(Add-Type -AssemblyName System.IO.Compression.FileSystem; $j='C:\\\\ST\\\\STM32CubeIDE_1.19.0\\\\STM32CubeIDE\\\\plugins\\\\com.st.stm32cube.ide.mcu.debug.stlink_2.4.100.202506121257.jar'; $z=[System.IO.Compression.ZipFile]::OpenRead\\($j\\); foreach\\($e in $z.Entries\\){ if\\($e.FullName -eq 'com/st/stm32cube/ide/mcu/debug/stlink/StLinkDebugConstants.class'\\){ $sr=New-Object System.IO.StreamReader\\($e.Open\\(\\)\\); $s=$sr.ReadToEnd\\(\\); $sr.Close\\(\\); $m=[regex]::Matches\\($s,'[ -~]{4,}'\\); foreach\\($x in $m\\){ if\\($x.Value -match 'reset|RESET|strategy|STRATEGY|none|NONE'\\){ Write-Output $x.Value } } } }; $z.Dispose\\(\\))"
     ]
   }
 }

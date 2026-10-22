@@ -39,6 +39,7 @@
 #include "Battery_task.h"
 
 #include <stdio.h>
+#include <stdint.h>
 #include "imx335.h"
 #include "rgblcd.h"
 #include "aht10.h"
@@ -53,11 +54,14 @@
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
 void StorageFlush_Task(void *argument);
+static void StatsTask(void *argument);
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+#define STATS_MAX_TASKS       32
+#define STATS_INTERVAL_MS     1000
+#define STATS_START_DELAY_MS  2000
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -72,6 +76,13 @@ const osThreadAttr_t StorageFlushTask_attributes = {
   .name = "StorageFlush",
   .priority = (osPriority_t) osPriorityLow,
   .stack_size = 512 * 4
+};
+
+static osThreadId_t StatsTaskHandle;
+static const osThreadAttr_t StatsTask_attributes = {
+  .name = "Stats",
+  .priority = (osPriority_t) osPriorityLow,
+  .stack_size = 1024 * 4
 };
 /* USER CODE END Variables */
 /* Definitions for defaultTask */
@@ -135,12 +146,14 @@ void vApplicationStackOverflowHook(xTaskHandle xTask, char *pcTaskName)
 /* Functions needed when configGENERATE_RUN_TIME_STATS is on */
 __weak void configureTimerForRunTimeStats(void)
 {
-
+  CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
+  DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
+  /* Do not reset CYCCNT: the trace recorder already uses this counter. */
 }
 
 __weak unsigned long getRunTimeCounterValue(void)
 {
-return 0;
+  return (unsigned long)DWT->CYCCNT;
 }
 /* USER CODE END 1 */
 
@@ -197,6 +210,7 @@ void MX_FREERTOS_Init(void) {
   VL53L1X_TaskHandle = osThreadNew(VL53L1X_Task, NULL, &VL53L1XTask_attributes);
   Battery_TaskHandle = osThreadNew(Battery_Task, NULL, &BatteryTask_attributes);
   StorageFlushHandle = osThreadNew(StorageFlush_Task, NULL, &StorageFlushTask_attributes);
+  StatsTaskHandle = osThreadNew(StatsTask, NULL, &StatsTask_attributes);
   /* USER CODE END RTOS_THREADS */
 
   /* USER CODE BEGIN RTOS_EVENTS */
@@ -233,6 +247,81 @@ void StorageFlush_Task(void *argument)
     for (;;) {
         storage_flush();
         vTaskDelay(pdMS_TO_TICKS(2000));  /* flush every 2 s */
+    }
+}
+
+/* Per-second per-task CPU share, computed from delta counters to stay
+ * wrap-safe on the 32-bit DWT cycle counter (7.16 s at 600 MHz). */
+static TaskStatus_t statsCur[STATS_MAX_TASKS];
+static TaskStatus_t statsPrev[STATS_MAX_TASKS];
+static UBaseType_t statsPrevCount;
+
+static void StatsTask(void *argument)
+{
+    uint32_t prevCycles;
+    uint32_t nowCycles;
+    uint32_t totalCycles;
+    UBaseType_t count;
+    UBaseType_t i;
+    UBaseType_t j;
+    uint32_t prevCounter;
+    uint32_t delta;
+    uint32_t pct;
+    uint32_t watermark;
+    const char *name;
+
+    (void)argument;
+
+    vTaskDelay(pdMS_TO_TICKS(STATS_START_DELAY_MS));
+    statsPrevCount = uxTaskGetSystemState(statsPrev, STATS_MAX_TASKS, NULL);
+    prevCycles = DWT->CYCCNT;
+
+    for (;;)
+    {
+        vTaskDelay(pdMS_TO_TICKS(STATS_INTERVAL_MS));
+
+        count = uxTaskGetSystemState(statsCur, STATS_MAX_TASKS, NULL);
+        nowCycles = DWT->CYCCNT;
+        totalCycles = nowCycles - prevCycles;
+
+        if (totalCycles == 0u)
+        {
+            prevCycles = nowCycles;
+            continue;
+        }
+
+        printf("--- %u ms ---\r\n", (unsigned int)STATS_INTERVAL_MS);
+
+        for (i = 0u; i < count; i++)
+        {
+            prevCounter = statsCur[i].ulRunTimeCounter;
+            for (j = 0u; j < statsPrevCount; j++)
+            {
+                if (statsPrev[j].xHandle == statsCur[i].xHandle)
+                {
+                    prevCounter = statsPrev[j].ulRunTimeCounter;
+                    break;
+                }
+            }
+
+            delta = statsCur[i].ulRunTimeCounter - prevCounter;
+            pct = (uint32_t)(((uint64_t)delta * 100u) / totalCycles);
+            watermark = (uint32_t)uxTaskGetStackHighWaterMark(statsCur[i].xHandle)
+                        * (uint32_t)sizeof(StackType_t);
+            name = statsCur[i].pcTaskName;
+
+            printf("%-16s %3u%%  stack %5u B\r\n",
+                   (name != NULL) ? name : "?",
+                   (unsigned int)pct,
+                   (unsigned int)watermark);
+        }
+
+        for (i = 0u; i < count; i++)
+        {
+            statsPrev[i] = statsCur[i];
+        }
+        statsPrevCount = count;
+        prevCycles = nowCycles;
     }
 }
 

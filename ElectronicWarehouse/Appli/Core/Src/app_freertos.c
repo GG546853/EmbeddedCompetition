@@ -144,16 +144,46 @@ void vApplicationStackOverflowHook(xTaskHandle xTask, char *pcTaskName)
 
 /* USER CODE BEGIN 1 */
 /* Functions needed when configGENERATE_RUN_TIME_STATS is on */
+/* 32-bit CYCCNT software-extended to a monotonic 64-bit cycle counter.
+ * CYCCNT wraps every 2^32 / 600 MHz ~= 7.16 s; the tick hook samples it
+ * every 1 ms so each raw delta stays far below 2^32 and is unambiguous. */
+static volatile uint64_t rt_cycles;
+static volatile uint32_t rt_last;
+
 __weak void configureTimerForRunTimeStats(void)
 {
+  uint32_t primask = __get_PRIMASK();
+
   CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
   DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
   /* Do not reset CYCCNT: the trace recorder already uses this counter. */
+
+  __disable_irq();
+  rt_last = DWT->CYCCNT;
+  rt_cycles = 0u;
+  __set_PRIMASK(primask);
 }
 
-__weak unsigned long getRunTimeCounterValue(void)
+uint64_t getRunTimeCounterValue(void)
 {
-  return (unsigned long)DWT->CYCCNT;
+  uint32_t primask = __get_PRIMASK();
+  uint32_t now;
+  uint64_t ret;
+
+  __disable_irq();
+  now = DWT->CYCCNT;
+  rt_cycles += (uint32_t)(now - rt_last);  /* wrap-safe 32-bit delta */
+  rt_last = now;
+  ret = rt_cycles;
+  __set_PRIMASK(primask);
+
+  return ret;
+}
+
+void vApplicationTickHook(void)
+{
+  /* Guarantees wrap detection even if no context switch happens for >7 s. */
+  (void)getRunTimeCounterValue();
 }
 /* USER CODE END 1 */
 
@@ -258,14 +288,15 @@ static UBaseType_t statsPrevCount;
 
 static void StatsTask(void *argument)
 {
-    uint32_t prevCycles;
-    uint32_t nowCycles;
-    uint32_t totalCycles;
+    uint64_t prevCycles;
+    uint64_t nowCycles;
+    uint64_t totalCycles;
+    uint32_t winMs;
     UBaseType_t count;
     UBaseType_t i;
     UBaseType_t j;
-    uint32_t prevCounter;
-    uint32_t delta;
+    uint64_t prevCounter;
+    uint64_t delta;
     uint32_t pct;
     uint32_t watermark;
     const char *name;
@@ -273,15 +304,13 @@ static void StatsTask(void *argument)
     (void)argument;
 
     vTaskDelay(pdMS_TO_TICKS(STATS_START_DELAY_MS));
-    statsPrevCount = uxTaskGetSystemState(statsPrev, STATS_MAX_TASKS, NULL);
-    prevCycles = DWT->CYCCNT;
+    statsPrevCount = uxTaskGetSystemState(statsPrev, STATS_MAX_TASKS, &prevCycles);
 
     for (;;)
     {
         vTaskDelay(pdMS_TO_TICKS(STATS_INTERVAL_MS));
 
-        count = uxTaskGetSystemState(statsCur, STATS_MAX_TASKS, NULL);
-        nowCycles = DWT->CYCCNT;
+        count = uxTaskGetSystemState(statsCur, STATS_MAX_TASKS, &nowCycles);
         totalCycles = nowCycles - prevCycles;
 
         if (totalCycles == 0u)
@@ -290,7 +319,8 @@ static void StatsTask(void *argument)
             continue;
         }
 
-        printf("--- %u ms ---\r\n", (unsigned int)STATS_INTERVAL_MS);
+        winMs = (uint32_t)(totalCycles / (SystemCoreClock / 1000u));
+        printf("--- window %u ms ---\r\n", (unsigned int)winMs);
 
         for (i = 0u; i < count; i++)
         {
@@ -305,7 +335,7 @@ static void StatsTask(void *argument)
             }
 
             delta = statsCur[i].ulRunTimeCounter - prevCounter;
-            pct = (uint32_t)(((uint64_t)delta * 100u) / totalCycles);
+            pct = (uint32_t)((delta * 100u) / totalCycles);
             watermark = (uint32_t)uxTaskGetStackHighWaterMark(statsCur[i].xHandle)
                         * (uint32_t)sizeof(StackType_t);
             name = statsCur[i].pcTaskName;

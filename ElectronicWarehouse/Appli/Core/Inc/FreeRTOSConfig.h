@@ -53,7 +53,7 @@
 extern uint32_t SystemCoreClock;
 /* USER CODE BEGIN 0 */
 extern void configureTimerForRunTimeStats(void);
-extern unsigned long getRunTimeCounterValue(void);
+extern uint64_t getRunTimeCounterValue(void);
 /* USER CODE END 0 */
 #endif
 #ifndef CMSIS_device_header
@@ -70,7 +70,7 @@ extern unsigned long getRunTimeCounterValue(void);
 #define configSUPPORT_STATIC_ALLOCATION          1
 #define configSUPPORT_DYNAMIC_ALLOCATION         1
 #define configUSE_IDLE_HOOK                      0
-#define configUSE_TICK_HOOK                      0
+#define configUSE_TICK_HOOK                      1
 #define configCPU_CLOCK_HZ                       ( SystemCoreClock )
 #define configTICK_RATE_HZ                       ((TickType_t)1000)
 #define configMAX_PRIORITIES                     ( 56 )
@@ -99,7 +99,7 @@ extern unsigned long getRunTimeCounterValue(void);
 #define configMESSAGE_BUFFER_LENGTH_TYPE         size_t
 /* USER CODE END MESSAGE_BUFFER_LENGTH_TYPE */
 
-#define configRUN_TIME_COUNTER_TYPE              size_t
+#define configRUN_TIME_COUNTER_TYPE              uint64_t
 
 /* Co-routine definitions. */
 #define configUSE_CO_ROUTINES                    0

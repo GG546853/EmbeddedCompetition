@@ -1,3 +1,0 @@
-../Middlewares/Third_Party/Percepio/TraceRecorder/trcHeap.c:16:13:xTraceHeapCreate	40	static
-../Middlewares/Third_Party/Percepio/TraceRecorder/trcHeap.c:27:13:xTraceHeapAlloc	8	static
-../Middlewares/Third_Party/Percepio/TraceRecorder/trcHeap.c:64:13:xTraceHeapFree	8	static

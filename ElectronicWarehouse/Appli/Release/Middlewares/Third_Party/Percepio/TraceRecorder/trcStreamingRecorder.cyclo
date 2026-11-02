@@ -1,8 +1,0 @@
-../Middlewares/Third_Party/Percepio/TraceRecorder/trcStreamingRecorder.c:142:13:xTraceInitialize	14
-../Middlewares/Third_Party/Percepio/TraceRecorder/trcStreamingRecorder.c:274:13:xTraceHeaderInitialize	4
-../Middlewares/Third_Party/Percepio/TraceRecorder/trcStreamingRecorder.c:346:13:xTraceEnable	8
-../Middlewares/Third_Party/Percepio/TraceRecorder/trcStreamingRecorder.c:408:13:xTraceDisable	2
-../Middlewares/Third_Party/Percepio/TraceRecorder/trcStreamingRecorder.c:431:13:xTraceGetEventBuffer	4
-../Middlewares/Third_Party/Percepio/TraceRecorder/trcStreamingRecorder.c:445:13:xTraceTzCtrl	3
-../Middlewares/Third_Party/Percepio/TraceRecorder/trcStreamingRecorder.c:489:6:vTraceSetFilterGroup	1
-../Middlewares/Third_Party/Percepio/TraceRecorder/trcStreamingRecorder.c:494:6:vTraceSetFilterMask	1

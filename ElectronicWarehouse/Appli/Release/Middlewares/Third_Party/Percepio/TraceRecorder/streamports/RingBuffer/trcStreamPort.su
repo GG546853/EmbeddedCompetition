@@ -1,2 +1,0 @@
-../Middlewares/Third_Party/Percepio/TraceRecorder/streamports/RingBuffer/trcStreamPort.c:25:13:xTraceStreamPortInitialize	8	static
-../Middlewares/Third_Party/Percepio/TraceRecorder/streamports/RingBuffer/trcStreamPort.c:102:13:xTraceStreamPortOnTraceBegin	0	static

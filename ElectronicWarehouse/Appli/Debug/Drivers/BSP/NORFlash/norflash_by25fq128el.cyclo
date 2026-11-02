@@ -1,3 +1,0 @@
-../Drivers/BSP/NORFlash/norflash_by25fq128el.c:3:31:BY25FQ128EL_Init	16
-../Drivers/BSP/NORFlash/norflash_by25fq128el.c:115:24:NORFlash_BY25FQ128EL_Init	1
-../Drivers/BSP/NORFlash/norflash_by25fq128el.c:120:24:NORFlash_DUAL_BY25FQ128EL_Init	1

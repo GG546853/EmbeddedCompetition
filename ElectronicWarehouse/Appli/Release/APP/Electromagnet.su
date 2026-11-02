@@ -1,3 +1,0 @@
-../APP/Electromagnet.c:23:6:Electromagnet_Task	8	static
-../APP/Electromagnet.c:17:6:Electromagnet_Open	0	static
-../APP/Electromagnet.c:45:6:ElectromagnetLock_Task	8	static

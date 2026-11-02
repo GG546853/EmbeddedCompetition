@@ -1,8 +1,0 @@
-../Middlewares/Third_Party/Percepio/TraceRecorder/trcEventBuffer.c:66:20:prvTraceEventBufferAllocPop.isra	16	static
-../Middlewares/Third_Party/Percepio/TraceRecorder/trcEventBuffer.c:15:13:xTraceEventBufferInitialize	8	static
-../Middlewares/Third_Party/Percepio/TraceRecorder/trcEventBuffer.c:91:13:xTraceEventBufferAlloc	24	static
-../Middlewares/Third_Party/Percepio/TraceRecorder/trcEventBuffer.c:256:13:xTraceEventBufferAllocCommit	0	static
-../Middlewares/Third_Party/Percepio/TraceRecorder/trcEventBuffer.c:272:13:xTraceEventBufferPush	40	static
-../Middlewares/Third_Party/Percepio/TraceRecorder/trcEventBuffer.c:395:13:xTraceEventBufferTransferAll	0	static
-../Middlewares/Third_Party/Percepio/TraceRecorder/trcEventBuffer.c:463:13:xTraceEventBufferTransferChunk	8	static
-../Middlewares/Third_Party/Percepio/TraceRecorder/trcEventBuffer.c:531:13:xTraceEventBufferClear	0	static

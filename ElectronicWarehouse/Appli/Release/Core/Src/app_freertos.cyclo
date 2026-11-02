@@ -1,8 +1,0 @@
-../Core/Src/app_freertos.c:259:13:StatsTask	6
-../Core/Src/app_freertos.c:228:6:StartDefaultTask	1
-../Core/Src/app_freertos.c:244:6:StorageFlush_Task	1
-../Core/Src/app_freertos.c:121:6:vApplicationMallocFailedHook	1
-../Core/Src/app_freertos.c:137:6:vApplicationStackOverflowHook	1
-../Core/Src/app_freertos.c:147:13:configureTimerForRunTimeStats	1
-../Core/Src/app_freertos.c:154:22:getRunTimeCounterValue	1
-../Core/Src/app_freertos.c:165:6:MX_FREERTOS_Init	1

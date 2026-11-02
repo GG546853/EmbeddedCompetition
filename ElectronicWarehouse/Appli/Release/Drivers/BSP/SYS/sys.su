@@ -1,4 +1,0 @@
-../Drivers/BSP/SYS/sys.c:28:6:sys_clock_config_debug	232	static
-../Drivers/BSP/SYS/sys.c:91:6:sys_rng_init	8	static
-../Drivers/BSP/SYS/sys.c:104:10:sys_rng_get_4digit	0	static
-../Drivers/BSP/SYS/sys.c:115:6:sys_delay_us	16	static

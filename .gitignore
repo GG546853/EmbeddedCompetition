@@ -20,3 +20,9 @@
 *.iex 
 *.htm 
 *.map
+
+# STM32CubeIDE generated build output
+ElectronicWarehouse/Appli/Debug/
+ElectronicWarehouse/Appli/Release/
+*.su
+*.cyclo

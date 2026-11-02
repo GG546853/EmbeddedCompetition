@@ -411,7 +411,7 @@ Release 烧录后，注册人脸时**雪花依旧存在**。显存已确认移�
 
 ## 待排查方向
 
-- [ ] NPU fc 推理是否实际写入范围超出 `fc_analyze.md` 报告的 0x90188000
+- [ ] NPU fc 推理是否实际写入范围超出 [`network-fc-analyze.log`](../ai/network-fc-analyze.log) 报告的 0x90188000
 - [ ] DCMIPP PIPE1 与 DMA2D crop 在同一 HyperRAM 总线上竞争带宽，导致 LTDC 读不到完整帧
 - [ ] NPU cache writeback 是否波及 0x90200000 区间
 - [ ] `network_f`（人脸检测）运行时是否有未记录的 HyperRAM 写入

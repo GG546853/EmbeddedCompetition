@@ -293,13 +293,13 @@ Defined in `ElectronicWarehouse/Appli/X-CUBE-AI/App/app_x-cube-ai.h`:
 
 | File | Purpose |
 |------|---------|
-| `Appli/X-CUBE-AI/App/app_x-cube-ai.h` | Detection/recognition parameters, data structures |
-| `Appli/X-CUBE-AI/App/app_x-cube-ai.c` | Model 1 post-process, Model 2 crop, identify/verify, gallery, enrollment |
-| `Appli/APP/AI_task.c` | AI task, serial commands, draw boxes, BGR→RGB conversion, ReID pipeline |
-| `Appli/APP/LV_task.c` | LVGL task, UI init, auto-unlock polling |
-| `Appli/APP/ui/actions.c` | UI action callbacks (camera start/stop, recognize, enroll, IO) |
-| `Appli/APP/ui/ui_bridge.cpp` | Bridge between AI variables and LVGL UI, `ui_poll_auto_unlock()` |
-| `Appli/APP/fd_blazeface_anchors.h` | 896 anchor definitions for Model 1 |
-| `Appli/BSP/IMX335/imx335.c` | DCMIPP PIPE1/PIPE2 configuration, camera registers |
-| `Appli/X-CUBE-AI/App/network_f.h` | Model 1 NPU network descriptor |
-| `Appli/X-CUBE-AI/App/network_fc.h` | Model 2 NPU network descriptor |
+| `ElectronicWarehouse/Appli/X-CUBE-AI/App/app_x-cube-ai.h` | Detection/recognition parameters, data structures |
+| `ElectronicWarehouse/Appli/X-CUBE-AI/App/app_x-cube-ai.c` | Model 1 post-process, Model 2 crop, identify/verify, gallery, enrollment |
+| `ElectronicWarehouse/Appli/APP/AI_task.c` | AI task, serial commands, draw boxes, BGR→RGB conversion, ReID pipeline |
+| `ElectronicWarehouse/Appli/APP/LV_task.c` | LVGL task, UI init, auto-unlock polling |
+| `ElectronicWarehouse/Appli/APP/ui/actions.c` | UI action callbacks (camera start/stop, recognize, enroll, IO) |
+| `ElectronicWarehouse/Appli/APP/ui/ui_bridge.cpp` | Bridge between AI variables and LVGL UI, `ui_poll_auto_unlock()` |
+| `ElectronicWarehouse/Appli/APP/fd_blazeface_anchors.h` | 896 anchor definitions for Model 1 |
+| `ElectronicWarehouse/Appli/Drivers/BSP/IMX335/imx335.c` | DCMIPP PIPE1/PIPE2 configuration, camera registers |
+| `ElectronicWarehouse/Appli/X-CUBE-AI/App/network_f.h` | Model 1 NPU network descriptor |
+| `ElectronicWarehouse/Appli/X-CUBE-AI/App/network_fc.h` | Model 2 NPU network descriptor |

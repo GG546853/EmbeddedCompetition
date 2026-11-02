@@ -1,1 +1,0 @@
-Development boot上电启动，切换为Flash boot复位，芯片就能与上位机连接了。

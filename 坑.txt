@@ -1,5 +1,0 @@
-﻿1. CubeMX重新生成代码后，adc.h已更新但adc.c可能还是旧的（如adc.h声明ADC2，adc.c仍是ADC1）。需要手动确认adc.c也正确更新，否则RELEASE有缓存.o能过、DEBUG clean build就炸。
-
-2. STM32 ADC必须校准（HAL_ADCEx_Calibration_Start），否则HAL_ADC_GetValue读到0。校准放在MX_ADCx_Init的USER CODE Init_2区域，不要漏。
-
-3. EEZ-Flow的stopScript()默认是assert(false)，UI事件/变量变化触发flow action执行完毕时会调用stopScriptHook() -> stopScript()导致卡死。嵌入式项目不跑flow脚本，改成空函数即可。

@@ -951,7 +951,7 @@ uint32_t ai_face_gallery_get_count(void)
  void ai_face_reid_run(float *embedding_out)
  {
      LL_ATON_RT_RetValues_t ret;
-     uint32_t wall0 = profiling_tick_now();
+     uint64_t wall0 = profiling_now();
      uint64_t t;
 
      t = profiling_now();
@@ -997,14 +997,14 @@ uint32_t ai_face_gallery_get_count(void)
      LL_ATON_RT_DeInit_Network(&NN_Instance_network_fc);
      profiling_npu_deinit(PROF_NET_FC, profiling_now() - t);
 
-     profiling_npu_wall(PROF_NET_FC, profiling_tick_now() - wall0);
+     profiling_npu_wall(PROF_NET_FC, profiling_now() - wall0);
  }
 
  void MX_X_CUBE_AI_Process_User(ai_result_t *result)
  {
 
      LL_ATON_RT_RetValues_t ll_aton_rt_ret;
-     uint32_t wall0 = profiling_tick_now();
+     uint64_t wall0 = profiling_now();
      uint64_t t;
 
      t = profiling_now();
@@ -1030,7 +1030,7 @@ uint32_t ai_face_gallery_get_count(void)
      LL_ATON_RT_DeInit_Network(&NN_Instance_network_f);
      profiling_npu_deinit(PROF_NET_F, profiling_now() - t);
 
-     profiling_npu_wall(PROF_NET_F, profiling_tick_now() - wall0);
+     profiling_npu_wall(PROF_NET_F, profiling_now() - wall0);
  }
 
 

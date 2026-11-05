@@ -30,7 +30,6 @@ typedef enum {
 #if PROFILING_ENABLE
 
 uint64_t profiling_now(void);
-uint32_t profiling_tick_now(void);
 void profiling_reset(void);
 void profiling_iter(void);
 void profiling_stage(prof_stage_t stage, uint64_t cycles);
@@ -40,14 +39,13 @@ void profiling_npu_deinit(prof_net_t net, uint64_t cycles);
 void profiling_npu_runblock(prof_net_t net, uint64_t cycles);
 void profiling_npu_post(prof_net_t net, uint64_t cycles);
 void profiling_wfe(prof_net_t net, uint64_t cycles);
-void profiling_npu_wall(prof_net_t net, uint32_t ticks);
+void profiling_npu_wall(prof_net_t net, uint64_t cycles);
 void profiling_epoch(prof_net_t net, int is_sw, int is_hybrid, int is_blob, int is_internal);
 void profiling_print_window(void);
 
 #else
 
 #define profiling_now()                  (0ULL)
-#define profiling_tick_now()             (0U)
 #define profiling_reset()                ((void)0)
 #define profiling_iter()                 ((void)0)
 #define profiling_stage(s, c)            ((void)(s), (void)(c))

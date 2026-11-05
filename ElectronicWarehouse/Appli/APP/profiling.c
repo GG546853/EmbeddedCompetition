@@ -25,7 +25,7 @@ typedef struct {
     prof_stat_t runblock;
     prof_stat_t wfe;
     prof_stat_t post;
-    uint64_t    wall_ticks;
+    uint64_t    wall_cycles;
     uint32_t    runs;
     uint32_t    wfe_short;
     uint32_t    ep_sw;
@@ -90,7 +90,7 @@ static uint32_t per_run_count(uint32_t count, uint32_t runs)
 static uint32_t net_wall_avg_us(const prof_net_stat_t *n)
 {
     if (n->runs == 0u) return 0u;
-    return (uint32_t)((n->wall_ticks * (1000000u / configTICK_RATE_HZ)) / n->runs);
+    return (uint32_t)(n->wall_cycles / n->runs / CYCLES_PER_US);
 }
 
 uint64_t profiling_now(void)
@@ -98,10 +98,6 @@ uint64_t profiling_now(void)
     return getRunTimeCounterValue();
 }
 
-uint32_t profiling_tick_now(void)
-{
-    return (uint32_t)xTaskGetTickCount();
-}
 
 void profiling_reset(void)
 {
@@ -190,12 +186,12 @@ void profiling_wfe(prof_net_t net, uint64_t cycles)
     prof_unlock(primask);
 }
 
-void profiling_npu_wall(prof_net_t net, uint32_t ticks)
+void profiling_npu_wall(prof_net_t net, uint64_t cycles)
 {
     if ((uint32_t)net >= (uint32_t)PROF_NET_N) return;
 
     uint32_t primask = prof_lock();
-    s_net[net].wall_ticks += ticks;
+    s_net[net].wall_cycles += cycles;
     s_net[net].runs++;
     prof_unlock(primask);
 }

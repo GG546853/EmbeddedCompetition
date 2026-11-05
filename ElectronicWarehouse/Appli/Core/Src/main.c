@@ -50,6 +50,7 @@
 #include "sd_nand.h"
 #include "storage.h"
 #include "trcRecorder.h"
+#include "profiling.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -492,6 +493,7 @@ void PeriphCommonClock_Config(void)
   void HAL_DCMIPP_PIPE_FrameEventCallback(DCMIPP_HandleTypeDef *hdcmipp, uint32_t Pipe)
   {
     imx335_dcmipp_pipe_frame_cb(hdcmipp, Pipe);
+    profiling_pipe_frame(Pipe);
     if (Pipe == DCMIPP_PIPE2)
     {
         // 释放信号量，通知 AI 任务“图像写完了，可以开始推理了！�?

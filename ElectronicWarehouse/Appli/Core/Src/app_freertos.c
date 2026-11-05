@@ -49,6 +49,7 @@
 #include "ui_bridge.h"
 #include "storage.h"
 #include "sys.h"
+#include "profiling.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -345,6 +346,8 @@ static void StatsTask(void *argument)
                    (unsigned int)pct,
                    (unsigned int)watermark);
         }
+
+        profiling_print_window();
 
         for (i = 0u; i < count; i++)
         {

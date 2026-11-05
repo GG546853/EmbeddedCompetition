@@ -51,6 +51,7 @@
 #include "fd_blazeface_anchors.h"
 #include "network_fc.h"
 #include "dma2d.h"
+#include "profiling.h"
 
  void MX_X_CUBE_AI_Init(void);
  void set_clk_sleep_mode(void);
@@ -924,19 +925,51 @@ uint32_t ai_face_gallery_get_count(void)
  /*                    network_fc Inference Wrapper                             */
  /* -------------------------------------------------------------------------- */
 
+ /* Structural epoch counters: called by the LL_ATON runtime before each epoch
+    starts. Only counts, never blocks or prints (runs in the inference context). */
+ static void prof_epoch_cb(LL_ATON_RT_Callbacktype_t ctype,
+                           const NN_Instance_TypeDef *nn_instance,
+                           const EpochBlock_ItemTypeDef *epoch_block)
+ {
+     if (ctype != LL_ATON_RT_Callbacktype_PRE_START || epoch_block == NULL) return;
+
+     prof_net_t n;
+     if (nn_instance == &NN_Instance_network_f) {
+         n = PROF_NET_F;
+     } else if (nn_instance == &NN_Instance_network_fc) {
+         n = PROF_NET_FC;
+     } else {
+         return;
+     }
+     profiling_epoch(n,
+                     EpochBlock_IsEpochPureSW(epoch_block),
+                     EpochBlock_IsEpochHybrid(epoch_block),
+                     EpochBlock_IsEpochBlob(epoch_block),
+                     EpochBlock_IsEpochInternal(epoch_block));
+ }
+
  void ai_face_reid_run(float *embedding_out)
  {
      LL_ATON_RT_RetValues_t ret;
+     uint32_t wall0 = profiling_tick_now();
+     uint64_t t;
 
+     t = profiling_now();
      LL_ATON_RT_Init_Network(&NN_Instance_network_fc);
+     profiling_npu_init(PROF_NET_FC, profiling_now() - t);
 
      do {
+         t = profiling_now();
          ret = LL_ATON_RT_RunEpochBlock(&NN_Instance_network_fc);
+         profiling_npu_runblock(PROF_NET_FC, profiling_now() - t);
          if (ret == LL_ATON_RT_WFE) {
+             t = profiling_now();
              LL_ATON_OSAL_WFE();
+             profiling_wfe(PROF_NET_FC, profiling_now() - t);
          }
      } while (ret != LL_ATON_RT_DONE);
 
+     t = profiling_now();
      /* Invalidate output cache */
      const LL_Buffer_InfoTypeDef *ob_fc = NN_Interface_network_fc.output_buffers_info();
      SCB_InvalidateDCache_by_Addr(
@@ -958,29 +991,46 @@ uint32_t ai_face_gallery_get_count(void)
          for (uint32_t i = 0; i < FACE_EMBEDDING_DIM && i < n; i++)
              embedding_out[i] = ((float)src[i] - (float)zp) * scale;
      }
+     profiling_npu_post(PROF_NET_FC, profiling_now() - t);
 
+     t = profiling_now();
      LL_ATON_RT_DeInit_Network(&NN_Instance_network_fc);
+     profiling_npu_deinit(PROF_NET_FC, profiling_now() - t);
+
+     profiling_npu_wall(PROF_NET_FC, profiling_tick_now() - wall0);
  }
 
  void MX_X_CUBE_AI_Process_User(ai_result_t *result)
  {
 
      LL_ATON_RT_RetValues_t ll_aton_rt_ret;
+     uint32_t wall0 = profiling_tick_now();
+     uint64_t t;
 
-
+     t = profiling_now();
      LL_ATON_RT_Init_Network(&NN_Instance_network_f);
+     profiling_npu_init(PROF_NET_F, profiling_now() - t);
+
      do {
+         t = profiling_now();
          ll_aton_rt_ret = LL_ATON_RT_RunEpochBlock(&NN_Instance_network_f);
+         profiling_npu_runblock(PROF_NET_F, profiling_now() - t);
          if (ll_aton_rt_ret == LL_ATON_RT_WFE) {
+             t = profiling_now();
              LL_ATON_OSAL_WFE();
+             profiling_wfe(PROF_NET_F, profiling_now() - t);
          }
      } while (ll_aton_rt_ret != LL_ATON_RT_DONE);
 
-
+     t = profiling_now();
      ai_blazeface_postprocess(result);
+     profiling_npu_post(PROF_NET_F, profiling_now() - t);
 
+     t = profiling_now();
      LL_ATON_RT_DeInit_Network(&NN_Instance_network_f);
+     profiling_npu_deinit(PROF_NET_F, profiling_now() - t);
 
+     profiling_npu_wall(PROF_NET_F, profiling_tick_now() - wall0);
  }
 
 
@@ -1085,6 +1135,12 @@ void MX_X_CUBE_AI_Init(void)
     buffer_in_fc  = (uint8_t *)LL_Buffer_addr_start(&ib_fc[0]);
     buffer_out_fc = (uint8_t *)LL_Buffer_addr_start(&ob_fc[0]);
     LL_ATON_RT_DeInit_Network(&NN_Instance_network_fc);
+
+    /* Register epoch callbacks after the discovery Init/DeInit above so the
+       boot-time probe does not pollute the counters. */
+    profiling_reset();
+    LL_ATON_RT_SetNetworkCallback(&NN_Instance_network_f,  prof_epoch_cb);
+    LL_ATON_RT_SetNetworkCallback(&NN_Instance_network_fc, prof_epoch_cb);
 
     printf("[FC-INIT] buffer_in_fc=0x%08lX buffer_out_fc=0x%08lX\r\n",
            (unsigned long)buffer_in_fc, (unsigned long)buffer_out_fc);

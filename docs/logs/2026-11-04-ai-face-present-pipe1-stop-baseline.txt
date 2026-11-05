@@ -1,0 +1,171 @@
+--- window 20848 ms ---
+Stats              0%  stack  2672 B
+Aht10Task          0%  stack  1456 B
+TzCtrl             0%  stack   920 B
+IDLE               0%  stack   424 B
+UART4_RxTask       0%  stack  1288 B
+LV_Task            1%  stack 125480 B
+EncoderTask        0%  stack  3544 B
+SensorTask         0%  stack  1208 B
+BarcodeTask        0%  stack  7888 B
+VL53L1XTask        0%  stack  1792 B
+StorageFlush       0%  stack  1944 B
+BatteryTask        0%  stack  1768 B
+defaultTask        0%  stack   400 B
+AITask            98%  stack  6408 B
+swdraw             0%  stack  6992 B
+Tmr Svc            0%  stack   372 B
+[PROF AI] it=1227 p1=1228 p2=1228 | wait 6/12 cin 23/30 cout 100/103 pre 2076/2111 infer 15850/16024 cmd 1/41 reid 2/39 draw 134/163 dstop 14333/25277 tail 514/2477 us(avg/max)
+[PROF f ] n=1227 wall=15881us | init=47 deinit=1 call=4225 wfe=11015 post=463 us/frame | rcalls=312 wfecalls=197 short=98 /frame | maxcall=611 maxwfe=657 | ep sw=5 hw=110 hyb=22 bl=0 in=22 /frame
+[PROF fc] n=0 wall=0us | init=0 deinit=0 call=0 wfe=0 post=0 us/frame | rcalls=0 wfecalls=0 short=0 /frame | maxcall=0 maxwfe=0 | ep sw=0 hw=0 hyb=0 bl=0 in=0 /frame
+--- window 37272 ms ---
+Stats              0%  stack  2672 B
+TzCtrl             0%  stack   920 B
+IDLE               0%  stack   424 B
+AITask            98%  stack  6408 B
+UART4_RxTask       0%  stack  1288 B
+EncoderTask        0%  stack  3544 B
+SensorTask         0%  stack  1208 B
+LV_Task            1%  stack 125480 B
+BarcodeTask        0%  stack  7888 B
+BatteryTask        0%  stack  1768 B
+StorageFlush       0%  stack  1944 B
+Aht10Task          0%  stack  1456 B
+defaultTask        0%  stack   400 B
+VL53L1XTask        0%  stack  1792 B
+Tmr Svc            0%  stack   372 B
+swdraw             0%  stack  6992 B
+--- window 20385 ms ---
+Aht10Task          0%  stack  1456 B
+Stats              0%  stack  2672 B
+StorageFlush       0%  stack  1944 B
+TzCtrl             0%  stack   920 B
+IDLE               0%  stack   424 B
+UART4_RxTask       0%  stack  1288 B
+LV_Task            1%  stack 125480 B
+EncoderTask        0%  stack  3544 B
+SensorTask         0%  stack  1208 B
+BarcodeTask        0%  stack  7888 B
+VL53L1XTask        0%  stack  1792 B
+defaultTask        0%  stack   400 B
+BatteryTask        0%  stack  1768 B
+AITask            98%  stack  6408 B
+swdraw             0%  stack  6992 B
+Tmr Svc            0%  stack   372 B
+[PROF AI] it=1732 p1=1732 p2=1732 | wait 6/11 cin 23/29 cout 100/104 pre 2076/2110 infer 15853/16036 cmd 1/9 reid 2/9 draw 133/159 dstop 14340/15023 tail 503/2349 us(avg/max)
+[PROF f ] n=1732 wall=15892us | init=47 deinit=1 call=4223 wfe=11016 post=467 us/frame | rcalls=312 wfecalls=197 short=98 /frame | maxcall=605 maxwfe=661 | ep sw=5 hw=110 hyb=22 bl=0 in=22 /frame
+[PROF fc] n=0 wall=0us | init=0 deinit=0 call=0 wfe=0 post=0 us/frame | rcalls=0 wfecalls=0 short=0 /frame | maxcall=0 maxwfe=0 | ep sw=0 hw=0 hyb=0 bl=0 in=0 /frame
+--- window 36421 ms ---
+Stats              0%  stack  2672 B
+TzCtrl             0%  stack   920 B
+IDLE               0%  stack   424 B
+UART4_RxTask       0%  stack  1288 B
+LV_Task            1%  stack 125480 B
+EncoderTask        0%  stack  3544 B
+SensorTask         0%  stack  1208 B
+BarcodeTask        0%  stack  7888 B
+VL53L1XTask        0%  stack  1792 B
+BatteryTask        0%  stack  1768 B
+StorageFlush       0%  stack  1944 B
+Aht10Task          0%  stack  1456 B
+defaultTask        0%  stack   400 B
+AITask            98%  stack  2008 B
+Tmr Svc            0%  stack   372 B
+swdraw             0%  stack  6992 B
+--- window 21540 ms ---
+Stats              0%  stack  2672 B
+TzCtrl             0%  stack   920 B
+IDLE               0%  stack   424 B
+UART4_RxTask       0%  stack  1288 B
+LV_Task            1%  stack 125480 B
+EncoderTask        0%  stack  3544 B
+SensorTask         0%  stack  1208 B
+BarcodeTask        0%  stack  7888 B
+VL53L1XTask        0%  stack  1792 B
+StorageFlush       0%  stack  1944 B
+Aht10Task          0%  stack  1456 B
+BatteryTask        0%  stack  1768 B
+defaultTask        0%  stack   400 B
+AITask            98%  stack  2008 B
+swdraw             0%  stack  6992 B
+Tmr Svc            0%  stack   372 B
+[PROF AI] it=1803 p1=1803 p2=1803 | wait 6/12 cin 23/30 cout 100/103 pre 2076/2109 infer 15855/16028 cmd 1/42 reid 2/9 draw 131/154 dstop 14337/15034 tail 494/2474 us(avg/max)
+[PROF f ] n=1803 wall=15899us | init=47 deinit=1 call=4225 wfe=11016 post=467 us/frame | rcalls=312 wfecalls=197 short=98 /frame | maxcall=604 maxwfe=661 | ep sw=5 hw=110 hyb=22 bl=0 in=22 /frame
+[PROF fc] n=0 wall=0us | init=0 deinit=0 call=0 wfe=0 post=0 us/frame | rcalls=0 wfecalls=0 short=0 /frame | maxcall=0 maxwfe=0 | ep sw=0 hw=0 hyb=0 bl=0 in=0 /frame
+[UART4] RX frame type=0x05 len=1
+--- window 37597 ms ---
+Stats              0%  stack  2672 B
+Aht10Task          0%  stack  1456 B
+TzCtrl             0%  stack   920 B
+IDLE               0%  stack   424 B
+UART4_RxTask       0%  stack  1248 B
+LV_Task            1%  stack 125480 B
+EncoderTask        0%  stack  3544 B
+SensorTask         0%  stack  1208 B
+BarcodeTask        0%  stack  7888 B
+VL53L1XTask        0%  stack  1792 B
+BatteryTask        0%  stack  1760 B
+StorageFlush       0%  stack  1944 B
+defaultTask        0%  stack   400 B
+AITask            98%  stack  2008 B
+Tmr Svc            0%  stack   372 B
+swdraw             0%  stack  6992 B
+--- window 20198 ms ---
+Stats              0%  stack  2672 B
+Aht10Task          0%  stack  1456 B
+TzCtrl             0%  stack   920 B
+IDLE               0%  stack   424 B
+SensorTask         0%  stack  1208 B
+AITask            98%  stack  2008 B
+UART4_RxTask       0%  stack  1248 B
+LV_Task            1%  stack 125480 B
+BarcodeTask        0%  stack  7888 B
+VL53L1XTask        0%  stack  1792 B
+BatteryTask        0%  stack  1760 B
+StorageFlush       0%  stack  1944 B
+defaultTask        0%  stack   400 B
+EncoderTask        0%  stack  3544 B
+swdraw             0%  stack  6992 B
+Tmr Svc            0%  stack   372 B
+[PROF AI] it=1716 p1=1716 p2=1716 | wait 6/11 cin 23/29 cout 100/103 pre 2076/2109 infer 15855/16026 cmd 1/44 reid 2/38 draw 132/152 dstop 14339/15012 tail 504/2383 us(avg/max)
+[PROF f ] n=1716 wall=15898us | init=47 deinit=1 call=4224 wfe=11016 post=468 us/frame | rcalls=312 wfecalls=197 short=98 /frame | maxcall=604 maxwfe=658 | ep sw=5 hw=110 hyb=22 bl=0 in=22 /frame
+[PROF fc] n=0 wall=0us | init=0 deinit=0 call=0 wfe=0 post=0 us/frame | rcalls=0 wfecalls=0 short=0 /frame | maxcall=0 maxwfe=0 | ep sw=0 hw=0 hyb=0 bl=0 in=0 /frame
+--- window 36253 ms ---
+Stats              0%  stack  2672 B
+TzCtrl             0%  stack   920 B
+IDLE               0%  stack   424 B
+UART4_RxTask       0%  stack  1248 B
+LV_Task            1%  stack 125480 B
+EncoderTask        0%  stack  3544 B
+SensorTask         0%  stack  1208 B
+BarcodeTask        0%  stack  7888 B
+VL53L1XTask        0%  stack  1792 B
+Aht10Task          0%  stack  1456 B
+BatteryTask        0%  stack  1760 B
+StorageFlush       0%  stack  1944 B
+defaultTask        0%  stack   400 B
+AITask            98%  stack  2008 B
+Tmr Svc            0%  stack   372 B
+swdraw             0%  stack  6992 B
+--- window 21187 ms ---
+Stats              0%  stack  2672 B
+TzCtrl             0%  stack   920 B
+IDLE               0%  stack   424 B
+SensorTask         0%  stack  1208 B
+AITask            98%  stack  2008 B
+UART4_RxTask       0%  stack  1248 B
+LV_Task            1%  stack 125480 B
+BarcodeTask        0%  stack  7888 B
+VL53L1XTask        0%  stack  1792 B
+BatteryTask        0%  stack  1760 B
+Aht10Task          0%  stack  1456 B
+StorageFlush       0%  stack  1880 B
+defaultTask        0%  stack   400 B
+EncoderTask        0%  stack  3544 B
+swdraw             0%  stack  6992 B
+Tmr Svc            0%  stack   372 B
+[PROF AI] it=1721 p1=1721 p2=1721 | wait 6/12 cin 23/29 cout 100/102 pre 2076/2110 infer 15847/16024 cmd 1/38 reid 2/39 draw 128/149 dstop 14352/15043 tail 508/2759 us(avg/max)
+[PROF f ] n=1721 wall=15863us | init=47 deinit=1 call=4225 wfe=11016 post=459 us/frame | rcalls=312 wfecalls=197 short=98 /frame | maxcall=603 maxwfe=661 | ep sw=5 hw=110 hyb=22 bl=0 in=22 /frame
+[PROF fc] n=0 wall=0us | init=0 deinit=0 call=0 wfe=0 post=0 us/frame | rcalls=0 wfecalls=0 short=0 /frame | maxcall=0 maxwfe=0 | ep sw=0 hw=0 hyb=0 bl=0 in=0 /frame
+--- window 35445 ms ---
+Stats              0%  stack  2672 B

@@ -23,6 +23,7 @@
 #include "ui/screens.h"
 #include "ui/ui_bridge.h"
 #include "Outbound_task.h"
+#include "profiling.h"
 #define DISP_W 800
 #define DISP_H 480
 #define BOX_THICKNESS 3
@@ -37,9 +38,12 @@
 
 /* Model 2 (face recognition) only runs during enrollment, not during idle. */
 
-extern uint8_t g_ltdc_framebuf[480 * 800 * 3];
+extern uint8_t g_ltdc_ui_framebuf[800 * 480 * 2];   /* LTDC 图层 1，LVGL 共用 */
 
-#define RGB888(r, g, b)  (((uint32_t)(r) << 16) | ((uint32_t)(g) << 8) | (uint32_t)(b))
+#define UI565(r, g, b)   ((uint16_t)((((r) & 0xF8) << 8) | (((g) & 0xFC) << 3) | ((b) >> 3)))
+#define BOX_COLOR565     UI565(0, 255, 0)   /* 与原来 RGB888 (0,255,0) 同色 */
+#define OVERLAY_CLEAR    0x0000u            /* 颜色键=黑色 → 透明 */
+#define OVERLAY_RECT_MAX 16                 /* AI_FD_MAX_DETECTIONS=1 → 4 边 + 6 关键点 = 10 */
 
 volatile int g_trigger_identify = 0;
 volatile int g_identify_done  = 0;
@@ -55,7 +59,11 @@ volatile int g_enroll_total    = FACE_ENROLL_SAMPLES;
 volatile int g_enroll_state    = 0;  /* 0=idle, 1=enrolling, 2=done, 3=waiting_name */
 char         g_enroll_msg[64]  = {0};
 
-static void fill_rect(int x, int y, int w, int h, uint8_t r, uint8_t g, uint8_t b)
+static int16_t s_rect[OVERLAY_RECT_MAX][4];   /* 上一帧画过的矩形，用于擦除 */
+static uint8_t s_rect_n;
+
+/* 画一个矩形到图层 1；record=1 时把裁剪后的矩形记入擦除表 */
+static void ui_edge(int x, int y, int w, int h, uint16_t color, int record)
 {
     if (x < 0) { w += x; x = 0; }
     if (y < 0) { h += y; y = 0; }
@@ -63,43 +71,48 @@ static void fill_rect(int x, int y, int w, int h, uint8_t r, uint8_t g, uint8_t 
     if (y + h > DISP_H) h = DISP_H - y;
     if (w <= 0 || h <= 0) return;
 
-    extern osMutexId_t dma2d_mutex;
-    if (dma2d_mutex != NULL) {
-        osMutexAcquire(dma2d_mutex, osWaitForever);
+    if (record && s_rect_n < OVERLAY_RECT_MAX) {
+        s_rect[s_rect_n][0] = (int16_t)x;
+        s_rect[s_rect_n][1] = (int16_t)y;
+        s_rect[s_rect_n][2] = (int16_t)w;
+        s_rect[s_rect_n][3] = (int16_t)h;
+        s_rect_n++;
     }
+
+    extern osMutexId_t dma2d_mutex;
+    if (dma2d_mutex != NULL) osMutexAcquire(dma2d_mutex, osWaitForever);
+
     hdma2d.Init.Mode = DMA2D_R2M;
-    hdma2d.Init.ColorMode = DMA2D_OUTPUT_RGB888;
+    hdma2d.Init.ColorMode = DMA2D_OUTPUT_RGB565;
     hdma2d.Init.OutputOffset = DISP_W - w;
     HAL_DMA2D_Init(&hdma2d);
-    HAL_DMA2D_Start(&hdma2d, RGB888(r, g, b),
-                    (uint32_t)&g_ltdc_framebuf[(y * DISP_W + x) * 3], w, h);
+    HAL_DMA2D_Start(&hdma2d, color,
+                    (uint32_t)&g_ltdc_ui_framebuf[(y * DISP_W + x) * 2], w, h);
     HAL_DMA2D_PollForTransfer(&hdma2d, 50);
-    if (dma2d_mutex != NULL) {
-        osMutexRelease(dma2d_mutex);
-    }
+
+    if (dma2d_mutex != NULL) osMutexRelease(dma2d_mutex);
 }
 
-static void draw_box(int x, int y, int w, int h, uint8_t r, uint8_t g, uint8_t b)
+static void ui_box(int x, int y, int w, int h, uint16_t color, int record)
 {
-    fill_rect(x, y, w, BOX_THICKNESS, r, g, b);               /* top */
-    fill_rect(x, y + h - BOX_THICKNESS, w, BOX_THICKNESS, r, g, b); /* bottom */
-    fill_rect(x, y, BOX_THICKNESS, h, r, g, b);               /* left */
-    fill_rect(x + w - BOX_THICKNESS, y, BOX_THICKNESS, h, r, g, b); /* right */
+    ui_edge(x, y, w, BOX_THICKNESS, color, record);                     /* top */
+    ui_edge(x, y + h - BOX_THICKNESS, w, BOX_THICKNESS, color, record); /* bottom */
+    ui_edge(x, y, BOX_THICKNESS, h, color, record);                     /* left */
+    ui_edge(x + w - BOX_THICKNESS, y, BOX_THICKNESS, h, color, record); /* right */
 }
 
-static void draw_kp(int x, int y, uint8_t r, uint8_t g, uint8_t b)
+static void ui_kp(int x, int y, int record)
 {
-    fill_rect(x - KP_SIZE/2, y - KP_SIZE/2, KP_SIZE, KP_SIZE, r, g, b);
+    ui_edge(x - KP_SIZE / 2, y - KP_SIZE / 2, KP_SIZE, KP_SIZE, BOX_COLOR565, record);
 }
 
-/* DCMIPP 每帧覆盖整个缓冲区，旧检测框自然被擦除 */
 /* PIPE2 center-crop compensation: NN sees sensor columns [324,2268] of full [0,2592].
    On the 800-wide display this region maps to x ∈ [100, 700].
    x_display = x_nn * (1944/2592 * 800) + (324/2592 * 800) = x_nn * 600 + 100 */
 #define NN2DISP_SCALE_X  600.0f
 #define NN2DISP_OFFSET_X 100.0f
 
-static void draw_one_detection(ai_detection_t *d, uint8_t r, uint8_t g, uint8_t b)
+static void draw_one_detection(ai_detection_t *d)
 {
     int bx = (int)(d->x_center * NN2DISP_SCALE_X + NN2DISP_OFFSET_X
                    - d->width  * NN2DISP_SCALE_X * 0.5f);
@@ -107,25 +120,39 @@ static void draw_one_detection(ai_detection_t *d, uint8_t r, uint8_t g, uint8_t 
     int bw = (int)(d->width  * NN2DISP_SCALE_X);
     int bh = (int)(d->height * DISP_H);
 
-    draw_box(bx, by, bw, bh, r, g, b);
+    ui_box(bx, by, bw, bh, BOX_COLOR565, 1);
 
     for (int k = 0; k < 6; k++) {
         int kx = (int)(d->keypoints[k][0] * NN2DISP_SCALE_X + NN2DISP_OFFSET_X);
         int ky = (int)(d->keypoints[k][1] * DISP_H);
-        draw_kp(kx, ky, r, g, b);
+        ui_kp(kx, ky, 1);
     }
 }
 
 static void draw_detections_on_display(ai_result_t *result)
 {
-	if (result->nb_detect == 0) return;
-    /* 暂停 PIPE1 连续写入，防止 DCMIPP 新帧覆盖正在绘制的框 */
-    HAL_DCMIPP_CSI_PIPE_Stop(&hdcmipp, DCMIPP_PIPE1, DCMIPP_VIRTUAL_CHANNEL0);
-    for (uint32_t i = 0; i < result->nb_detect; i++) {
-        draw_one_detection(&result->detections[i], 0, 255, 0);
+    uint64_t t = profiling_now();
+    uint8_t n = s_rect_n;
+    s_rect_n = 0;
+
+    /* 先擦掉上一帧的框（填黑色 = 恢复颜色键透明） */
+    for (uint8_t i = 0; i < n; i++) {
+        ui_edge(s_rect[i][0], s_rect[i][1], s_rect[i][2], s_rect[i][3], OVERLAY_CLEAR, 0);
     }
-    HAL_DCMIPP_CSI_PIPE_Start(&hdcmipp, DCMIPP_PIPE1, DCMIPP_VIRTUAL_CHANNEL0,
-    (uint32_t)g_ltdc_framebuf, DCMIPP_MODE_CONTINUOUS);
+    /* 再画本帧；nb_detect==0 时就只剩擦除 */
+    for (uint32_t i = 0; i < result->nb_detect; i++) {
+        draw_one_detection(&result->detections[i]);
+    }
+    profiling_stage(PROF_DRAW, profiling_now() - t);
+}
+
+void ai_clear_overlay(void)
+{
+    uint8_t n = s_rect_n;
+    s_rect_n = 0;
+    for (uint8_t i = 0; i < n; i++) {
+        ui_edge(s_rect[i][0], s_rect[i][1], s_rect[i][2], s_rect[i][3], OVERLAY_CLEAR, 0);
+    }
 }
 
 osThreadId_t AITaskHandle;
@@ -528,31 +555,46 @@ void AI_Task(void *argument)
     vTaskDelay(pdMS_TO_TICKS(1000));
 
     printf("\r\n[REID] Face Re-ID ready. Commands: register <name>, identify, gallery, help\r\n");
+    s_rect_n = 0;
+    profiling_reset();
 
     for (;;) {
+        uint64_t t;
+        profiling_iter();
+
+        t = profiling_now();
         if(osSemaphoreAcquire(cam_frame_sem, HAL_MAX_DELAY) != osOK)
             while(1);
+        profiling_stage(PROF_WAIT, profiling_now() - t);
 
         /* Cache maintenance: DCMIPP wrote to nn_input_u8 via DMA */
+        t = profiling_now();
         SCB_CleanInvalidateDCache_by_Addr(
             (uint32_t *)nn_input_u8, sizeof(nn_input_u8));
+        profiling_stage(PROF_CACHE_IN, profiling_now() - t);
 
         /* Software uint8→float32 normalization with BGR→RGB swap.
            DCMIPP outputs BGR order; model was trained on RGB. */
+        t = profiling_now();
         float *fin = (float *)buffer_in;
         for (uint32_t i = 0; i < 128 * 128 * 3; i += 3) {
             fin[i + 0] = (float)nn_input_u8[i + 2] / 255.0f;  /* R ← B */
             fin[i + 1] = (float)nn_input_u8[i + 1] / 255.0f;  /* G ← G */
             fin[i + 2] = (float)nn_input_u8[i + 0] / 255.0f;  /* B ← R */
         }
+        profiling_stage(PROF_PRE, profiling_now() - t);
 
         /* Cache maintenance: CPU wrote to buffer_in */
+        t = profiling_now();
         SCB_CleanInvalidateDCache_by_Addr(
             (uint32_t *)buffer_in, LL_ATON_NETWORK_F_IN_1_SIZE_BYTES);
+        profiling_stage(PROF_CACHE_OUT, profiling_now() - t);
 
         /* Run NPU inference + post-processing */
+        t = profiling_now();
         memset(&result, 0, sizeof(result));
         MX_X_CUBE_AI_Process_User(&result);
+        profiling_stage(PROF_NPU_F, profiling_now() - t);
 
         /* Face size gate: temporarily disabled for PC comparison.
            Out-of-range → no box drawn, no ReID, no identify. */
@@ -597,16 +639,22 @@ void AI_Task(void *argument)
 #endif
 
         /* Check serial commands */
+        t = profiling_now();
         process_serial_commands();
+        profiling_stage(PROF_CMD, profiling_now() - t);
 
         /* Run face recognition (Model 2) every frame when face detected */
+        t = profiling_now();
         run_reid_pipeline(&result);
+        profiling_stage(PROF_REID, profiling_now() - t);
 
-        /* Draw detection boxes + keypoints on LTDC layer 2 overlay */
+        /* Draw detection boxes + keypoints (draw stage timed inside) */
         draw_detections_on_display(&result);
 
         HAL_GPIO_WritePin(GPIOG,GPIO_PIN_10,0);
+        t = profiling_now();
         vTaskDelay(pdMS_TO_TICKS(1));
+        profiling_stage(PROF_TAIL, profiling_now() - t);
     }
 }
 

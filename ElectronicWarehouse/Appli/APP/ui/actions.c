@@ -62,6 +62,8 @@ void action_action_stop_camera(lv_event_t * e) {
         osThreadTerminate(AITaskHandle);
         AITaskHandle = NULL;
     }
+    /* 硬杀线程可能留下半帧检测框；趁颜色键还开着把它擦掉 */
+    ai_clear_overlay();
 
     // ② 关 Color Keying（Main 屏幕不能开，否则黑色 UI 元素会消失）
     HAL_LTDC_DisableColorKeying(&hltdc, 1);
@@ -94,6 +96,7 @@ void action_action_recognize(lv_event_t * e) {
             osThreadTerminate(AITaskHandle);
             AITaskHandle = NULL;
         }
+        ai_clear_overlay();
         osThreadNew(ElectromagnetLock_Task, NULL, &ElectromagnetLockTask_attributes);
 
         strncpy(Cabinet.User, g_identify_name, sizeof(Cabinet.User) - 1);
@@ -120,6 +123,7 @@ void action_action_recognize(lv_event_t * e) {
             osThreadTerminate(AITaskHandle);
             AITaskHandle = NULL;
         }
+        ai_clear_overlay();
 
         eez_flow_push_screen(SCREEN_ID_PAGE_LOCK, LV_SCR_LOAD_ANIM_NONE, 0, 0);
     }

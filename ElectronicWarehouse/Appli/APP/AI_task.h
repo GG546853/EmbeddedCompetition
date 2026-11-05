@@ -32,6 +32,7 @@ void ai_select_face_by_index(int idx);
 void ai_refresh_dropdown_users(void);
 
 void AI_Task(void *argument);
+void ai_clear_overlay(void);
 
 #ifdef __cplusplus
 }

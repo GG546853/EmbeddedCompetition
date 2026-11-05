@@ -925,13 +925,26 @@ uint32_t ai_face_gallery_get_count(void)
  /*                    network_fc Inference Wrapper                             */
  /* -------------------------------------------------------------------------- */
 
- /* Structural epoch counters: called by the LL_ATON runtime before each epoch
-    starts. Only counts, never blocks or prints (runs in the inference context). */
+ /* Structural epoch counters and per-epoch wall timing. Called by the LL_ATON
+    runtime on PRE_START / POST_END; never blocks or prints (inference context). */
+#define PROF_EP_PENDING_MAX 8
+ typedef struct {
+     const EpochBlock_ItemTypeDef *eb;
+     uint64_t t0;
+ } prof_ep_pending_t;
+
+ static prof_ep_pending_t s_ep_pending[PROF_EP_PENDING_MAX];
+
+ static void prof_epoch_pending_clear(void)
+ {
+     memset(s_ep_pending, 0, sizeof(s_ep_pending));
+ }
+
  static void prof_epoch_cb(LL_ATON_RT_Callbacktype_t ctype,
                            const NN_Instance_TypeDef *nn_instance,
                            const EpochBlock_ItemTypeDef *epoch_block)
  {
-     if (ctype != LL_ATON_RT_Callbacktype_PRE_START || epoch_block == NULL) return;
+     if (epoch_block == NULL) return;
 
      prof_net_t n;
      if (nn_instance == &NN_Instance_network_f) {
@@ -941,11 +954,35 @@ uint32_t ai_face_gallery_get_count(void)
      } else {
          return;
      }
-     profiling_epoch(n,
-                     EpochBlock_IsEpochPureSW(epoch_block),
-                     EpochBlock_IsEpochHybrid(epoch_block),
-                     EpochBlock_IsEpochBlob(epoch_block),
-                     EpochBlock_IsEpochInternal(epoch_block));
+
+     if (ctype == LL_ATON_RT_Callbacktype_PRE_START) {
+         profiling_epoch(n,
+                         EpochBlock_IsEpochPureSW(epoch_block),
+                         EpochBlock_IsEpochHybrid(epoch_block),
+                         EpochBlock_IsEpochBlob(epoch_block),
+                         EpochBlock_IsEpochInternal(epoch_block));
+
+         for (uint32_t i = 0; i < PROF_EP_PENDING_MAX; i++) {
+             if (s_ep_pending[i].eb == NULL) {
+                 s_ep_pending[i].eb = epoch_block;
+                 s_ep_pending[i].t0 = profiling_now();
+                 break;
+             }
+         }
+     } else if (ctype == LL_ATON_RT_Callbacktype_POST_END) {
+         for (uint32_t i = 0; i < PROF_EP_PENDING_MAX; i++) {
+             if (s_ep_pending[i].eb == epoch_block) {
+                 uint64_t cycles = profiling_now() - s_ep_pending[i].t0;
+                 s_ep_pending[i].eb = NULL;
+                 profiling_epoch_time(n,
+                                      EpochBlock_IsEpochPureSW(epoch_block),
+                                      EpochBlock_IsEpochHybrid(epoch_block),
+                                      EpochBlock_IsEpochInternal(epoch_block),
+                                      cycles);
+                 break;
+             }
+         }
+     }
  }
 
  void ai_face_reid_run(float *embedding_out)
@@ -953,6 +990,8 @@ uint32_t ai_face_gallery_get_count(void)
      LL_ATON_RT_RetValues_t ret;
      uint64_t wall0 = profiling_now();
      uint64_t t;
+
+     prof_epoch_pending_clear();
 
      t = profiling_now();
      LL_ATON_RT_Init_Network(&NN_Instance_network_fc);
@@ -1006,6 +1045,8 @@ uint32_t ai_face_gallery_get_count(void)
      LL_ATON_RT_RetValues_t ll_aton_rt_ret;
      uint64_t wall0 = profiling_now();
      uint64_t t;
+
+     prof_epoch_pending_clear();
 
      t = profiling_now();
      LL_ATON_RT_Init_Network(&NN_Instance_network_f);

@@ -41,6 +41,7 @@ void profiling_npu_post(prof_net_t net, uint64_t cycles);
 void profiling_wfe(prof_net_t net, uint64_t cycles);
 void profiling_npu_wall(prof_net_t net, uint64_t cycles);
 void profiling_epoch(prof_net_t net, int is_sw, int is_hybrid, int is_blob, int is_internal);
+void profiling_epoch_time(prof_net_t net, int is_sw, int is_hybrid, int is_internal, uint64_t cycles);
 void profiling_print_window(void);
 
 #else
@@ -58,6 +59,8 @@ void profiling_print_window(void);
 #define profiling_npu_wall(n, t)         ((void)(n), (void)(t))
 #define profiling_epoch(n, sw, hy, bl, in) \
     ((void)(n), (void)(sw), (void)(hy), (void)(bl), (void)(in))
+#define profiling_epoch_time(n, sw, hy, in_, c) \
+    ((void)(n), (void)(sw), (void)(hy), (void)(in_), (void)(c))
 #define profiling_print_window()         ((void)0)
 
 #endif

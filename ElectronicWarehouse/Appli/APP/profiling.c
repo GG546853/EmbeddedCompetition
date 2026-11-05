@@ -33,6 +33,10 @@ typedef struct {
     uint32_t    ep_hybrid;
     uint32_t    ep_blob;
     uint32_t    ep_internal;
+    prof_stat_t ept_sw;
+    prof_stat_t ept_hw;
+    prof_stat_t ept_hyb;
+    prof_stat_t ept_in;
 } prof_net_stat_t;
 
 static prof_stat_t      s_stage[PROF_STAGE_N];
@@ -215,12 +219,37 @@ void profiling_epoch(prof_net_t net, int is_sw, int is_hybrid, int is_blob, int 
     prof_unlock(primask);
 }
 
+/* Per-epoch wall time, exclusive classification: SW, then hybrid, then internal,
+ * everything else counts as pure HW. Mirrors the runtime flags used above. */
+void profiling_epoch_time(prof_net_t net, int is_sw, int is_hybrid, int is_internal, uint64_t cycles)
+{
+    if ((uint32_t)net >= (uint32_t)PROF_NET_N) return;
+
+    uint32_t primask = prof_lock();
+    prof_net_stat_t *n = &s_net[net];
+    prof_stat_t *st;
+
+    if (is_sw) {
+        st = &n->ept_sw;
+    } else if (is_hybrid) {
+        st = &n->ept_hyb;
+    } else if (is_internal) {
+        st = &n->ept_in;
+    } else {
+        st = &n->ept_hw;
+    }
+    stat_add(st, cycles);
+
+    prof_unlock(primask);
+}
+
 static void print_net(const char *tag, const prof_net_stat_t *n)
 {
     printf("[PROF %s] n=%lu wall=%luus | init=%lu deinit=%lu call=%lu wfe=%lu post=%lu us/frame"
            " | rcalls=%lu wfecalls=%lu short=%lu /frame"
            " | maxcall=%lu maxwfe=%lu"
-           " | ep sw=%lu hw=%lu hyb=%lu bl=%lu in=%lu /frame\r\n",
+           " | ep sw=%lu hw=%lu hyb=%lu bl=%lu in=%lu /frame"
+           " | ept sw=%lu hw=%lu hyb=%lu in=%lu us/frame\r\n",
            tag,
            (unsigned long)n->runs,
            (unsigned long)net_wall_avg_us(n),
@@ -238,7 +267,11 @@ static void print_net(const char *tag, const prof_net_stat_t *n)
            (unsigned long)per_run_count(n->ep_hw, n->runs),
            (unsigned long)per_run_count(n->ep_hybrid, n->runs),
            (unsigned long)per_run_count(n->ep_blob, n->runs),
-           (unsigned long)per_run_count(n->ep_internal, n->runs));
+           (unsigned long)per_run_count(n->ep_internal, n->runs),
+           (unsigned long)stat_total_per_run_us(&n->ept_sw, n->runs),
+           (unsigned long)stat_total_per_run_us(&n->ept_hw, n->runs),
+           (unsigned long)stat_total_per_run_us(&n->ept_hyb, n->runs),
+           (unsigned long)stat_total_per_run_us(&n->ept_in, n->runs));
 }
 
 void profiling_print_window(void)

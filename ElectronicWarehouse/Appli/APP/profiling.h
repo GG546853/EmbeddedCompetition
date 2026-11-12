@@ -7,6 +7,15 @@
 #define PROFILING_ENABLE 1
 #endif
 
+/* HyperRAM (XSPI1) bandwidth/latency bench + LTDC FIFO underrun counters.
+   Both are measurement-only; set to 0 to compile them out completely. */
+#ifndef HYPERRAM_BENCH_ENABLE
+#define HYPERRAM_BENCH_ENABLE 1
+#endif
+#ifndef LTDC_STATS_ENABLE
+#define LTDC_STATS_ENABLE 1
+#endif
+
 typedef enum {
     PROF_WAIT = 0,
     PROF_CACHE_IN,
@@ -18,6 +27,8 @@ typedef enum {
     PROF_DRAW,
     PROF_DRAW_STOP,
     PROF_TAIL,
+    PROF_CROP,      /* ai_crop_resize_face_112 (copy + resize) */
+    PROF_FC_RUN,    /* ai_face_reid_run */
     PROF_STAGE_N
 } prof_stage_t;
 
@@ -44,6 +55,28 @@ void profiling_epoch(prof_net_t net, int is_sw, int is_hybrid, int is_blob, int 
 void profiling_epoch_time(prof_net_t net, int is_sw, int is_hybrid, int is_internal, uint64_t cycles);
 void profiling_print_window(void);
 
+#if HYPERRAM_BENCH_ENABLE
+void profiling_bench_info(void);
+void profiling_bench_canary(void);
+void profiling_bench_read(uint32_t kb, uint32_t iters);
+void profiling_bench_write(uint32_t kb, uint32_t iters);
+void profiling_bench_copy(uint32_t kb, uint32_t iters);
+void profiling_bench_chase(uint32_t steps);
+void profiling_bench_matrix(void);
+void profiling_bench_infer(uint32_t iters, uint32_t cfg);
+void profiling_bench_reid(uint32_t iters, uint32_t cfg);
+#else
+#define profiling_bench_info()            ((void)0)
+#define profiling_bench_canary()          ((void)0)
+#define profiling_bench_read(k, n)        ((void)(k), (void)(n))
+#define profiling_bench_write(k, n)       ((void)(k), (void)(n))
+#define profiling_bench_copy(k, n)        ((void)(k), (void)(n))
+#define profiling_bench_chase(n)          ((void)(n))
+#define profiling_bench_matrix()          ((void)0)
+#define profiling_bench_infer(n, c)       ((void)(n), (void)(c))
+#define profiling_bench_reid(n, c)        ((void)(n), (void)(c))
+#endif
+
 #else
 
 #define profiling_now()                  (0ULL)
@@ -62,6 +95,15 @@ void profiling_print_window(void);
 #define profiling_epoch_time(n, sw, hy, in_, c) \
     ((void)(n), (void)(sw), (void)(hy), (void)(in_), (void)(c))
 #define profiling_print_window()         ((void)0)
+#define profiling_bench_info()           ((void)0)
+#define profiling_bench_canary()         ((void)0)
+#define profiling_bench_read(k, n)       ((void)(k), (void)(n))
+#define profiling_bench_write(k, n)      ((void)(k), (void)(n))
+#define profiling_bench_copy(k, n)       ((void)(k), (void)(n))
+#define profiling_bench_chase(n)         ((void)(n))
+#define profiling_bench_matrix()         ((void)0)
+#define profiling_bench_infer(n, c)      ((void)(n), (void)(c))
+#define profiling_bench_reid(n, c)       ((void)(n), (void)(c))
 
 #endif
 

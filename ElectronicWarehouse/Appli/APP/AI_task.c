@@ -311,6 +311,42 @@ static void process_serial_commands(void)
         ui_push_inventory(inventory_item_T, 28, inventory_item_D, 6);
         printf("[TEST] Inventory + history cleared in RAM (SD NAND NOT modified)\r\n");
     }
+    else if (strcmp(cmd, "bench info") == 0) {
+        profiling_bench_info();
+    }
+    else if (strcmp(cmd, "bench canary") == 0) {
+        profiling_bench_canary();
+    }
+    else if (strncmp(cmd, "bench read", 10) == 0) {
+        uint32_t kb = (uint32_t)atoi(cmd + 10);
+        profiling_bench_read(kb ? kb : 1024u, 5u);
+    }
+    else if (strncmp(cmd, "bench write", 11) == 0) {
+        uint32_t kb = (uint32_t)atoi(cmd + 11);
+        profiling_bench_write(kb ? kb : 1024u, 5u);
+    }
+    else if (strncmp(cmd, "bench copy", 10) == 0) {
+        uint32_t kb = (uint32_t)atoi(cmd + 10);
+        profiling_bench_copy(kb ? kb : 512u, 5u);
+    }
+    else if (strcmp(cmd, "bench chase") == 0) {
+        profiling_bench_chase(8192u);
+    }
+    else if (strcmp(cmd, "bench matrix") == 0) {
+        profiling_bench_matrix();
+    }
+    else if (strncmp(cmd, "bench infer", 11) == 0) {
+        char *p = cmd + 11;
+        uint32_t n = (uint32_t)strtoul(p, &p, 10);
+        uint32_t cfg = (uint32_t)strtoul(p, &p, 10);
+        profiling_bench_infer(n, cfg);
+    }
+    else if (strncmp(cmd, "bench reid", 10) == 0) {
+        char *p = cmd + 10;
+        uint32_t n = (uint32_t)strtoul(p, &p, 10);
+        uint32_t cfg = (uint32_t)strtoul(p, &p, 10);
+        profiling_bench_reid(n, cfg);
+    }
     else if (strcmp(cmd, "help") == 0) {
         printf("[HELP] Commands:\r\n");
         printf("  register <name>  -- start enrolling current face\r\n");
@@ -336,6 +372,16 @@ static void process_serial_commands(void)
         printf("  dumpface         -- one-shot hex dump of face crop\r\n");
         printf("  dumpface on/off  -- auto-dump on every identify frame\r\n");
         printf("  enrolldump on/off-- auto-dump on every enrollment capture\r\n");
+        printf("  --- HyperRAM bench (measurement only) ---\r\n");
+        printf("  bench info       -- XSPI1 clock/registers + cache geometry\r\n");
+        printf("  bench canary     -- probe 0x90600000 writability\r\n");
+        printf("  bench read [KB]  -- sequential read bandwidth (default 1024)\r\n");
+        printf("  bench write [KB] -- sequential write bandwidth\r\n");
+        printf("  bench copy [KB]  -- read+write copy bandwidth (default 512)\r\n");
+        printf("  bench chase      -- dependent-load latency (HyperRAM vs SRAM)\r\n");
+        printf("  bench matrix     -- C0..C4 load ladder (toggles camera/LTDC)\r\n");
+        printf("  bench infer [n] [cfg] -- detection inference (cfg 1=off 2=on)\r\n");
+        printf("  bench reid [n] [cfg]  -- fc inference timing\r\n");
     }
     else if (strcmp(cmd, "crccc") == 0) {
         extern uint32_t fc_weight_crc32(void);
@@ -413,6 +459,8 @@ static void send_enroll_face_dump(int sample_idx, int total)
 
 static void run_reid_pipeline(ai_result_t *result)
 {
+    uint64_t t;
+
     if (!g_model2_enabled) return;
     if (result->nb_detect == 0) return;
 
@@ -427,7 +475,9 @@ static void run_reid_pipeline(ai_result_t *result)
 
     /* Crop face from LTDC framebuffer */
     HAL_DCMIPP_CSI_PIPE_Stop(&hdcmipp, DCMIPP_PIPE1, DCMIPP_VIRTUAL_CHANNEL0);
+    t = profiling_now();
     ai_crop_resize_face_112((uint8_t *)g_ltdc_framebuf, best, FACE_CROP_BUF);
+    profiling_stage(PROF_CROP, profiling_now() - t);
     HAL_DCMIPP_CSI_PIPE_Start(&hdcmipp, DCMIPP_PIPE1, DCMIPP_VIRTUAL_CHANNEL0,
                                (uint32_t)g_ltdc_framebuf, DCMIPP_MODE_CONTINUOUS);
 
@@ -438,7 +488,9 @@ static void run_reid_pipeline(ai_result_t *result)
         (uint32_t *)buffer_in_fc, LL_ATON_NETWORK_FC_IN_1_SIZE_BYTES);
 
     float embedding[FACE_EMBEDDING_DIM];
+    t = profiling_now();
     ai_face_reid_run(embedding);
+    profiling_stage(PROF_FC_RUN, profiling_now() - t);
 
     if (reid_pending == REID_REGISTER) {
         /* --- Enrollment --- */

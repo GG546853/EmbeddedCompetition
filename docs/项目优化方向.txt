@@ -1,0 +1,193 @@
+● 底层优化清单（按“可测量性 → 收益”排序）
+
+  先说三个需要纠正的前提，避免简历写错被面试官追问：
+
+  1. “NPU 释放率 <0.1%” 是未经验证的推断，而且衡量方式本身有偏差。 这是一个帧驱动流水线，NPU 在等帧时闲置是正常的；有意义的指标是单次推理内 HW
+  时间占比和端到端延迟，而不是整机时间轴上的占空比。目前有明确线索值得测：network_f 95 个 epoch 中 26 个是 CPU 软件回退，network_fc 183 个 epoch 中 110
+  个是软件回退（PReLU/Dequant/Quant 未融合），这些都有生成报告可查。
+  2. 雪花屏的根因尚未证明。 你们已经试过把 framebuffer 挪到 0x90200000 仍会复现，这基本排除了“地址重叠”假说，指向带宽竞争 / LTDC FIFO underrun / cache
+  一致性。而这三者都有现成的硬件计数器可以证伪或证实（见 P1）。
+  3. SEGGER RTT 需要 J-Link。如果现场只有 ST-Link，用 ITM/SWO 或“UART DMA 环形缓冲 + 丢包”替代，效果一样，别在简历里写 RTT 却说不清传输链路。
+
+  ---
+  P0 测量基座（先做，1~2 天）
+
+  ▎ 目标：后面每一条优化都有 before/after 数字。这也是简历里最有说服力的部分——展示“先测量再优化”的工程方法。
+
+  - P0-1 DWT → FreeRTOS 运行时统计
+    - 证据：FreeRTOSConfig.h:81 已开 configGENERATE_RUN_TIME_STATS 1，:181-182 已映射钩子，但 app_freertos.c:136-144 两个钩子是空壳，统计完全没生效。
+    - 改动：约 10 行。configureTimerForRunTimeStats() 里开 CoreDebug->DEMCR |= TRCENA、DWT->CTRL |= CYCCNTENA；getRunTimeCounterValue() 返回
+  DWT->CYCCNT。注意 configRUN_TIME_COUNTER_TYPE size_t 在 32 位 M55 上就是 32 位，正好匹配 CYCCNT；600MHz 下 7.16s 回绕一次，FreeRTOS
+  内部用无符号差值累加，百分比统计不受影响（但做长时间轴 trace 时要软件进位扩展成 64 位）。
+    - 输出：每秒打印一次「任务名 / 运行时间占比 / uxTaskGetStackHighWaterMark2」，顺便把栈水位也拿到（LVTask 栈 128KB、AI 任务 8KB，都能验证）。
+    - 简历点：“基于 DWT CYCCNT 实现 RTOS 运行时统计与栈水位监控”。
+  - P0-2 AI 流水线四段打点
+    - 在 AI_task.c:523-611 主循环里用 DWT->CYCCNT 分别累计：等帧信号量 / cache clean / BGR→RGB + u8→f32 转换 / MX_X_CUBE_AI_Process_User / 后处理 / 画框 /
+  crop+resize。用 uint64_t 累加，每 100 帧打印均值+最大值，不要每帧 printf。
+    - 关键产出：证明“CPU 搬图”到底占多少。network_f 输入是 196,608 字节 f32，转换在 AI_task.c:542-547 是标量循环，我估计 1~3ms，但必须实测。
+  - P0-3 NPU 内部 HW/SW 时间分解
+    - 依据：ll_aton_runtime.h 提供 __LL_ATON_RT_GetCurrEpochBlockIndex()，ll_aton_NN_interface.h:84-94 有 pure_hw / pure_sw / hybrid flags 和判断函数。
+    - 改法：在 app_x-cube-ai.c:927-963 和 :965-984 的 RunEpochBlock 循环里，每次调用前后取 DWT，按 epoch flag 归类累计 HW 时间 / SW
+  时间；同时统计每次推理调用了多少次 RunEpochBlock、其中多少次返回 LL_ATON_RT_WFE。如果调用次数远大于 epoch 数（95 / 183），说明 __WFE()
+  被虚假事件唤醒后在空转——这就是“NPU 空转”的真实来源之一。
+    - 这是回答“NPU 释放率”的正确姿势：单次推理 HW 时间 / 单次推理墙钟时间。
+  - P0-4 观察外设侧计数器
+    - LTDC FIFO underrun：HAL_LTDC_ErrorCallback（main.c:507-511）目前是空的，且没有任何 LTDC 中断被使能。使能 LTDC_IT_FU + NVIC，在回调里
+  g_ltdc_fu_count++，定期打印。这是证明雪花根因的直接证据。
+    - DMA2D 传输耗时、XSPI 访问延迟：用 DWT 包住即可；若能借到逻辑分析仪，测 HyperRAM 片选占空比更直观。
+    - 工具层：Percepio View for FreeRTOS 是免费的，trace 记录在 RAM，快照可由调试器读出（ST-Link 可用），但需要集成 TraceRecorder
+  源码，有半天接入成本；J-Link 用户可先上 SystemView。建议 P0 只做 DWT + 计数器，trace 工具作为加分项，不要卡在这里。
+  - P0-5 串口输出别污染测量
+    - main.c:558-563 的 _write 是阻塞 HAL_UART_Transmit(..., 0xFFFF) @115200，一行 50 字节约 4.3ms，直接在 AI 任务里 printf 会显著扭曲耗时。
+    - 先做最小改动：仅 P0 阶段把 printf 改为「环形缓冲 + DMA + 满则丢弃」，或降到每 N 帧打印。RTT/ITM 作为后续增强。
+
+  ---
+  P1 内存与显示子系统（雪花屏，最值得写进简历的底层故事）
+
+  ▎ 核心假说：XSPI1 带宽被打满 + cache 一致性缺失，而不是地址重叠。先算账：
+
+  - LTDC Layer0（RGB888，800×480×3=1.15MB/帧）@60fps ≈ 69 MB/s
+  - LTDC Layer1（RGB565，0.77MB/帧）@60fps ≈ 46 MB/s
+  - DCMIPP PIPE1 写层0（按 30fps）≈ 34.6 MB/s
+  - 合计 ≈ 150 MB/s；XSPI1 8bit DDR @92.3MHz 理论 184.6 MB/s，实际可用通常只有 70~85%（130~155MB/s）。
+  - 这还没算：NPU network_fc 的 1.53MB HyperRAM 激活值突发、CPU crop 在 HyperRAM 里流的 691KB 临时缓冲、cache 脏行回写。
+
+  结论：现在的预算已经在理论上限附近，任何一次推理突发都可能把 LTDC 的 FIFO 拖到欠载 → 雪花。 这也解释了为什么“挪 framebuffer 地址没用”。
+
+  - P1-1 用 FU 计数器做因果实验
+    - 实验矩阵：① 只跑 UI（不起摄像头）② 起摄像头不推理 ③ 推理时 ④ 只跑 crop。分别记录 FU 计数。如果 ③/④ 显著高于 ①②，根因坐实为带宽/延迟竞争。
+    - 这一步不改业务代码，纯测量，风险为零。
+  - P1-2 配置 MPU（当前完全没配）
+    - 证据：main.c:115-156 MPU 配置被注释，但 main.c:161-165 使能了 I/D-Cache。ARMv8-M 默认存储映射下，0x90000000（XSPI1 映射区）是
+  Normal、可缓存（WBWA），这意味着：
+        - actions.c:42/202/217 直接 memset(g_ltdc_ui_framebuf, ...) 后没有 clean cache，写可能停在 cache 里，LTDC/DMA2D 看到的是旧数据；rgblcd.c:289-309 的
+  rgblcd_draw_point 同理。
+      - CPU 读 crop 源（layer0 framebuffer）时可能命中 DCMIPP 写入之前的过期 cache 行——DCMIPP 是 DMA，不维护 CPU cache。
+      - cache 脏行回写本身还在偷带宽。
+    - 改法：把 layer0/layer1 framebuffer 区配成 Normal Non-cacheable（或 Device-nGnRnE 视需求），NPU 激活值池同理；.noncacheable 段已经存在（链接脚本
+  189-196），但需要 MPU 属性才真正生效。
+    - 注意：非缓存后 CPU 直接写 FB 会变慢，但你们本来就走 DMA2D/LVGL 局部缓冲，收益大于损失。这是一个非常典型的“面试官会追问细节”的点：cache 属性、DMA
+  一致性、write-back vs write-through，能讲透就是加分项。
+  - P1-3 削减 HyperRAM 流量（按性价比排序）
+    a. 干掉 crop 的 691KB 临时缓冲：app_x-cube-ai.c:479+ 先把 480×480×3 整块拷进 crop_temp_buf（在 .crop_buf，HyperRAM）再 CPU 双线性缩到
+  112×112。可以改成两遍直接采样：第一遍从源图按目标行采样（顺带 BGR 交换）写出 112×N 的中间行，第二遍纵向插值。省掉 691KB 的写入+回读，单次 crop 的 HyperRAM
+   流量从 ~2.8MB 降到 ~0.7MB。这一条很可能直接消除推理瞬间的花屏。
+    b. LVGL 局部绘制缓冲从 HyperRAM 挪到内部 SRAM（LV_task.c 里 .lvgl_pool 的两个 partial buffer，各约 64KB），内部 SRAM 完全放得下，省掉“CPU 渲染写
+  HyperRAM → DMA2D 读回”的往返。
+    c. DCMIPP 硬件 SWAPRB：DCMIPP_SWAP_COMPONENT_ENABLE 存在，PIPE1/PIPE2 都用 RGB888_YUV444_1 packer，但软件里手工 BGR→RGB（AI_task.c:542、crop
+  代码）。开硬件交换后可以省掉整段逐像素分支，先抓一帧验证字节序即可。
+    d. 摄像头不看时关 Layer0：退出相机页后 Layer0 仍以 69MB/s 扫描。主界面/锁屏时 disable layer0，直接释放 69MB/s 给系统和 NPU。
+    e. 长期项：layer0 改 RGB565（带宽腰斩，画质下降）或降帧率；不做双缓冲前不建议动。
+  - P1-4 双缓冲 + VSYNC 切换（消除撕裂/偶发花屏）
+    - 现状：DCMIPP 一直在往 g_ltdc_framebuf 写，LTDC 同时扫同一块内存；HAL_LTDC_Reload(...,
+  LTDC_RELOAD_IMMEDIATE)（actions.c:39/68/200/215）还会在帧中途改寄存器。
+    - 改法：两块 layer0 buffer，DCMIPP 写 back buffer，VSYNC 中断里交换 LTDC 地址（LTDC_RELOAD_VBLANK），配合 P1-2 的 cache 属性。EXTRAM_FB 有 4MB，放两块
+  1.15MB 绰绰有余。
+    - 预期：彻底消除撕裂；FU 计数应显著下降。
+  - P1-5 检测框画到 Layer1 而不是 Layer0
+    - 现在 AI_task.c:119-129 画框要 停 PIPE1 → DMA2D 写层0 → 重启 PIPE1，有丢帧、有撕裂窗口，而且任务被 terminate 时可能停在“PIPE1 已停”的状态 →
+  画面冻结。这在 P2 里会展开。
+    - 由于 Layer1 已经用 color key（黑色透出 Layer0），完全可以把框画在 Layer1 的独立小区域或直接由 LVGL 画；避免停流。
+
+  ---
+  P2 UI 时序与并发（“小概率卡死”的确定性根因）
+
+  按“最可能导致随机卡死”排序，前四条都有代码证据：
+
+  - P2-1 跨任务 osThreadTerminate（最高危）
+    - 证据：actions.c:62/94/120、ui_bridge.cpp:216/247 在 LVGL 任务/回调里直接 terminate AI 任务。
+    - 具体危害路径：
+        - AI 任务可能正停在 run_reid_pipeline 的 stop PIPE1 与 restart PIPE1 之间（AI_task.c:387-517）→ PIPE1 永久停止，预览冻结；
+      - 可能正持有 flow_var_mutex（tick() 的临界区）→ LV 任务的 tick 永久阻塞 → 整个 UI 卡死；
+      - 可能正在 ui_set_cam_text 里 create/delete lv_timer（ui_bridge.cpp:186-193，且没有 lv_lock）→ LVGL 定时器链表损坏 → 随机死机；
+      - 可能正在 DMA2D 传输中（fill_rect）→ 硬件状态和软件状态不一致。
+    - 改法：统一改成协作式停止——置 g_ai_stop_req = 1，AI 任务在主循环检查点自行清理（恢复 PIPE1、释放资源）后 osThreadExit()；LV 侧 osThreadJoin
+  或轮询句柄变空。这是标准做法，面试必问。
+    - 简历点：“将跨任务强制终止重构为协作式状态机，消除任务在临界区/硬件传输中被杀导致的偶发死锁”。
+  - P2-2 DMA2D 互斥量根本不存在
+    - 证据：actions.c:29-30 定义了 dma2d_mutex 和 attr，全工程没有任何 osMutexNew 调用；lv_st_ltdc.c:213-223 的 flush_wait_cb 却会 release 一个 NULL
+  互斥量；AI_task.c:58-80 的 fill_rect 里那个 if (dma2d_mutex != NULL) 永远为假。
+    - 后果：LVGL flush 和 AI 画框可能同时操作同一颗 DMA2D（改寄存器、反复轮询），轻则花屏，重则 while(DMA2D->CR & START) 永久等待。
+    - 改法：在 LV_task 或 app_freertos 启动时创建；所有 DMA2D 使用方统一加锁；HAL_DMA2D_PollForTransfer 的 50ms 超时要处理返回值并在失败时复位 DMA2D。
+    - 顺带：lv_st_ltdc.c:178 的 while(DMA2D->CR & DMA2D_CR_START); 应有超时和错误恢复。
+  - P2-3 LVGL 事件回调里阻塞 2 秒
+    - 证据：actions.c:84-89，action_action_recognize 在 LVGL 事件回调里 vTaskDelay(10) 轮询，最长 2 秒。这期间 LVGL 持有锁、lv_timer_handler 不跑，UI
+  必然冻结 2 秒。
+    - 改法：改成状态机——回调只置标志并切“识别中”界面，结果由 AI 任务通知，LV 任务定期 ui_poll_*（你们已经有这套轮询机制）。顺带解决 P2-1 里 AI 任务被
+  terminate 的问题。
+  - P2-4 Sensor 任务的高优先级无让出忙等
+    - 证据：Sensor_task.c:23-27 while (imx335_init()) { __NOP(); }，优先级 Normal+1 高于 LV 任务。摄像头初始化失败（或上电时序抖动）时，UI
+  直接被饿死。README 里记录过这个根因，但当前代码里并没有 vTaskDelay 修复。
+    - 改法：加 vTaskDelay(pdMS_TO_TICKS(100)) 并限制重试次数，失败则上报错误态。
+  - P2-5 裸机 __WFE() 在 RTOS 任务里空转
+    - 证据：构建宏 LL_ATON_OSAL_BARE_METAL（Release/Middlewares/ST/AI/Npu/ll_aton/subdir.mk），ll_aton_osal.h:35 映射为 __WFE()。__WFE 不阻塞任务，只是让
+  CPU 睡到下个事件；被任一事件唤醒后任务继续以 Normal+1 优先级循环，和 LV 任务抢 CPU。
+    - 改法（收益最大、风险中等）：切到 FreeRTOS OSAL，让等待变成 xSemaphoreTake(portMAX_DELAY)，NPU 中断里 give。注意：ll_aton_osal_freertos.c 依赖的
+  ll_aton_osal_rtos_template.c 在当前仓库里不存在，要么从 ST 包里补，要么写一个几十行的自定义 OSAL（创建信号量 + 在 NPU IRQ 里 signal）。先做 P0-3 的“WFE
+  调用次数 / epoch 数”统计，用数据决定值不值得改。
+  - P2-6 全局变量与 LVGL 的锁纪律
+    - eez-flow.cpp:6287-6295 的 setGlobalVariable 没有加锁，而 tick() 被 flow_var_mutex 保护；UART/AI 任务调用 ui_set_* 时存在竞争。
+    - ui_set_cam_text 从 AI 任务直接操作 LVGL timer，没有 lv_lock；LVGL 配置是 LV_USE_OS = LV_OS_FREERTOS（lv_conf.h:110），必须遵守锁。
+    - 建议把“跨任务更新 UI”统一成消息队列，LV 任务消费；这比到处加锁更可讲。
+
+  ---
+  P3 NPU 利用率与推理流水线
+
+  - P3-1 用 P0-3 的数据定义指标：单次 network_f / network_fc 的 HW 时间 / 总时间、WFE 调用次数 / epoch 数、端到端帧延迟。先别复述 0.1%。
+  - P3-2 消除 fc 的 110 个软件 epoch（模型侧，收益最大）
+    - 证据：network_fc_generate_report.txt：110 个 SW epoch，PReLU 未量化、每层 Dequantize/PRelu/Quantize 三元组、3 个 SW Conv、Cast、BatchNorm。
+    - 改法：QAT 或全整型量化；PReLU 换 ReLU（或换成可量化的 LeakyReLU）；BN 折叠进 Conv；避免 Cast。用 ST Edge AI Developer Cloud 的 analyzer 重新看 epoch
+  分布。
+    - 风险：需要重新训练/量化 + 精度回归，比赛周期内可能来不及；若做，必须有“精度-A/B”数据。
+  - P3-3 输入侧去 f32
+    - 现状：每帧 CPU 把 49KB u8 转成 196KB f32（AI_task.c:542-547），再 clean cache 让 NPU 读。
+    - 快赢：用 CMSIS-DSP 的向量化转换替换标量循环 + P1-3 的 DCMIPP SWAPRB，去掉 BGR 分支。
+    - 根治：模型输入改 int8/u8，转换和 4 倍内存流量一起消失（需重新量化）。
+  - P3-4 去掉每次推理的 Init/DeInit
+    - 证据：app_x-cube-ai.c:927-963 / 965-984 每次推理后 DeInit；1032-1094 注释说明两个网络共享 npuRAM4，所以互相 DeInit。先测这部分开销（通常几百 µs 到
+  ms）。
+    - 改法：拆分内存池，让两个网络常驻；EXTRAM_LVGL 的 2MB 目前未使用，可重新规划。收益是把“每帧固定开销”变成一次性开销。
+    - 风险：内存映射要重排，需验证 npu_cache 和链接脚本，属于中等风险高收益。
+  - P3-5 输入双缓冲
+    - 现在 nn_input_u8（PIPE2 DMA 目标）是单缓冲，DCMIPP 可能在 CPU 转换或 NPU 读取期间覆盖它 → 半帧混合，导致偶发误检。改成 ping-pong 两块，帧回调按 buffer
+   索引交替释放信号量。
+    - 这一条是正确性问题，不只是性能，值得写。
+
+  ---
+  P4 健壮性与工程化（收尾加分）
+
+  - P4-1 看门狗：目前工程里没有 IWDG 使用（Core 下只在 HAL 配置/启动文件出现）。加 IWDG + 各任务喂狗/心跳，配合 P0 的统计，能证明“系统不会无声挂死”。
+  - P4-2 HardFault/MemManage/BusFault 钩子打印 PC/LR/CFSR/HFSR + 栈回溯（用 __builtin_return_address 或简易栈扫描），替代现在只能靠猜。
+  - P4-3 configCHECK_FOR_STACK_OVERFLOW 2 已开，但 vApplicationStackOverflowHook 需要落实现（打印任务名并复位/停机）。
+  - P4-4 malloc failed hook + 堆剩余量打印；configTOTAL_HEAP_SIZE 262144 里有个 128KB 的 LVGL 栈，检查峰值后决定是否收紧。
+  - P4-5 UART 协议层：命令解析的边界检查、超时、队列满时丢弃策略；_read 逐字节阻塞会拖慢协议任务。
+  - P4-6 检查重复建任务：每次解锁都会 osThreadNew(Barcode_Task)（actions.c:114），action_ver 也不检查已有句柄（:53）。加状态守卫，避免任务泄漏。
+
+  ---
+  建议的执行顺序（3 周节奏）
+
+  ┌─────────┬───────────────────────────────────────────────┬────────────────────────────────────────────────┐
+  │  阶段   │                     内容                      │                        产出                        │
+  ├─────────┼───────────────────────────────────────────────┼────────────────────────────────────────────────┤
+  │ 第 1 周 │ P0 全部 + P1-1 因果实验                       │ CPU 占用表、AI 分段耗时、HW/SW epoch 占比、FU 计数 │
+  ├─────────┼───────────────────────────────────────────────┼────────────────────────────────────────────────┤
+  │ 第 2 周 │ P1-2/1-3(1,2,3)/1-5 + P2-1~2-4                │ 雪花复现率→0、UI 卡死根因消除、带宽下降数据        │
+  ├─────────┼───────────────────────────────────────────────┼────────────────────────────────────────────────┤
+  │ 第 3 周 │ P3 中风险最低的两项（P3-3、P3-4 或 P3-5）+ P4 │ 端到端延迟/帧率对比，故障注入测试                  │
+  └─────────┴───────────────────────────────────────────────┴────────────────────────────────────────────────┘
+
+  重要纪律：每做一项，在同一个测量脚本下记录 before/after；不要在同一提交里混多个变量，否则数字无法归因。这也是简历上“可复现实验”的可信度来源。
+
+  ---
+  简历条目模板（数字必须来自 P0 的实测）
+
+  - 基于 DWT CYCCNT 实现 FreeRTOS 运行时统计与 AI 流水线分段打点，定位 UI 卡顿根因为 __WFE() 裸机自旋与跨任务强制终止；改为 RTOS 信号量等待 +
+  协作式状态机后，UI 卡死从 A 次/小时降为 0，LVGL 任务 CPU 占用稳定在 B%。
+  - 通过 LTDC FIFO Underrun 计数与 XSPI1 带宽预算建模，定位 HyperRAM 雪花屏为带宽竞争（LTDC 115MB/s + DCMIPP 35MB/s ≈ 峰值 184MB/s 的 81%），采用缓存裁剪 +
+  crop 零拷贝重采样 + 非缓存 MPU 配置后，Underrun 计数下降 C%，稳定 60fps。
+  - 分析 ST Edge AI 生成报告，发现检测网络 26/95、识别网络 110/183 个 epoch 回退至 CPU；通过全量化与算子替换将 HW epoch 占比从 D% 提升至 E%，单次推理延迟从
+  F ms 降至 G ms。
+  - 重构 DMA2D/LVGL 并发模型：补齐缺失的互斥量、引入 LVGL 锁与消息队列，消除帧缓冲竞争导致的偶发花屏/死锁。
+
+  ---
+  下一步建议：先只做 P0-1 + P0-2（约半天，改动小、可回退），拿到第一组真实数字后再决定 P1/P3 的投入。需要我直接把 DWT 钩子和分段计时的最小实现写出来吗？
